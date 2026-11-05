@@ -1,0 +1,17 @@
+# Flutter generated files
+**/.dart_tool/
+**/build/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+
+# IDE files
+**/.idea/
+**/*.iml
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.*
