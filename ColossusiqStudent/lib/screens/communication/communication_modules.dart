@@ -1413,10 +1413,10 @@ class CertificationRoadmapScreen extends StatelessWidget {
           category: "COMMUNICATION & SKILLS",
           phase: "Phase 2",
           isMvp: false,
-          icon: Icons.settings_suggest_outlined,
+          icon: Icons.workspace_premium_outlined,
           title: "Certification Roadmap",
           subtitle: "Recommended certifications sequenced against your career target.",
-          watermarkIcon: Icons.settings_suggest_outlined,
+          watermarkIcon: Icons.workspace_premium_outlined,
         ),
         const SizedBox(height: 20),
 
@@ -1428,9 +1428,9 @@ class CertificationRoadmapScreen extends StatelessWidget {
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(flex: 14, child: _buildTimelineCard(context)),
+                  Expanded(flex: 15, child: _buildTimelineCard(context)),
                   const SizedBox(width: 20),
-                  Expanded(flex: 8, child: _buildProgressColumn()),
+                  Expanded(flex: 7, child: _buildProgressColumn()),
                 ],
               );
             }
@@ -1466,77 +1466,71 @@ class CertificationRoadmapScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Certification roadmap — Data Scientist",
+            "Certification Roadmap — B.E. Computer Science & Engineering",
             style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
               color: const Color(0xFF1E293B),
             ),
           ),
           const SizedBox(height: 2),
           Text(
-            "2 of 6 stages complete",
+            "1 of 4 stages complete",
             style: GoogleFonts.poppins(
               fontSize: 12,
               color: const Color(0xFF64748B),
             ),
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 24),
 
-          // Stage 1: SQL fundamentals
+          // Stage 1: Foundation Level (Done)
           _buildStageItem(
             context: context,
             status: _StageStatus.done,
-            title: "SQL fundamentals",
-            subtitle: "Free · 12 hours",
-            tag: "Completed Aug 2026",
+            title: "Foundation Level",
+            subtitle: "Core concepts & fundamentals in major department subjects",
+            tags: [
+              "Completed: Department Internal Certification",
+              "Score: 84% (Grade A)",
+            ],
             isLast: false,
           ),
 
-          // Stage 2: Python for Data Science
-          _buildStageItem(
-            context: context,
-            status: _StageStatus.done,
-            title: "Python for Data Science",
-            subtitle: "Free · 20 hours",
-            tag: "Completed Sep 2026",
-            isLast: false,
-          ),
-
-          // Stage 3: Statistics essentials
+          // Stage 2: Intermediate Mastery (Current)
           _buildStageItem(
             context: context,
             status: _StageStatus.current,
-            title: "Statistics essentials",
-            subtitle: "In progress · 60%",
+            title: "Intermediate Mastery",
+            subtitle: "Applied problem solving, laboratory assessments, and project work",
             tagBadge: "Current",
+            tags: [
+              "In Progress: 30-Question Final Assessment",
+              "Passing mark: 60%",
+            ],
             isLast: false,
           ),
 
-          // Stage 4: Cloud fundamentals
+          // Stage 3: Industry Professional (Todo)
           _buildStageItem(
             context: context,
             status: _StageStatus.todo,
-            title: "Cloud fundamentals (any major provider)",
-            subtitle: "Recommended for Sem 6",
+            title: "Industry Professional",
+            subtitle: "Recognized national/international external certifications",
+            tags: [
+              "Recommended: NPTEL / SWAYAM / Industry Council certification",
+            ],
             isLast: false,
           ),
 
-          // Stage 5: Machine Learning specialisation
+          // Stage 4: Capstone & Placement Verified (Todo)
           _buildStageItem(
             context: context,
             status: _StageStatus.todo,
-            title: "Machine Learning specialisation",
-            subtitle: "Recommended for Sem 6",
-            isLast: false,
-          ),
-
-          // Stage 6: Data visualisation
-          _buildStageItem(
-            context: context,
-            status: _StageStatus.todo,
-            title: "Data visualisation",
-            subtitle: "Recommended for Sem 7",
+            title: "Capstone & Placement Verified",
+            subtitle: "Comprehensive verification for campus hiring drives",
+            tags: [
+              "Placement Readiness Board Verification",
+            ],
             isLast: true,
           ),
         ],
@@ -1549,7 +1543,7 @@ class CertificationRoadmapScreen extends StatelessWidget {
     required _StageStatus status,
     required String title,
     required String subtitle,
-    String? tag,
+    List<String>? tags,
     String? tagBadge,
     required bool isLast,
   }) {
@@ -1559,30 +1553,33 @@ class CertificationRoadmapScreen extends StatelessWidget {
     switch (status) {
       case _StageStatus.done:
         iconWidget = Container(
-          width: 24,
-          height: 24,
-          decoration: const BoxDecoration(color: Color(0xFF0F766E), shape: BoxShape.circle),
-          child: const Icon(Icons.check, size: 15, color: Colors.white),
+          width: 26,
+          height: 26,
+          decoration: const BoxDecoration(
+            color: Color(0xFF0F766E),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.check, size: 16, color: Colors.white),
         );
         lineColor = const Color(0xFF0F766E);
         break;
       case _StageStatus.current:
         iconWidget = Container(
-          width: 24,
-          height: 24,
+          width: 26,
+          height: 26,
           decoration: BoxDecoration(
             color: const Color(0xFFFFFBEB),
             shape: BoxShape.circle,
             border: Border.all(color: const Color(0xFFD97706), width: 2),
           ),
-          child: const Icon(Icons.auto_awesome, size: 13, color: Color(0xFFD97706)),
+          child: const Icon(Icons.auto_awesome, size: 14, color: Color(0xFFD97706)),
         );
         lineColor = const Color(0xFFE2E8F0);
         break;
       case _StageStatus.todo:
         iconWidget = Container(
-          width: 24,
-          height: 24,
+          width: 26,
+          height: 26,
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
@@ -1599,7 +1596,7 @@ class CertificationRoadmapScreen extends StatelessWidget {
         children: [
           // Timeline indicator & line
           SizedBox(
-            width: 24,
+            width: 26,
             child: Column(
               children: [
                 iconWidget,
@@ -1613,25 +1610,23 @@ class CertificationRoadmapScreen extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 16),
 
           // Content
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 22),
+              padding: const EdgeInsets.only(bottom: 26),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1E293B),
-                          ),
+                      Text(
+                        title,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1E293B),
                         ),
                       ),
                       if (tagBadge != null) ...[
@@ -1654,7 +1649,7 @@ class CertificationRoadmapScreen extends StatelessWidget {
                       ],
                     ],
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Text(
                     subtitle,
                     style: GoogleFonts.poppins(
@@ -1662,199 +1657,34 @@ class CertificationRoadmapScreen extends StatelessWidget {
                       color: const Color(0xFF64748B),
                     ),
                   ),
-                  if (tag != null) ...[
+                  if (tags != null && tags.isNotEmpty) ...[
                     const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Text(
-                        tag,
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          color: const Color(0xFF475569),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: tags.map((tg) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Text(
+                            tg,
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              color: const Color(0xFF475569),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ],
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed: () => _showRoadmapStageDetailsDialog(context, title, subtitle, status.name),
-                        icon: const Icon(Icons.visibility_outlined, size: 12),
-                        label: const Text("View"),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          minimumSize: Size.zero,
-                          side: const BorderSide(color: Color(0xFFE2E8F0)),
-                          foregroundColor: const Color(0xFF0F766E),
-                          textStyle: GoogleFonts.poppins(fontSize: 11),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      OutlinedButton.icon(
-                        onPressed: () => _showEditRoadmapStageDialog(context, title, subtitle),
-                        icon: const Icon(Icons.edit_outlined, size: 12),
-                        label: const Text("Edit"),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          minimumSize: Size.zero,
-                          side: const BorderSide(color: Color(0xFFE2E8F0)),
-                          foregroundColor: const Color(0xFF4338CA),
-                          textStyle: GoogleFonts.poppins(fontSize: 11),
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showRoadmapStageDetailsDialog(BuildContext context, String title, String subtitle, String status) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.timeline_rounded, color: Color(0xFF2563EB), size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700)),
-                  Text("Stage Status: ${status.toUpperCase()}", style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF64748B))),
-                ],
-              ),
-            ),
-          ],
-        ),
-        content: Container(
-          width: double.maxFinite,
-          constraints: const BoxConstraints(maxWidth: 440),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.school_outlined, size: 16, color: Color(0xFF2563EB)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(subtitle, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B))),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Divider(height: 1, color: Color(0xFFE2E8F0)),
-                const SizedBox(height: 12),
-                Text("Learning Objectives & Certification", style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF94A3B8))),
-                const SizedBox(height: 4),
-                Text(
-                  "Covers fundamental concepts, practical assignments, and mock test questions aligned with national and international certification exams.",
-                  style: GoogleFonts.poppins(fontSize: 12.5, height: 1.45, color: const Color(0xFF475569)),
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text("Close", style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _showEditRoadmapStageDialog(context, title, subtitle);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF141938), foregroundColor: Colors.white),
-            child: const Text("Edit Schedule"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showEditRoadmapStageDialog(BuildContext context, String title, String subtitle) {
-    final titleCtrl = TextEditingController(text: title);
-    final scheduleCtrl = TextEditingController(text: subtitle);
-    final targetDateCtrl = TextEditingController(text: "30 Nov 2026");
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text("Edit Roadmap Milestone", style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16)),
-        content: Container(
-          width: double.maxFinite,
-          constraints: const BoxConstraints(maxWidth: 440),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: titleCtrl,
-                  decoration: const InputDecoration(labelText: "Stage Title", border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: scheduleCtrl,
-                  decoration: const InputDecoration(labelText: "Duration / Hours", border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: targetDateCtrl,
-                  decoration: const InputDecoration(labelText: "Target Completion Date", border: OutlineInputBorder()),
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text("Cancel", style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text("Roadmap milestone '${titleCtrl.text}' updated!"),
-                  backgroundColor: const Color(0xFF15803D),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF141938), foregroundColor: Colors.white),
-            child: Text("Save Milestone", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -1892,7 +1722,7 @@ class CertificationRoadmapScreen extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                "33%",
+                "25%",
                 style: GoogleFonts.poppins(
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
@@ -1903,7 +1733,7 @@ class CertificationRoadmapScreen extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: const LinearProgressIndicator(
-                  value: 0.33,
+                  value: 0.25,
                   minHeight: 7,
                   backgroundColor: Color(0xFFF1F5F9),
                   valueColor: AlwaysStoppedAnimation(Color(0xFF0F766E)),

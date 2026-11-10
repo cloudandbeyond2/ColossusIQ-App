@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'core/theme/app_theme.dart';
 import 'screens/auth/splash_screen.dart';
+import 'screens/career/career_modules.dart';
+import 'screens/placement/placement_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +62,11 @@ class StudentApp extends StatelessWidget {
         );
       },
       home: const SplashScreen(),
+      routes: {
+        '/interview': (context) => const MockInterviewScreen(),
+        '/resume': (context) => const ResumeBuilderScreen(),
+        '/placement-readiness': (context) => const PlacementScreen(),
+      },
     );
   }
 }

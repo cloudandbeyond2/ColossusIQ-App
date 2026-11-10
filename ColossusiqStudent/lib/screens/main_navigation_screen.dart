@@ -42,6 +42,7 @@ import 'assessment/assessment_modules.dart';
 
 // Academics & Innovation Modules
 import 'academics/academic_calendar_screen.dart';
+import 'academics/document_ai_screen.dart';
 import 'communication/communication_modules.dart';
 import 'innovation/innovation_modules.dart';
 import 'campus_modules/campus_modules.dart';
@@ -1011,7 +1012,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                     title: "Document AI",
                     isActive: _activeSubScreenTitle == "Document AI",
                     onTap: () => _openSubScreen(
-                      ExamPrepScreen(onBack: _closeSubScreen),
+                      DocumentAiScreen(onBack: _closeSubScreen),
                       title: "Document AI",
                     ),
                   ),
@@ -1289,6 +1290,42 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                     ),
                   ),
                   _drawerItem(
+                    icon: Icons.star_outline_rounded,
+                    title: "Experience Passport",
+                    isActive: _activeSubScreenTitle == "Experience Passport",
+                    onTap: () => _openSubScreen(
+                      ExperiencePassportScreen(onBack: _closeSubScreen),
+                      title: "Experience Passport",
+                    ),
+                  ),
+                  _drawerItem(
+                    icon: Icons.sports_esports_outlined,
+                    title: "Refresh Zone",
+                    isActive: _activeSubScreenTitle == "Refresh Zone",
+                    onTap: () => _openSubScreen(
+                      RefreshZoneScreen(onBack: _closeSubScreen),
+                      title: "Refresh Zone",
+                    ),
+                  ),
+                  _drawerItem(
+                    icon: Icons.emoji_events_outlined,
+                    title: "XP & Badges",
+                    isActive: _activeSubScreenTitle == "XP & Badges",
+                    onTap: () => _openSubScreen(
+                      XpBadgesScreen(onBack: _closeSubScreen),
+                      title: "XP & Badges",
+                    ),
+                  ),
+                  _drawerItem(
+                    icon: Icons.favorite_outline_rounded,
+                    title: "Wellness & Habits",
+                    isActive: _activeSubScreenTitle == "Wellness & Habits",
+                    onTap: () => _openSubScreen(
+                      WellnessHabitsScreen(onBack: _closeSubScreen),
+                      title: "Wellness & Habits",
+                    ),
+                  ),
+                  _drawerItem(
                     icon: Icons.school_outlined,
                     title: "Campus Assistant",
                     isActive: _activeSubScreenTitle == "Campus Assistant",
@@ -1330,7 +1367,21 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                     title: "Job Matching",
                     isActive: _activeSubScreenTitle == "Job Matching",
                     onTap: () => _openSubScreen(
-                      JobMatchingScreen(onBack: _closeSubScreen),
+                      JobMatchingScreen(
+                        onBack: _closeSubScreen,
+                        onOpenInterview: () => _openSubScreen(
+                          MockInterviewScreen(onBack: _closeSubScreen),
+                          title: "AI Mock Interview",
+                        ),
+                        onOpenResume: () => _openSubScreen(
+                          ResumeBuilderScreen(onBack: _closeSubScreen),
+                          title: "Resume Builder",
+                        ),
+                        onOpenReadiness: () => _openSubScreen(
+                          PlacementScreen(onBack: _closeSubScreen),
+                          title: "Placement Readiness",
+                        ),
+                      ),
                       title: "Job Matching",
                     ),
                   ),

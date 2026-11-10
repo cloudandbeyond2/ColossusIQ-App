@@ -1,9 +1,73 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../core/theme/app_colors.dart';
 
 // =============================================================================
-// OVERVIEW: NOTICE BOARD (FACULTY PORTAL)
+// NOTICE DATA MODEL
+// =============================================================================
+class NoticeItem {
+  final String id;
+  String title;
+  bool hasBullet;
+  String authorRole;
+  String authorName;
+  String dateStr;
+  String audience;
+  String category;
+  List<String> tags;
+  String body;
+  String? venue;
+  String? validity;
+  int readCount;
+  int ackCount;
+  bool isUrgent;
+  bool isUnread;
+  bool toAcknowledge;
+  bool isAcknowledged;
+  bool isSentByMe;
+  IconData icon;
+  Color iconColor;
+  Color iconBg;
+  bool hasAmberBorder;
+  bool isExpanded;
+  bool hasOpenLink;
+  bool hasDelete;
+  bool showMarkAsRead;
+  bool showIHaveReadThisButton;
+
+  NoticeItem({
+    required this.id,
+    required this.title,
+    this.hasBullet = false,
+    required this.authorRole,
+    required this.authorName,
+    required this.dateStr,
+    required this.audience,
+    required this.category,
+    required this.tags,
+    required this.body,
+    this.venue,
+    this.validity,
+    this.readCount = 0,
+    this.ackCount = 0,
+    this.isUrgent = false,
+    this.isUnread = false,
+    this.toAcknowledge = false,
+    this.isAcknowledged = false,
+    this.isSentByMe = false,
+    this.icon = Icons.edit_note_rounded,
+    this.iconColor = const Color(0xFFD97706),
+    this.iconBg = const Color(0xFFFEF3C7),
+    this.hasAmberBorder = false,
+    this.isExpanded = true,
+    this.hasOpenLink = false,
+    this.hasDelete = false,
+    this.showMarkAsRead = false,
+    this.showIHaveReadThisButton = false,
+  });
+}
+
+// =============================================================================
+// NOTICE BOARD SCREEN (STAFF PORTAL - EXACT REPLICA)
 // =============================================================================
 class NoticeBoardScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -19,10 +83,13 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
   String _selectedCategory = "All";
   final TextEditingController _searchController = TextEditingController();
 
-  // New Notice form controllers
+  // New Notice Composer Controllers
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _bodyController = TextEditingController();
+  final TextEditingController _venueController = TextEditingController();
+  final TextEditingController _validityController = TextEditingController();
   String _formCategory = "Academic";
+  final String _formAudience = "Everyone";
   bool _isUrgent = false;
 
   final List<String> _categories = [
@@ -37,359 +104,386 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
     "General",
   ];
 
-  // In-memory notice state (defaults to empty like in the screenshot, with interactive demo support)
-  final List<Map<String, dynamic>> _notices = [];
-  final List<Map<String, dynamic>> _sentNotices = [];
+  late List<NoticeItem> _allNotices;
+
+  @override
+  void initState() {
+    super.initState();
+    _initNotices();
+  }
+
+  void _initNotices() {
+    _allNotices = [
+      // 1. Notice 1: test (Principal)
+      NoticeItem(
+        id: "n1",
+        title: "test",
+        hasBullet: true,
+        authorRole: "Principal",
+        authorName: "Dr. Lakshmi Sundaram",
+        dateStr: "3 Nov, 11:08 am",
+        audience: "Everyone",
+        category: "Examination",
+        tags: ["Important", "Examination"],
+        body: "Assessment · 3 Nov - 11 Nov · Full day\nVenue: dfg\ngdf",
+        validity: "Valid till 11 Nov",
+        isUrgent: true,
+        isUnread: true,
+        toAcknowledge: false,
+        isSentByMe: false,
+        hasAmberBorder: true,
+        icon: Icons.edit_note_rounded,
+        iconColor: const Color(0xFFD97706),
+        iconBg: const Color(0xFFFEF3C7),
+        showMarkAsRead: true,
+      ),
+
+      // 2. Notice 2: Internal Assessment II (Faculty - Sent by me)
+      NoticeItem(
+        id: "n2",
+        title: "Internal Assessment II Schedule & Exam Guidelines",
+        authorRole: "Faculty",
+        authorName: "Dr. Meena Raghavan",
+        dateStr: "8 Oct, 10:29 am",
+        audience: "All students",
+        category: "Academic",
+        tags: ["Important", "Academic", "Expired"],
+        body:
+            "The Internal Assessment II examinations will commence on October 15, 2026. Important Guidelines:\n1. Detailed hall seating arrangements will be published by October 12.\n2. Students must carry their ID cards and hall tickets for all exam sessions.\n3. Mobile phones and smartwatches are strictly prohibited inside the exam hall.\nFor any queries, please reach out to your respective department coordinator.",
+        validity: "Valid till 24 Oct",
+        readCount: 2,
+        ackCount: 2,
+        isUrgent: true,
+        isUnread: false,
+        toAcknowledge: false,
+        isSentByMe: true,
+        hasAmberBorder: true,
+        icon: Icons.edit_note_rounded,
+        iconColor: const Color(0xFFD97706),
+        iconBg: const Color(0xFFFEF3C7),
+        hasOpenLink: true,
+        hasDelete: true,
+      ),
+
+      // 3. Notice 3: Testing (HOD - Needs Acknowledgement)
+      NoticeItem(
+        id: "n3",
+        title: "Testing",
+        authorRole: "HOD",
+        authorName: "Dr. S. Venkatesh",
+        dateStr: "21 Oct, 09:43 am",
+        audience: "Everyone",
+        category: "Academic",
+        tags: ["Academic"],
+        body: "Test message",
+        validity: "Valid till 7 Nov",
+        isUrgent: false,
+        isUnread: false,
+        toAcknowledge: true,
+        isAcknowledged: false,
+        isSentByMe: false,
+        hasAmberBorder: false,
+        icon: Icons.edit_note_rounded,
+        iconColor: const Color(0xFF4F46E5),
+        iconBg: const Color(0xFFEEF2FF),
+        showIHaveReadThisButton: true,
+      ),
+
+      // 4. Notice 4: testt (Faculty - Sent by me)
+      NoticeItem(
+        id: "n4",
+        title: "testt",
+        authorRole: "Faculty",
+        authorName: "Dr. Meena Raghavan",
+        dateStr: "13 Oct, 11:30 am",
+        audience: "Everyone",
+        category: "Holiday",
+        tags: ["Holiday", "Expired"],
+        body: "Holiday · 19 Oct · Full day",
+        validity: "Valid till 19 Oct",
+        readCount: 0,
+        ackCount: 0,
+        isUrgent: false,
+        isUnread: false,
+        toAcknowledge: false,
+        isSentByMe: true,
+        hasAmberBorder: false,
+        icon: Icons.edit_note_rounded,
+        iconColor: const Color(0xFF6B7280),
+        iconBg: const Color(0xFFF3F4F6),
+        hasDelete: true,
+      ),
+
+      // 5. Notice 5: Monday will be Holiday (Faculty - Sent by me)
+      NoticeItem(
+        id: "n5",
+        title: "Monday will be Holiday",
+        authorRole: "Faculty",
+        authorName: "Dr. Meena Raghavan",
+        dateStr: "13 Oct, 10:52 am",
+        audience: "All students",
+        category: "Holiday",
+        tags: ["Holiday", "Expired"],
+        body: "Sent by Dr. Meena Raghavan",
+        validity: "Valid till 19 Oct",
+        readCount: 1,
+        ackCount: 1,
+        isUrgent: false,
+        isUnread: false,
+        toAcknowledge: false,
+        isSentByMe: true,
+        hasAmberBorder: false,
+        icon: Icons.beach_access_rounded,
+        iconColor: const Color(0xFF0284C7),
+        iconBg: const Color(0xFFE0F2FE),
+        hasDelete: true,
+      ),
+
+      // 6. Notice 6: Career & Placement Drive (Faculty - Sent by me)
+      NoticeItem(
+        id: "n6",
+        title: "Career & Placement Drive",
+        authorRole: "Faculty",
+        authorName: "Dr. Meena Raghavan",
+        dateStr: "8 Oct, 10:12 am",
+        audience: "All students",
+        category: "Academic",
+        tags: ["Academic"],
+        body:
+            "🚀 Placement Drive 2026\nMeet leading companies and explore exciting career opportunities.\n📅 12 November 2026\n📍 Seminar Hall",
+        validity: "Valid till 31 Dec",
+        readCount: 2,
+        ackCount: 2,
+        isUrgent: false,
+        isUnread: false,
+        toAcknowledge: false,
+        isSentByMe: true,
+        hasAmberBorder: false,
+        icon: Icons.business_center_outlined,
+        iconColor: const Color(0xFF0D9488),
+        iconBg: const Color(0xFFCCFBF1),
+        hasDelete: true,
+      ),
+
+      // 7. Notice 7: Sports Day (Faculty - Sent by me)
+      NoticeItem(
+        id: "n7",
+        title: "Sports Day",
+        authorRole: "Faculty",
+        authorName: "Dr. Meena Raghavan",
+        dateStr: "8 Oct, 10:12 am",
+        audience: "All students",
+        category: "Academic",
+        tags: ["Academic"],
+        body: "Annual inter-department sports competitions and track & field selections.",
+        validity: "Valid till 30 Nov",
+        readCount: 5,
+        ackCount: 4,
+        isUrgent: false,
+        isUnread: false,
+        toAcknowledge: false,
+        isSentByMe: true,
+        hasAmberBorder: false,
+        icon: Icons.emoji_events_outlined,
+        iconColor: const Color(0xFFD97706),
+        iconBg: const Color(0xFFFEF3C7),
+        hasDelete: true,
+      ),
+
+      // 8. Notice 8: Faculty FDP (Faculty - Sent by me)
+      NoticeItem(
+        id: "n8",
+        title: "Faculty Development Program on AI & Cloud",
+        authorRole: "Faculty",
+        authorName: "Dr. Meena Raghavan",
+        dateStr: "5 Oct, 02:15 pm",
+        audience: "All Faculty",
+        category: "Event",
+        tags: ["Event"],
+        body: "Hands-on workshop on Large Language Models and Cloud Microservices in CSE Lab 3.",
+        validity: "Valid till 15 Nov",
+        readCount: 12,
+        ackCount: 9,
+        isUrgent: false,
+        isUnread: false,
+        toAcknowledge: false,
+        isSentByMe: true,
+        hasAmberBorder: false,
+        icon: Icons.computer_rounded,
+        iconColor: const Color(0xFF6366F1),
+        iconBg: const Color(0xFFEEF2FF),
+        hasDelete: true,
+      ),
+
+      // 9. Notice 9: Fee Payment Notice (Faculty - Sent by me)
+      NoticeItem(
+        id: "n9",
+        title: "Even Semester Fee Payment Schedule",
+        authorRole: "Faculty",
+        authorName: "Dr. Meena Raghavan",
+        dateStr: "1 Oct, 11:00 am",
+        audience: "All students",
+        category: "Fees",
+        tags: ["Fees", "Expired"],
+        body: "Online payment gateway is now open for tuition and exam registration fees.",
+        validity: "Valid till 20 Oct",
+        readCount: 45,
+        ackCount: 38,
+        isUrgent: false,
+        isUnread: false,
+        toAcknowledge: false,
+        isSentByMe: true,
+        hasAmberBorder: false,
+        icon: Icons.account_balance_wallet_outlined,
+        iconColor: const Color(0xFF10B981),
+        iconBg: const Color(0xFFD1FAE5),
+        hasDelete: true,
+      ),
+
+      // 10. Notice 10: Bus Route Timings (Faculty - Sent by me)
+      NoticeItem(
+        id: "n10",
+        title: "Hostel & Transport Route Revision",
+        authorRole: "Faculty",
+        authorName: "Dr. Meena Raghavan",
+        dateStr: "28 Sep, 09:30 am",
+        audience: "Hostellers & Day Scholars",
+        category: "Hostel & Transport",
+        tags: ["Hostel & Transport"],
+        body: "Route 12 and Route 18 evening departure timings updated to 5:45 PM.",
+        validity: "Valid till 30 Nov",
+        readCount: 28,
+        ackCount: 22,
+        isUrgent: false,
+        isUnread: false,
+        toAcknowledge: false,
+        isSentByMe: true,
+        hasAmberBorder: false,
+        icon: Icons.directions_bus_outlined,
+        iconColor: const Color(0xFFF97316),
+        iconBg: const Color(0xFFFFEDD5),
+        hasDelete: true,
+      ),
+    ];
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
     _titleController.dispose();
     _bodyController.dispose();
+    _venueController.dispose();
+    _validityController.dispose();
     super.dispose();
   }
 
   void _publishNotice() {
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter a notice title")),
+        const SnackBar(
+          content: Text("Please enter a notice title"),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
       return;
     }
-    final newNotice = {
-      "title": _titleController.text.trim(),
-      "category": _formCategory,
-      "date": "Just now",
-      "author": "Dr. V. Ramanathan (Faculty)",
-      "content": _bodyController.text.trim().isEmpty
+
+    final newNotice = NoticeItem(
+      id: "n_${DateTime.now().millisecondsSinceEpoch}",
+      title: _titleController.text.trim(),
+      authorRole: "Faculty",
+      authorName: "Dr. Meena Raghavan",
+      dateStr: "Just now",
+      audience: _formAudience,
+      category: _formCategory,
+      tags: _isUrgent ? ["Important", _formCategory] : [_formCategory],
+      body: _bodyController.text.trim().isEmpty
           ? "No additional description provided."
           : _bodyController.text.trim(),
-      "isUrgent": _isUrgent,
-      "isUnread": true,
-      "toAcknowledge": true,
-    };
+      validity: _validityController.text.trim().isNotEmpty
+          ? "Valid till ${_validityController.text.trim()}"
+          : "Valid till 30 Nov",
+      venue: _venueController.text.trim().isNotEmpty ? _venueController.text.trim() : null,
+      isUrgent: _isUrgent,
+      isUnread: false,
+      toAcknowledge: false,
+      isSentByMe: true,
+      hasAmberBorder: _isUrgent,
+      icon: Icons.edit_note_rounded,
+      iconColor: _isUrgent ? const Color(0xFFD97706) : const Color(0xFF4F46E5),
+      iconBg: _isUrgent ? const Color(0xFFFEF3C7) : const Color(0xFFEEF2FF),
+      hasDelete: true,
+    );
 
     setState(() {
-      _notices.insert(0, newNotice);
-      _sentNotices.insert(0, newNotice);
+      _allNotices.insert(0, newNotice);
       _titleController.clear();
       _bodyController.clear();
-      _selectedTab = 0; // Switch back to notices list
+      _venueController.clear();
+      _validityController.clear();
+      _isUrgent = false;
+      _selectedTab = 2; // Switch to "Sent by me"
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Notice published successfully!")),
+      const SnackBar(
+        content: Text("Notice published successfully!"),
+        backgroundColor: Color(0xFF15803D),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
-  void _showNoticeDetailsDialog(Map<String, dynamic> n) {
+  void _deleteNotice(NoticeItem item) {
     showDialog(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.campaign_rounded, color: Color(0xFF2563EB), size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(n["title"] as String, style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700)),
-                    Text("${n["category"]} · ${n["date"]}", style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF64748B))),
-                  ],
-                ),
-              ),
-            ],
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          "Delete Notice?",
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16),
+        ),
+        content: Text(
+          "Are you sure you want to delete '${item.title}'? This action cannot be undone.",
+          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF475569)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text("Cancel", style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
           ),
-          content: Container(
-            width: double.maxFinite,
-            constraints: const BoxConstraints(maxWidth: 460),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    n["content"] as String,
-                    style: GoogleFonts.poppins(fontSize: 13, height: 1.5, color: const Color(0xFF1E293B)),
+          ElevatedButton(
+            onPressed: () {
+              final idx = _allNotices.indexOf(item);
+              setState(() {
+                _allNotices.remove(item);
+              });
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Notice deleted", style: GoogleFonts.poppins()),
+                  behavior: SnackBarBehavior.floating,
+                  action: SnackBarAction(
+                    label: "Undo",
+                    textColor: const Color(0xFFFBBF24),
+                    onPressed: () {
+                      setState(() {
+                        _allNotices.insert(idx >= 0 ? idx : 0, item);
+                      });
+                    },
                   ),
-                  const SizedBox(height: 16),
-                  const Divider(height: 1, color: Color(0xFFE2E8F0)),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    alignment: WrapAlignment.spaceBetween,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 8,
-                    runSpacing: 6,
-                    children: [
-                      Text("Issued by: ${n["author"]}", style: GoogleFonts.poppins(fontSize: 12, fontStyle: FontStyle.italic, color: const Color(0xFF64748B))),
-                      if (n["toAcknowledge"] == true)
-                        Text("Pending Acknowledgment", style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFFD97706)))
-                      else
-                        Text("Acknowledged", style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF15803D))),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
             ),
+            child: const Text("Delete"),
           ),
-          actions: [
-            if (n["toAcknowledge"] == true)
-              ElevatedButton.icon(
-                onPressed: () {
-                  setState(() {
-                    n["toAcknowledge"] = false;
-                  });
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Acknowledged receipt of '${n["title"]}'", style: GoogleFonts.poppins()),
-                      backgroundColor: const Color(0xFF15803D),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.check_circle_outline_rounded, size: 15),
-                label: const Text("Acknowledge Notice"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0F766E),
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF141938),
-                foregroundColor: Colors.white,
-              ),
-              child: const Text("Close"),
-            ),
-          ],
-        );
-      },
+        ],
+      ),
     );
-  }
-
-  void _showEditNoticeDialog(Map<String, dynamic> n) {
-    final titleCtrl = TextEditingController(text: n["title"] as String);
-    final contentCtrl = TextEditingController(text: n["content"] as String);
-    final authorCtrl = TextEditingController(text: n["author"] as String);
-    String category = n["category"] as String;
-    bool isUrgent = n["isUrgent"] == true;
-
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setDlgState) {
-            return AlertDialog(
-              insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: Text("Edit Announcement", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700)),
-              content: SingleChildScrollView(
-                child: Container(
-                  width: double.maxFinite,
-                  constraints: const BoxConstraints(maxWidth: 460),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextField(
-                        controller: titleCtrl,
-                        decoration: const InputDecoration(labelText: "Notice Title"),
-                      ),
-                      const SizedBox(height: 12),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final dropdownField = DropdownButtonFormField<String>(
-                            isExpanded: true,
-                            initialValue: category,
-                            decoration: const InputDecoration(labelText: "Category"),
-                            items: ["Academic", "Examination", "Administrative", "Placement", "Events"]
-                                .map((c) => DropdownMenuItem(
-                                      value: c,
-                                      child: Text(c, overflow: TextOverflow.ellipsis),
-                                    ))
-                                .toList(),
-                            onChanged: (val) {
-                              if (val != null) setDlgState(() => category = val);
-                            },
-                          );
-
-                          final urgentTile = CheckboxListTile(
-                            title: Text("Urgent", style: GoogleFonts.poppins(fontSize: 12)),
-                            value: isUrgent,
-                            contentPadding: EdgeInsets.zero,
-                            controlAffinity: ListTileControlAffinity.leading,
-                            onChanged: (val) => setDlgState(() => isUrgent = val ?? false),
-                          );
-
-                          if (constraints.maxWidth < 340) {
-                            return Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                dropdownField,
-                                const SizedBox(height: 6),
-                                urgentTile,
-                              ],
-                            );
-                          }
-
-                          return Row(
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                child: dropdownField,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                flex: 2,
-                                child: urgentTile,
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: authorCtrl,
-                        decoration: const InputDecoration(labelText: "Author / Issuing Body"),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: contentCtrl,
-                        maxLines: 4,
-                        decoration: const InputDecoration(labelText: "Notice Content"),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text("Cancel"),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      n["title"] = titleCtrl.text.trim();
-                      n["category"] = category;
-                      n["isUrgent"] = isUrgent;
-                      n["author"] = authorCtrl.text.trim();
-                      n["content"] = contentCtrl.text.trim();
-                      n["date"] = "Updated just now";
-                    });
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("Announcement updated successfully!"),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF141938),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text("Save Changes"),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _showDeleteNoticeDialog(Map<String, dynamic> n) {
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text("Delete Announcement?", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700)),
-          content: Text(
-            "Are you sure you want to delete '${n["title"]}'? This announcement will be removed from notice boards.",
-            style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF475569)),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final source = _selectedTab == 2 ? _sentNotices : _notices;
-                final removed = Map<String, dynamic>.from(n);
-                final index = source.indexOf(n);
-                setState(() {
-                  source.remove(n);
-                });
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("Announcement deleted"),
-                    behavior: SnackBarBehavior.floating,
-                    action: SnackBarAction(
-                      label: "Undo",
-                      textColor: const Color(0xFFFBBF24),
-                      onPressed: () {
-                        setState(() {
-                          source.insert(index >= 0 ? index : 0, removed);
-                        });
-                      },
-                    ),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFDC2626),
-                foregroundColor: Colors.white,
-              ),
-              child: const Text("Delete"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _loadDemoNotices() {
-    setState(() {
-      _notices.addAll([
-        {
-          "title": "Submission of Internal Assessment II Question Papers",
-          "category": "Academic",
-          "date": "Today, 10:30 AM",
-          "author": "Controller of Examinations",
-          "content": "All faculty members are requested to submit two sets of question papers along with answer keys for IA-II by Friday 5:00 PM.",
-          "isUrgent": true,
-          "isUnread": true,
-          "toAcknowledge": true,
-        },
-        {
-          "title": "NBA Accreditation Mock Audit Schedule",
-          "category": "Examination",
-          "date": "Yesterday",
-          "author": "Dean Academic Affairs",
-          "content": "Department course files and Course Outcome (CO) attainment sheets must be updated on the portal by October 20th.",
-          "isUrgent": false,
-          "isUnread": false,
-          "toAcknowledge": false,
-        },
-      ]);
-    });
   }
 
   @override
@@ -398,49 +492,54 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
       backgroundColor: const Color(0xFFFBFBFD),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final isDesktop = constraints.maxWidth >= 900;
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 90),
-            children: [
-              // 1. Top Hero Banner (Gradient + Blueprint Grid + Breadcrumbs)
-              _buildHeroBanner(),
-              const SizedBox(height: 18),
+          final isDesktop = constraints.maxWidth >= 940;
 
-              // 2. Tab Navigation Pills (Notices, New notice, Sent by me)
-              _buildTabPills(),
-              const SizedBox(height: 18),
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 80),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 1. TOP HERO BLUEPRINT BANNER
+                _buildHeroBanner(),
+                const SizedBox(height: 20),
 
-              // 3. Main Content: Split View (Sidebar + Content Panel) or Form
-              if (_selectedTab == 1) ...[
-                _buildNewNoticeForm(),
-              ] else ...[
-                if (isDesktop)
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Left Filter Sidebar
-                      SizedBox(
-                        width: 260,
-                        child: _buildFilterSidebar(),
-                      ),
-                      const SizedBox(width: 18),
-                      // Right Main Panel
-                      Expanded(
-                        child: _buildMainContentPanel(),
-                      ),
-                    ],
-                  )
-                else
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildFilterSidebar(),
-                      const SizedBox(height: 18),
-                      _buildMainContentPanel(),
-                    ],
-                  ),
+                // 2. SUB-HEADER: TABS (LEFT) + ACKNOWLEDGEMENT ALERT (RIGHT)
+                _buildTabsAndAlertRow(constraints),
+                const SizedBox(height: 20),
+
+                // 3. MAIN SECTION: NEW NOTICE FORM OR 2-COLUMN VIEW
+                if (_selectedTab == 1) ...[
+                  _buildNewNoticeForm(),
+                ] else ...[
+                  if (isDesktop)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Left Filter Sidebar (exact dimensions & style)
+                        SizedBox(
+                          width: 250,
+                          child: _buildFilterSidebar(),
+                        ),
+                        const SizedBox(width: 20),
+
+                        // Right Cards List
+                        Expanded(
+                          child: _buildNoticeCardsList(),
+                        ),
+                      ],
+                    )
+                  else
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildFilterSidebar(),
+                        const SizedBox(height: 18),
+                        _buildNoticeCardsList(),
+                      ],
+                    ),
+                ],
               ],
-            ],
+            ),
           );
         },
       ),
@@ -448,7 +547,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
   }
 
   // ===========================================================================
-  // 1. HERO BANNER
+  // 1. BLUEPRINT HERO BANNER
   // ===========================================================================
   Widget _buildHeroBanner() {
     return Container(
@@ -457,8 +556,8 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
         gradient: const LinearGradient(
           colors: [
             Color(0xFF141A46),
-            Color(0xFF1E2865),
-            Color(0xFF283685),
+            Color(0xFF1D2866),
+            Color(0xFF2B3A8C),
           ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
@@ -466,7 +565,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF141A46).withValues(alpha: 0.18),
-            blurRadius: 20,
+            blurRadius: 18,
             offset: const Offset(0, 8),
           ),
         ],
@@ -475,38 +574,38 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
         borderRadius: BorderRadius.circular(18),
         child: Stack(
           children: [
-            // Background blueprint grid texture
+            // Background Blueprint Grid
             Positioned.fill(
               child: CustomPaint(
-                painter: _GridPaperPainter(
-                  gridColor: Colors.white.withValues(alpha: 0.06),
+                painter: _BlueprintGridPainter(
+                  gridColor: Colors.white.withValues(alpha: 0.07),
                   step: 26.0,
                 ),
               ),
             ),
 
-            // Large decorative bell watermark on the right
+            // Subtle Bell Watermark Icon
             Positioned(
-              right: 20,
-              top: -10,
-              bottom: -10,
+              right: 28,
+              top: -12,
+              bottom: -12,
               child: Opacity(
                 opacity: 0.08,
                 child: const Icon(
                   Icons.notifications_rounded,
-                  size: 160,
+                  size: 170,
                   color: Colors.white,
                 ),
               ),
             ),
 
-            // Foreground Content
+            // Content
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Breadcrumb row
+                  // Breadcrumb Row
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -548,14 +647,14 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Main Title & Icon row
+                  // Title Row with Icon
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Bell icon rounded box
+                      // Bell Icon rounded box
                       Container(
-                        width: 44,
-                        height: 44,
+                        width: 46,
+                        height: 46,
                         decoration: BoxDecoration(
                           color: const Color(0xFF1E2865).withValues(alpha: 0.85),
                           borderRadius: BorderRadius.circular(12),
@@ -568,31 +667,31 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                           child: Icon(
                             Icons.notifications_rounded,
                             color: Color(0xFFFBBF24),
-                            size: 24,
+                            size: 26,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 14),
+                      const SizedBox(width: 16),
 
                       // Title + Badges + Subtitle
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Badges
+                            // Badges: OVERVIEW, MVP
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                  padding: const EdgeInsets.symmetric(horizontal: 7.5, vertical: 2.5),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF1A2352),
                                     borderRadius: BorderRadius.circular(5),
-                                    border: Border.all(color: const Color(0xFF38467D), width: 1),
+                                    border: Border.all(color: const Color(0xFF38467D)),
                                   ),
                                   child: Text(
                                     "OVERVIEW",
                                     style: GoogleFonts.poppins(
-                                      fontSize: 9,
+                                      fontSize: 9.5,
                                       fontWeight: FontWeight.w800,
                                       color: Colors.white,
                                       letterSpacing: 0.5,
@@ -601,7 +700,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                                 ),
                                 const SizedBox(width: 6),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                  padding: const EdgeInsets.symmetric(horizontal: 7.5, vertical: 2.5),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF0D9488),
                                     borderRadius: BorderRadius.circular(5),
@@ -609,7 +708,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                                   child: Text(
                                     "MVP",
                                     style: GoogleFonts.poppins(
-                                      fontSize: 9,
+                                      fontSize: 9.5,
                                       fontWeight: FontWeight.w800,
                                       color: Colors.white,
                                       letterSpacing: 0.5,
@@ -618,27 +717,25 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 5),
 
-                            // Main Title
                             Text(
                               "Notice Board",
                               style: GoogleFonts.poppins(
-                                fontSize: 22,
+                                fontSize: 24,
                                 fontWeight: FontWeight.w800,
                                 color: Colors.white,
-                                letterSpacing: -0.3,
+                                letterSpacing: -0.4,
                               ),
                             ),
-                            const SizedBox(height: 3),
+                            const SizedBox(height: 4),
 
-                            // Subtitle description
                             Text(
                               "Important announcements from your faculty, HOD, Principal and the University, with read and acknowledgement tracking.",
                               style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: const Color(0xFFC7D2FE).withValues(alpha: 0.9),
-                                height: 1.35,
+                                fontSize: 12.5,
+                                color: const Color(0xFFC7D2FE).withValues(alpha: 0.92),
+                                height: 1.4,
                               ),
                             ),
                           ],
@@ -656,62 +753,140 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
   }
 
   // ===========================================================================
-  // 2. TAB PILLS (Notices, New notice, Sent by me)
+  // 2. SUB-HEADER: TABS + RIGHT ALERT PILL
   // ===========================================================================
-  Widget _buildTabPills() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      child: Row(
+  Widget _buildTabsAndAlertRow(BoxConstraints constraints) {
+    final unacknowledgedCount = _allNotices
+        .where((n) => n.toAcknowledge && !n.isAcknowledged)
+        .length;
+    final sentCount = _allNotices.where((n) => n.isSentByMe).length;
+    final unreadCount = _allNotices.where((n) => n.isUnread).length;
+
+    final tabsWidget = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Tab 0: Notices 1
+        _buildNavTab(
+          index: 0,
+          label: "Notices",
+          count: unreadCount > 0 ? unreadCount : null,
+          icon: Icons.all_inbox_rounded,
+        ),
+        const SizedBox(width: 10),
+
+        // Tab 1: New notice
+        _buildNavTab(
+          index: 1,
+          label: "New notice",
+          icon: Icons.edit_note_rounded,
+        ),
+        const SizedBox(width: 10),
+
+        // Tab 2: Sent by me 8
+        _buildNavTab(
+          index: 2,
+          label: "Sent by me",
+          count: sentCount,
+          icon: Icons.near_me_outlined,
+        ),
+      ],
+    );
+
+    // Right Alert Pill
+    final alertPill = unacknowledgedCount > 0
+        ? InkWell(
+            onTap: () {
+              setState(() {
+                _selectedTab = 0;
+                _selectedStatus = "To acknowledge";
+                _selectedCategory = "All";
+              });
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF2F2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFFCA5A5).withValues(alpha: 0.6)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.info_outline_rounded,
+                    size: 15,
+                    color: Color(0xFFDC2626),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    "$unacknowledgedCount notice need your acknowledgement",
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF991B1B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        : const SizedBox.shrink();
+
+    if (constraints.maxWidth < 780) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildPillTab(
-            index: 0,
-            label: "Notices",
-            icon: Icons.all_inbox_rounded,
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: tabsWidget,
           ),
-          const SizedBox(width: 8),
-          _buildPillTab(
-            index: 1,
-            label: "New notice",
-            icon: Icons.edit_note_rounded,
-          ),
-          const SizedBox(width: 8),
-          _buildPillTab(
-            index: 2,
-            label: "Sent by me",
-            icon: Icons.near_me_outlined,
-          ),
+          if (unacknowledgedCount > 0) ...[
+            const SizedBox(height: 12),
+            alertPill,
+          ],
         ],
-      ),
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        tabsWidget,
+        alertPill,
+      ],
     );
   }
 
-  Widget _buildPillTab({required int index, required String label, required IconData icon}) {
+  Widget _buildNavTab({
+    required int index,
+    required String label,
+    required IconData icon,
+    int? count,
+  }) {
     final isSelected = _selectedTab == index;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => setState(() => _selectedTab = index),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(22),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+          duration: const Duration(milliseconds: 160),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7.5),
           decoration: BoxDecoration(
             color: isSelected ? const Color(0xFF141938) : Colors.white,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(22),
             border: Border.all(
               color: isSelected ? const Color(0xFF141938) : const Color(0xFFE2E8F0),
-              width: 1,
             ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF141938).withValues(alpha: 0.15),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ]
-                : [],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isSelected ? 0.08 : 0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -721,7 +896,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                 size: 15,
                 color: isSelected ? Colors.white : const Color(0xFF475569),
               ),
-              const SizedBox(width: 7),
+              const SizedBox(width: 6),
               Text(
                 label,
                 style: GoogleFonts.poppins(
@@ -730,6 +905,24 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                   color: isSelected ? Colors.white : const Color(0xFF334155),
                 ),
               ),
+              if (count != null) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6.5, vertical: 1.5),
+                  decoration: BoxDecoration(
+                    color: isSelected ? const Color(0xFF283685) : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    "$count",
+                    style: GoogleFonts.poppins(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      color: isSelected ? Colors.white : const Color(0xFF475569),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -741,11 +934,14 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
   // 3. LEFT FILTER SIDEBAR
   // ===========================================================================
   Widget _buildFilterSidebar() {
-    final list = _selectedTab == 2 ? _sentNotices : _notices;
+    final list = _selectedTab == 2
+        ? _allNotices.where((n) => n.isSentByMe).toList()
+        : _allNotices;
+
     final allCount = list.length;
-    final unreadCount = list.where((n) => n["isUnread"] == true).length;
-    final urgentCount = list.where((n) => n["isUrgent"] == true).length;
-    final ackCount = list.where((n) => n["toAcknowledge"] == true).length;
+    final unreadCount = list.where((n) => n.isUnread).length;
+    final urgentCount = list.where((n) => n.isUrgent).length;
+    final ackCount = list.where((n) => n.toAcknowledge && !n.isAcknowledged).length;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -756,15 +952,15 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Search Box
+          // Search Input
           Container(
             height: 38,
             decoration: BoxDecoration(
@@ -794,7 +990,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
           ),
           const SizedBox(height: 12),
 
-          // Status Filters List
+          // Status Filters
           _buildStatusFilterItem("All notices", allCount),
           _buildStatusFilterItem("Unread", unreadCount),
           _buildStatusFilterItem("Important & urgent", urgentCount),
@@ -850,6 +1046,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
 
   Widget _buildStatusFilterItem(String title, int count) {
     final isSelected = _selectedStatus == title;
+
     return InkWell(
       onTap: () => setState(() => _selectedStatus = title),
       borderRadius: BorderRadius.circular(8),
@@ -880,7 +1077,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
               "$count",
               style: GoogleFonts.poppins(
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: isSelected ? const Color(0xFF1E293B) : const Color(0xFF94A3B8),
               ),
             ),
@@ -891,29 +1088,79 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
   }
 
   // ===========================================================================
-  // 4. RIGHT MAIN CONTENT PANEL
+  // 4. RIGHT NOTICES CARDS LIST
   // ===========================================================================
-  Widget _buildMainContentPanel() {
-    final sourceList = _selectedTab == 2 ? _sentNotices : _notices;
+  Widget _buildNoticeCardsList() {
+    final sourceList = _selectedTab == 2
+        ? _allNotices.where((n) => n.isSentByMe).toList()
+        : _allNotices;
+
     final query = _searchController.text.trim().toLowerCase();
 
     final filtered = sourceList.where((n) {
-      if (_selectedCategory != "All" && n["category"] != _selectedCategory) {
+      if (_selectedCategory != "All" && n.category != _selectedCategory) {
         return false;
       }
-      if (_selectedStatus == "Unread" && n["isUnread"] != true) return false;
-      if (_selectedStatus == "Important & urgent" && n["isUrgent"] != true) return false;
-      if (_selectedStatus == "To acknowledge" && n["toAcknowledge"] != true) return false;
+      if (_selectedStatus == "Unread" && !n.isUnread) return false;
+      if (_selectedStatus == "Important & urgent" && !n.isUrgent) return false;
+      if (_selectedStatus == "To acknowledge" && (!n.toAcknowledge || n.isAcknowledged)) {
+        return false;
+      }
       if (query.isNotEmpty) {
-        final title = (n["title"] as String).toLowerCase();
-        final content = (n["content"] as String).toLowerCase();
-        if (!title.contains(query) && !content.contains(query)) return false;
+        final title = n.title.toLowerCase();
+        final content = n.body.toLowerCase();
+        final author = n.authorName.toLowerCase();
+        if (!title.contains(query) && !content.contains(query) && !author.contains(query)) {
+          return false;
+        }
       }
       return true;
     }).toList();
 
+    if (filtered.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        child: Center(
+          child: Column(
+            children: [
+              const Icon(Icons.mark_email_read_outlined, size: 48, color: Color(0xFF94A3B8)),
+              const SizedBox(height: 12),
+              Text(
+                "No announcements found",
+                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "Try selecting a different filter or clearing search criteria.",
+                style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF64748B)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: filtered.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 14),
+      itemBuilder: (context, index) {
+        return _buildNoticeCard(filtered[index]);
+      },
+    );
+  }
+
+  // ===========================================================================
+  // INDIVIDUAL NOTICE CARD COMPONENT
+  // ===========================================================================
+  Widget _buildNoticeCard(NoticeItem n) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 460),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -921,8 +1168,8 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -930,241 +1177,344 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
         borderRadius: BorderRadius.circular(16),
         child: Stack(
           children: [
-            // Faint graph paper / grid background (as shown in the screenshot!)
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _GridPaperPainter(
-                  gridColor: const Color(0xFFF1F5F9),
-                  step: 24.0,
+            // Left Accent Amber Border if applicable
+            if (n.hasAmberBorder)
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: Container(
+                  width: 4.5,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF59E0B),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      bottomLeft: Radius.circular(16),
+                    ),
+                  ),
                 ),
               ),
-            ),
 
-            // Content: Empty State (Default) or Notice Cards List
-            filtered.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "No notices yet",
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF1E293B),
+            // Card Inner Padding
+            Padding(
+              padding: EdgeInsets.fromLTRB(n.hasAmberBorder ? 20 : 18, 16, 18, 14),
+              child: LayoutBuilder(
+                builder: (context, cardConstraints) {
+                  final isCompact = cardConstraints.maxWidth < 560;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Top Row: Icon + Title + Badges (Responsive)
+                      if (isCompact) ...[
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: n.iconBg,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Icon(n.icon, size: 17, color: n.iconColor),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            "Announcements from your college and the university will appear here.",
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              color: const Color(0xFF64748B),
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          if (_notices.isEmpty && _selectedTab == 0) ...[
-                            OutlinedButton.icon(
-                              onPressed: _loadDemoNotices,
-                              icon: const Icon(Icons.refresh_rounded, size: 15),
-                              label: const Text("Load Sample Announcements"),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.primaryBlue,
-                                side: const BorderSide(color: Color(0xFFCBD5E1)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                textStyle: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                n.hasBullet ? "• ${n.title}" : n.title,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF0F172A),
+                                  height: 1.35,
+                                ),
                               ),
                             ),
                           ],
+                        ),
+                        if (n.tags.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 5,
+                            children: n.tags.map((tag) => _buildBadgeChip(tag)).toList(),
+                          ),
                         ],
-                      ),
-                    ),
-                  )
-                : ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(16),
-                    itemCount: filtered.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 12),
-                    itemBuilder: (context, i) {
-                      final n = filtered[i];
-                      final isUrgent = n["isUrgent"] == true;
-                      return Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.02),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
+                      ] else ...[
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: n.iconBg,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Icon(n.icon, size: 17, color: n.iconColor),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                n.hasBullet ? "• ${n.title}" : n.title,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF0F172A),
+                                  height: 1.35,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: n.tags.map((tag) => _buildBadgeChip(tag)).toList(),
                             ),
                           ],
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Wrap(
-                              alignment: WrapAlignment.spaceBetween,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              spacing: 8,
-                              runSpacing: 4,
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        color: isUrgent
-                                            ? const Color(0xFFFEE2E2)
-                                            : const Color(0xFFEEF2FF),
-                                        borderRadius: BorderRadius.circular(6),
+                      ],
+                      const SizedBox(height: 6),
+
+                      // Subtitle: Role · Name · Date · Audience
+                      Text(
+                        "${n.authorRole} · ${n.authorName} · ${n.dateStr} · ${n.audience}",
+                        style: GoogleFonts.poppins(
+                          fontSize: 11.5,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Notice Body (with multi-line or collapse)
+                      Text(
+                        n.body,
+                        maxLines: n.hasOpenLink && !n.isExpanded ? 2 : null,
+                        overflow: n.hasOpenLink && !n.isExpanded
+                            ? TextOverflow.ellipsis
+                            : TextOverflow.visible,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12.5,
+                          color: const Color(0xFF334155),
+                          height: 1.45,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Footer Row / Wrap: 100% Overflow-Free
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [
+                          // Left Details Group
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 12,
+                            runSpacing: 6,
+                            children: [
+                              // "Mark as read" Link if unread
+                              if (n.showMarkAsRead && n.isUnread) ...[
+                                InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      n.isUnread = false;
+                                      n.hasBullet = false;
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Marked as read"),
+                                        behavior: SnackBarBehavior.floating,
+                                        duration: Duration(seconds: 1),
                                       ),
-                                      child: Text(
-                                        n["category"] as String,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                          color: isUrgent
-                                              ? const Color(0xFFDC2626)
-                                              : const Color(0xFF4338CA),
-                                        ),
-                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    "Mark as read",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF0F172A),
+                                      decoration: TextDecoration.underline,
                                     ),
-                                    if (isUrgent) ...[
-                                      const SizedBox(width: 6),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFDC2626),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: Text(
-                                          "URGENT",
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.w800,
-                                            color: Colors.white,
-                                          ),
+                                  ),
+                                ),
+                              ],
+
+                              // Expander toggle "Show less" / "Show more"
+                              if (n.hasOpenLink) ...[
+                                InkWell(
+                                  onTap: () => setState(() => n.isExpanded = !n.isExpanded),
+                                  child: Text(
+                                    n.isExpanded ? "Show less" : "Show more",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFF475569),
+                                    ),
+                                  ),
+                                ),
+                              ],
+
+                              // Open Link Icon
+                              if (n.hasOpenLink) ...[
+                                InkWell(
+                                  onTap: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Opening attached document link..."),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.link_rounded, size: 14, color: Color(0xFF475569)),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        "Open link",
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                          color: const Color(0xFF475569),
                                         ),
                                       ),
                                     ],
-                                  ],
+                                  ),
                                 ),
+                              ],
+
+                              // Validity
+                              if (n.validity != null) ...[
                                 Text(
-                                  n["date"] as String,
+                                  n.validity!,
                                   style: GoogleFonts.poppins(
-                                    fontSize: 11,
-                                    color: const Color(0xFF94A3B8),
+                                    fontSize: 11.5,
+                                    color: const Color(0xFF64748B),
                                   ),
                                 ),
                               ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              n["title"] as String,
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF0F172A),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              n["content"] as String,
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: const Color(0xFF475569),
-                                height: 1.4,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              alignment: WrapAlignment.spaceBetween,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 240),
-                                  child: Text(
-                                    "Author: ${n["author"]}",
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 11,
-                                      fontStyle: FontStyle.italic,
-                                      color: const Color(0xFF64748B),
-                                    ),
-                                  ),
-                                ),
-                                Wrap(
-                                  spacing: 6,
-                                  runSpacing: 6,
-                                  crossAxisAlignment: WrapCrossAlignment.center,
+
+                              // Read stats
+                              if (n.readCount > 0 || n.ackCount > 0) ...[
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    if (n["toAcknowledge"] == true)
-                                      OutlinedButton.icon(
-                                        onPressed: () {
-                                          setState(() => n["toAcknowledge"] = false);
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: Text("Acknowledged '${n["title"]}'", style: GoogleFonts.poppins()),
-                                              backgroundColor: const Color(0xFF15803D),
-                                              behavior: SnackBarBehavior.floating,
-                                            ),
-                                          );
-                                        },
-                                        icon: const Icon(Icons.done_all_rounded, size: 13),
-                                        label: const Text("Acknowledge"),
-                                        style: OutlinedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          minimumSize: Size.zero,
-                                          foregroundColor: const Color(0xFF0F766E),
-                                          side: const BorderSide(color: Color(0xFF0F766E)),
-                                          textStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600),
-                                        ),
+                                    const Icon(Icons.remove_red_eye_outlined, size: 13, color: Color(0xFF64748B)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      "Read by ${n.readCount} · ${n.ackCount} acknowledged",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 11.5,
+                                        color: const Color(0xFF64748B),
                                       ),
-                                    IconButton(
-                                      icon: const Icon(Icons.visibility_outlined, size: 16, color: Color(0xFF64748B)),
-                                      onPressed: () => _showNoticeDetailsDialog(n),
-                                      tooltip: "View Notice",
-                                      splashRadius: 16,
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.edit_outlined, size: 16, color: Color(0xFF4338CA)),
-                                      onPressed: () => _showEditNoticeDialog(n),
-                                      tooltip: "Edit Notice",
-                                      splashRadius: 16,
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Color(0xFFEF4444)),
-                                      onPressed: () => _showDeleteNoticeDialog(n),
-                                      tooltip: "Delete Notice",
-                                      splashRadius: 16,
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
                                     ),
                                   ],
                                 ),
                               ],
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                            ],
+                          ),
+
+                          // Right Action Group
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 10,
+                            runSpacing: 6,
+                            children: [
+                              // Action: "I have read this" Button
+                              if (n.showIHaveReadThisButton) ...[
+                                ElevatedButton.icon(
+                                  onPressed: () {
+                                    setState(() {
+                                      n.isAcknowledged = !n.isAcknowledged;
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(n.isAcknowledged
+                                            ? "Acknowledgment recorded"
+                                            : "Acknowledgment revoked"),
+                                        backgroundColor: n.isAcknowledged
+                                            ? const Color(0xFF15803D)
+                                            : const Color(0xFF1E2865),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  },
+                                  icon: Icon(
+                                    n.isAcknowledged ? Icons.check_circle_rounded : Icons.check_rounded,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
+                                  label: Text(
+                                    n.isAcknowledged ? "Acknowledged" : "I have read this",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: n.isAcknowledged
+                                        ? const Color(0xFF15803D)
+                                        : const Color(0xFF1E2865),
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                ),
+                              ],
+
+                              // Trash Icon Button for Deletion
+                              if (n.hasDelete) ...[
+                                InkWell(
+                                  onTap: () => _deleteNotice(n),
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(4),
+                                    child: Icon(
+                                      Icons.delete_outline_rounded,
+                                      size: 16,
+                                      color: Color(0xFF94A3B8),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadgeChip(String tag) {
+    final isImportant = tag == "Important";
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+      decoration: BoxDecoration(
+        color: isImportant ? const Color(0xFFFEF3C7) : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        tag,
+        style: GoogleFonts.poppins(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w600,
+          color: isImportant ? const Color(0xFFD97706) : const Color(0xFF475569),
         ),
       ),
     );
@@ -1175,7 +1525,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
   // ===========================================================================
   Widget _buildNewNoticeForm() {
     return Container(
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -1194,21 +1544,21 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
           Text(
             "Draft New Announcement",
             style: GoogleFonts.poppins(
-              fontSize: 16,
+              fontSize: 17,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            "Broadcast a notice to students, departments, or entire institution.",
-            style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF64748B)),
+            "Broadcast a notice to students, faculty, departments, or entire institution.",
+            style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF64748B)),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
 
           // Title Input
           Text(
-            "Notice Title",
+            "Notice Title *",
             style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF334155)),
           ),
           const SizedBox(height: 6),
@@ -1224,12 +1574,12 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Category & Urgent Toggle (Responsive)
+          // Category & Priority (Responsive)
           LayoutBuilder(
-            builder: (context, constraints) {
-              final isCompact = constraints.maxWidth < 650;
+            builder: (context, formConstraints) {
+              final isSmall = formConstraints.maxWidth < 600;
 
-              final categorySection = Column(
+              final categoryCol = Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -1260,7 +1610,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                 ],
               );
 
-              final urgentSection = Column(
+              final priorityCol = Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -1272,7 +1622,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                     onTap: () => setState(() => _isUrgent = !_isUrgent),
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: const Color(0xFFCBD5E1)),
@@ -1280,21 +1630,14 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
-                            child: Text(
-                              "Mark as Urgent",
-                              style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF334155)),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                          Text(
+                            "Mark as Important",
+                            style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF334155)),
                           ),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Switch(
-                              value: _isUrgent,
-                              activeThumbColor: const Color(0xFFDC2626),
-                              onChanged: (val) => setState(() => _isUrgent = val),
-                            ),
+                          Switch(
+                            value: _isUrgent,
+                            activeThumbColor: const Color(0xFFD97706),
+                            onChanged: (val) => setState(() => _isUrgent = val),
                           ),
                         ],
                       ),
@@ -1303,22 +1646,89 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                 ],
               );
 
-              if (isCompact) {
+              if (isSmall) {
                 return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    categorySection,
-                    const SizedBox(height: 16),
-                    urgentSection,
+                    categoryCol,
+                    const SizedBox(height: 14),
+                    priorityCol,
                   ],
                 );
               }
 
               return Row(
                 children: [
-                  Expanded(child: categorySection),
+                  Expanded(child: categoryCol),
                   const SizedBox(width: 16),
-                  Expanded(child: urgentSection),
+                  Expanded(child: priorityCol),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+
+          // Validity & Venue (Responsive)
+          LayoutBuilder(
+            builder: (context, formConstraints) {
+              final isSmall = formConstraints.maxWidth < 600;
+
+              final validityCol = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Validity / Expiry Date",
+                    style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF334155)),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: _validityController,
+                    style: GoogleFonts.poppins(fontSize: 13),
+                    decoration: InputDecoration(
+                      hintText: "e.g., 20 Nov 2026",
+                      hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                ],
+              );
+
+              final venueCol = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Venue (Optional)",
+                    style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF334155)),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: _venueController,
+                    style: GoogleFonts.poppins(fontSize: 13),
+                    decoration: InputDecoration(
+                      hintText: "e.g., Seminar Hall, Block B",
+                      hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                ],
+              );
+
+              if (isSmall) {
+                return Column(
+                  children: [
+                    validityCol,
+                    const SizedBox(height: 14),
+                    venueCol,
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(child: validityCol),
+                  const SizedBox(width: 16),
+                  Expanded(child: venueCol),
                 ],
               );
             },
@@ -1327,7 +1737,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
 
           // Content body
           Text(
-            "Notice Body",
+            "Notice Body *",
             style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF334155)),
           ),
           const SizedBox(height: 6),
@@ -1336,35 +1746,34 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
             maxLines: 4,
             style: GoogleFonts.poppins(fontSize: 13),
             decoration: InputDecoration(
-              hintText: "Enter full announcement text, instructions, and deadlines...",
+              hintText: "Enter full announcement text, instructions, and guidelines...",
               hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
               contentPadding: const EdgeInsets.all(14),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 22),
 
           // Actions
-          Wrap(
-            alignment: WrapAlignment.end,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 12,
-            runSpacing: 8,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButton(
                 onPressed: () => setState(() => _selectedTab = 0),
                 child: Text("Cancel", style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF64748B))),
               ),
+              const SizedBox(width: 12),
               ElevatedButton.icon(
                 onPressed: _publishNotice,
-                icon: const Icon(Icons.send_rounded, size: 16),
-                label: const Text("Publish Announcement"),
+                icon: const Icon(Icons.send_rounded, size: 16, color: Colors.white),
+                label: Text(
+                  "Publish Notice",
+                  style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF141938),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  textStyle: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -1376,12 +1785,12 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
 }
 
 // =============================================================================
-// SUBTLE GRID PAPER PAINTER
+// BLUEPRINT GRID PAINTER
 // =============================================================================
-class _GridPaperPainter extends CustomPainter {
+class _BlueprintGridPainter extends CustomPainter {
   final Color gridColor;
   final double step;
-  const _GridPaperPainter({required this.gridColor, this.step = 28.0});
+  const _BlueprintGridPainter({required this.gridColor, this.step = 26.0});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1398,6 +1807,6 @@ class _GridPaperPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _GridPaperPainter oldDelegate) =>
+  bool shouldRepaint(covariant _BlueprintGridPainter oldDelegate) =>
       oldDelegate.gridColor != gridColor || oldDelegate.step != step;
 }

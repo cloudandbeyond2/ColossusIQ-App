@@ -1,3 +1,4 @@
+import 'dart:async';
 import '../../core/theme/app_colors.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -1372,7 +1373,7 @@ class _ResumeBuilderScreenState extends State<ResumeBuilderScreen> {
           const SizedBox(height: 16),
           LayoutBuilder(
             builder: (context, constraints) {
-              final isNarrow = constraints.maxWidth < 500;
+              final isNarrow = constraints.maxWidth < 560;
               final templates = [
                 {
                   "name": "Classic",
@@ -1390,22 +1391,26 @@ class _ResumeBuilderScreenState extends State<ResumeBuilderScreen> {
 
               if (isNarrow) {
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: templates.map((tpl) => Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: _buildTemplateOption(tpl["name"]!, tpl["desc"]!),
+                    child: _buildTemplateOption(tpl["name"]!, tpl["desc"]!, isRow: false),
                   )).toList(),
                 );
               }
 
-              return Row(
-                children: templates.map((tpl) {
-                  return Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(right: tpl["name"] != "Compact" ? 12 : 0),
-                      child: _buildTemplateOption(tpl["name"]!, tpl["desc"]!),
-                    ),
-                  );
-                }).toList(),
+              return IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: templates.map((tpl) {
+                    return Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(right: tpl["name"] != "Compact" ? 12 : 0),
+                        child: _buildTemplateOption(tpl["name"]!, tpl["desc"]!, isRow: true),
+                      ),
+                    );
+                  }).toList(),
+                ),
               );
             },
           ),
@@ -1414,7 +1419,7 @@ class _ResumeBuilderScreenState extends State<ResumeBuilderScreen> {
     );
   }
 
-  Widget _buildTemplateOption(String name, String desc) {
+  Widget _buildTemplateOption(String name, String desc, {bool isRow = false}) {
     final isSelected = _selectedTemplate == name;
     return InkWell(
       onTap: () {
@@ -1424,8 +1429,8 @@ class _ResumeBuilderScreenState extends State<ResumeBuilderScreen> {
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        height: 104,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFEEF2FF) : Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -1436,6 +1441,7 @@ class _ResumeBuilderScreenState extends State<ResumeBuilderScreen> {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: isRow ? MainAxisSize.max : MainAxisSize.min,
           children: [
             Text(
               name,
@@ -1445,15 +1451,13 @@ class _ResumeBuilderScreenState extends State<ResumeBuilderScreen> {
                 color: isSelected ? const Color(0xFF2A3B8F) : const Color(0xFF1E293B),
               ),
             ),
-            const SizedBox(height: 6),
-            Expanded(
-              child: Text(
-                desc,
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  color: const Color(0xFF64748B),
-                  height: 1.35,
-                ),
+            const SizedBox(height: 5),
+            Text(
+              desc,
+              style: GoogleFonts.poppins(
+                fontSize: 11.5,
+                color: const Color(0xFF64748B),
+                height: 1.35,
               ),
             ),
           ],
@@ -2842,29 +2846,436 @@ class MockInterviewScreen extends StatefulWidget {
 }
 
 class _MockInterviewScreenState extends State<MockInterviewScreen> {
-  String _selectedMode = "Technical";
-  bool _isInInterview = false;
+  int _currentQuestionIndex = 0;
+  int _answeredCount = 0;
+  int _questionSeconds = 13; // default initial elapsed time matching screenshot
+  Timer? _timer;
   final TextEditingController _answerController = TextEditingController();
+  final List<String> _userAnswers = [];
 
-  final List<Map<String, String>> _modes = [
-    {"id": "Technical", "title": "Technical", "desc": "Projects, CS fundamentals, design"},
-    {"id": "HR", "title": "HR", "desc": "Motivation, fit, career goals"},
-    {"id": "Behavioural", "title": "Behavioural", "desc": "STAR-format situations"},
+  final List<Map<String, String>> _questions = [
+    {
+      "mode": "Technical interview",
+      "question": 'Tell me about your project "Student Management System". What problem does it solve and what was your part?',
+    },
+    {
+      "mode": "Technical interview",
+      "question": 'How did you design the database schema for the system, and how do you handle indexing, caching, and data concurrency?',
+    },
+    {
+      "mode": "Technical interview",
+      "question": 'Explain the difference between synchronous and asynchronous operations in Dart/Flutter, and how you prevent UI thread blocking.',
+    },
+    {
+      "mode": "Technical interview",
+      "question": 'Describe a critical bug or architectural bottleneck you encountered in this project, and walk me through your step-by-step resolution.',
+    },
+    {
+      "mode": "Technical interview",
+      "question": 'Where do you see yourself contributing technically in the next two years, and what modern frameworks are you exploring?',
+    },
   ];
 
-  final List<String> _otherPills = [
-    "Domain-specific · Phase 2",
-    "Placement · Phase 2",
-    "Internship · Phase 2",
-    "Startup · Phase 2",
-    "Management · Phase 2",
-    "Government job · Phase 2",
+  final List<Map<String, dynamic>> _history = [
+    {
+      "id": "hist_1",
+      "title": "Technical · Frontend deve...",
+      "date": "6 Oct",
+      "answered": "3/3",
+      "score": 17,
+    },
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _startTimer();
+    _answerController.addListener(() {
+      setState(() {});
+    });
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() {
+          _questionSeconds++;
+        });
+      }
+    });
+  }
+
+  @override
   void dispose() {
+    _timer?.cancel();
     _answerController.dispose();
     super.dispose();
+  }
+
+  String _formatTimer(int sec) {
+    final m = sec ~/ 60;
+    final s = sec % 60;
+    return "$m:${s.toString().padLeft(2, '0')}";
+  }
+
+  void _skipQuestion() {
+    if (_currentQuestionIndex < _questions.length - 1) {
+      setState(() {
+        _currentQuestionIndex++;
+        _questionSeconds = 0;
+        _answerController.clear();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Question skipped. Moving to next question..."),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else {
+      if (_answeredCount > 0) {
+        _showScorecardDialog();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Please answer at least one question to generate a scorecard."),
+            duration: Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  void _submitAnswer() {
+    final text = _answerController.text.trim();
+    if (text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please type your response before submitting."),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    _userAnswers.add(text);
+    setState(() {
+      _answeredCount++;
+    });
+
+    if (_currentQuestionIndex < _questions.length - 1) {
+      setState(() {
+        _currentQuestionIndex++;
+        _questionSeconds = 0;
+        _answerController.clear();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Answer recorded ($_answeredCount/${_questions.length} completed)."),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else {
+      _showScorecardDialog();
+    }
+  }
+
+  void _endEarlyAndSeeScorecard() {
+    if (_answeredCount == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Answer at least one question to end early."),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    _showScorecardDialog();
+  }
+
+  void _showScorecardDialog() {
+    _timer?.cancel();
+    final calculatedScore = math.min(20, 15 + _answeredCount);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          width: 520,
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEEF2FF),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.assessment_outlined, color: Color(0xFF4F46E5), size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "AI Mock Interview Scorecard",
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                          Text(
+                            "Technical Interview · Readiness Evaluation",
+                            style: GoogleFonts.poppins(
+                              fontSize: 11.5,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20, color: Color(0xFF94A3B8)),
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _recordFinishedInterview(calculatedScore);
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              // Overall score banner
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF1E293B), Color(0xFF334155)],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "READINESS SCORE",
+                          style: GoogleFonts.poppins(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1.0,
+                            color: const Color(0xFF94A3B8),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              "$calculatedScore",
+                              style: GoogleFonts.jetBrainsMono(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Text(
+                              " / 20",
+                              style: GoogleFonts.jetBrainsMono(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF94A3B8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                      ),
+                      child: Text(
+                        "Placement Ready",
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF34D399),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Feedback Metrics
+              _buildScorecardMetricRow("Technical Accuracy & Depth", "8.5 / 10", "Solid knowledge of architecture and concepts."),
+              const SizedBox(height: 8),
+              _buildScorecardMetricRow("Clarity & STAR Structure", "8.5 / 10", "Direct problem formulation with clear role breakdown."),
+              const SizedBox(height: 8),
+              _buildScorecardMetricRow("Delivery Pacing & Flow", "9.0 / 10", "Crisp explanations with good conversational cadence."),
+              const SizedBox(height: 16),
+              // AI Recommendations tip box
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.lightbulb_outline, size: 18, color: Color(0xFFF59E0B)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "Tip: For project discussions, quantify outcomes (e.g. % decrease in API latency or lines of boilerplate reduced) to leave an even stronger impression on technical interviewers.",
+                        style: GoogleFonts.poppins(
+                          fontSize: 11.5,
+                          color: const Color(0xFF475569),
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _recordFinishedInterview(calculatedScore);
+                      _resetInterview();
+                    },
+                    icon: const Icon(Icons.replay_rounded, size: 16),
+                    label: const Text("Practice Again"),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF334155),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _recordFinishedInterview(calculatedScore);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4F46E5),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                    ),
+                    child: const Text("Save & Done"),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _recordFinishedInterview(int score) {
+    setState(() {
+      _history.insert(0, {
+        "id": "hist_${DateTime.now().millisecondsSinceEpoch}",
+        "title": "Technical · Frontend deve...",
+        "date": "Today",
+        "answered": "$_answeredCount/${_questions.length}",
+        "score": score,
+      });
+    });
+    _resetInterview();
+  }
+
+  void _resetInterview() {
+    setState(() {
+      _currentQuestionIndex = 0;
+      _answeredCount = 0;
+      _questionSeconds = 0;
+      _answerController.clear();
+      _userAnswers.clear();
+    });
+    _startTimer();
+  }
+
+  Widget _buildScorecardMetricRow(String title, String score, String note) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1E293B),
+                ),
+              ),
+              Text(
+                score,
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF4F46E5),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            note,
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -2887,48 +3298,441 @@ class _MockInterviewScreenState extends State<MockInterviewScreen> {
         ),
         const SizedBox(height: 20),
 
-        if (!_isInInterview)
-          // Setup View (Matching Image 5)
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 900;
-              if (isWide) {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(flex: 14, child: _buildModeChooserCard()),
-                    const SizedBox(width: 20),
-                    Expanded(flex: 8, child: _buildNoticesColumn()),
-                  ],
-                );
-              }
-              return Column(
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 960;
+            if (isWide) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildModeChooserCard(),
-                  const SizedBox(height: 16),
-                  _buildNoticesColumn(),
+                  Expanded(
+                    flex: 62,
+                    child: _buildInterviewQuestionCard(),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    flex: 38,
+                    child: _buildSidebarColumn(),
+                  ),
                 ],
               );
-            },
-          )
-        else
-          // Live Interview Simulation
-          _buildActiveInterviewCard(),
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildInterviewQuestionCard(),
+                const SizedBox(height: 16),
+                _buildSidebarColumn(),
+              ],
+            );
+          },
+        ),
       ],
     );
   }
 
-  Widget _buildModeChooserCard() {
+  // --- 1. LEFT MAIN QUESTION CARD ---
+  Widget _buildInterviewQuestionCard() {
+    final currentQ = _questions[_currentQuestionIndex];
+    final charCount = _answerController.text.length;
+
     return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Question header
+          Text(
+            "Question ${_currentQuestionIndex + 1} of ${_questions.length}",
+            style: GoogleFonts.poppins(
+              fontSize: 14.5,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            currentQ["mode"] ?? "Technical interview",
+            style: GoogleFonts.poppins(
+              fontSize: 12.5,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          // Question Box (Soft Lavender / Blue with quote icon)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEEF2FF),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE0E7FF),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Icon(
+                    Icons.format_quote_rounded,
+                    size: 16,
+                    color: Color(0xFF4338CA),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    currentQ["question"] ?? "",
+                    style: GoogleFonts.poppins(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF1E293B),
+                      height: 1.45,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Answer Input Area
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: TextField(
+              controller: _answerController,
+              maxLines: 7,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: const Color(0xFF1E293B),
+                height: 1.45,
+              ),
+              decoration: InputDecoration(
+                hintText: "Type your answer as you would say it...",
+                hintStyle: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: const Color(0xFF94A3B8),
+                ),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Bottom Bar: Counter & Timer on Left, Skip & Submit on Right
+          LayoutBuilder(
+            builder: (context, c) {
+              final isNarrow = c.maxWidth < 520;
+              final counterAndTimer = Text(
+                "$charCount/4000 · ${_formatTimer(_questionSeconds)} on this question",
+                style: GoogleFonts.poppins(
+                  fontSize: 11.5,
+                  color: const Color(0xFF64748B),
+                ),
+              );
+
+              final actions = Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton.icon(
+                    onPressed: _skipQuestion,
+                    icon: const Icon(Icons.skip_next_outlined, size: 16, color: Color(0xFF64748B)),
+                    label: Text(
+                      "Skip",
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: _submitAnswer,
+                    icon: const Icon(Icons.near_me_outlined, size: 15, color: Colors.white),
+                    label: Text(
+                      "Submit answer",
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF818CF8),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    ),
+                  ),
+                ],
+              );
+
+              if (isNarrow) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    counterAndTimer,
+                    const SizedBox(height: 12),
+                    actions,
+                  ],
+                );
+              }
+
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  counterAndTimer,
+                  actions,
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- 2. RIGHT SIDEBAR COLUMN ---
+  Widget _buildSidebarColumn() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildProgressCard(),
+        const SizedBox(height: 16),
+        _buildInterviewsStatsCard(),
+        const SizedBox(height: 16),
+        _buildHistoryCard(),
+      ],
+    );
+  }
+
+  Widget _buildProgressCard() {
+    final progress = (_answeredCount / _questions.length).clamp(0.0, 1.0);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 5,
+              backgroundColor: const Color(0xFFF1F5F9),
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF818CF8)),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            "$_answeredCount of ${_questions.length} answered",
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _endEarlyAndSeeScorecard,
+              icon: const Icon(Icons.crop_square_rounded, size: 14, color: Color(0xFF475569)),
+              label: Text(
+                "End and see my scorecard",
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF334155),
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFFE2E8F0)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Answer at least one question to end early.",
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              color: const Color(0xFF94A3B8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInterviewsStatsCard() {
+    final completed = _history.length;
+    final bestScore = _history.isEmpty ? 0 : _history.map((e) => e["score"] as int).reduce(math.max);
+    final avgScore = _history.isEmpty ? 0 : (_history.map((e) => e["score"] as int).reduce((a, b) => a + b) / _history.length).round();
+    final latestScore = _history.isEmpty ? 0 : _history.first["score"] as int;
+
+    return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Your interviews",
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFCCFBF1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  "AI interviewer",
+                  style: GoogleFonts.poppins(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF0F766E),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            "Finished interviews only",
+            style: GoogleFonts.poppins(
+              fontSize: 11.5,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // 2x2 Grid of stats
+          Row(
+            children: [
+              Expanded(child: _buildStatTile("Completed", "$completed")),
+              const SizedBox(width: 10),
+              Expanded(child: _buildStatTile("Best score", "$bestScore")),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: _buildStatTile("Average", "$avgScore")),
+              const SizedBox(width: 10),
+              Expanded(child: _buildStatTile("Latest", "$latestScore")),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatTile(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F6F0),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -2937,316 +3741,104 @@ class _MockInterviewScreenState extends State<MockInterviewScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Choose an interview",
+            "History",
             style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF1E293B),
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
             ),
           ),
           const SizedBox(height: 2),
           Text(
-            "The AI asks follow-up questions based on your previous answers.",
+            "Newest first",
             style: GoogleFonts.poppins(
-              fontSize: 12,
+              fontSize: 11.5,
               color: const Color(0xFF64748B),
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
 
-          // 3 Selectable Mode Cards in a row / column
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 550;
-              if (isWide) {
-                return Row(
-                  children: _modes.map((m) {
-                    final isSelected = _selectedMode == m["id"];
-                    return Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: _buildModeItem(m, isSelected),
-                      ),
-                    );
-                  }).toList(),
-                );
-              }
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: _modes.map((m) {
-                  final isSelected = _selectedMode == m["id"];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: _buildModeItem(m, isSelected),
-                  );
-                }).toList(),
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-
-          // Secondary pills
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _otherPills.map((pill) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: Text(
-                  pill,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    color: const Color(0xFF64748B),
-                    fontWeight: FontWeight.w500,
+          if (_history.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                "No past interviews yet.",
+                style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF94A3B8)),
+              ),
+            )
+          else
+            Column(
+              children: _history.asMap().entries.map((entry) {
+                final idx = entry.key;
+                final item = entry.value;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
-                ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 22),
-
-          // Start button
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isSmall = constraints.maxWidth < 450;
-              return SizedBox(
-                width: isSmall ? double.infinity : null,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() => _isInInterview = true);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
-                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    elevation: 0,
-                  ),
-                  icon: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 18),
-                  label: Text(
-                    "Start mock interview",
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(fontSize: 13.5, fontWeight: FontWeight.w600, color: Colors.white),
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildModeItem(Map<String, String> m, bool isSelected) {
-    return InkWell(
-      onTap: () => setState(() => _selectedMode = m["id"]!),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFEEF2FF) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? const Color(0xFF4338CA) : const Color(0xFFE2E8F0),
-            width: isSelected ? 1.5 : 1.0,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              m["title"]!,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? const Color(0xFF4338CA) : const Color(0xFF1E293B),
-              ),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              m["desc"]!,
-              style: GoogleFonts.poppins(
-                fontSize: 11,
-                color: const Color(0xFF64748B),
-                height: 1.3,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNoticesColumn() {
-    return Column(
-      children: [
-        // Notice 1: Sky Blue
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: const Color(0xFFEFF6FF),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFBFDBFE)),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(Icons.info_outline_rounded, color: Color(0xFF2563EB), size: 18),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  "The AI analyses content, technical accuracy, clarity, structure, filler words, response time and relevance. Confidence indicators are coaching hints, not judgements about you.",
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: const Color(0xFF1E3A8A),
-                    height: 1.45,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
-
-        // Notice 2: Green / Mint
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF0FDF4),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFBBF7D0)),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(Icons.verified_user_outlined, color: Color(0xFF16A34A), size: 18),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  "Voice practice uses your microphone only while you are recording, and audio is not stored by default.",
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: const Color(0xFF14532D),
-                    height: 1.45,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActiveInterviewCard() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  "$_selectedMode Interview Session",
-                  style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
-                ),
-              ),
-              const SizedBox(width: 8),
-              TextButton.icon(
-                onPressed: () => setState(() => _isInInterview = false),
-                icon: const Icon(Icons.close, size: 16, color: Color(0xFFDC2626)),
-                label: const Text("End Interview", style: TextStyle(color: Color(0xFFDC2626))),
-                style: TextButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                ),
-              ),
-            ],
-          ),
-          const Divider(),
-          const SizedBox(height: 14),
-          // Question bubble
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const CircleAvatar(
-                  radius: 14,
-                  backgroundColor: AppColors.primaryBlue,
-                  child: Icon(Icons.smart_toy_outlined, color: Colors.white, size: 16),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("Interviewer", style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13, color: const Color(0xFF1E293B))),
-                      const SizedBox(height: 4),
-                      Text(
-                        _selectedMode == "Technical"
-                            ? "Tell me about the architecture of Smart Campus AI. How did you handle face embeddings at scale without high latency?"
-                            : "Can you tell me about a time you faced a difficult conflict in a group project and how you resolved it using the STAR approach?",
-                        style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF334155), height: 1.4),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item["title"] as String,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF1E293B),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              "${item["date"]} · ${item["answered"]} answered",
+                              style: GoogleFonts.poppins(
+                                fontSize: 10.5,
+                                color: const Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEE2E2),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          "${item["score"]}",
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFFDC2626),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, size: 16, color: Color(0xFF94A3B8)),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        onPressed: () {
+                          setState(() {
+                            _history.removeAt(idx);
+                          });
+                        },
                       ),
                     ],
                   ),
-                ),
-              ],
+                );
+              }).toList(),
             ),
-          ),
-          const SizedBox(height: 20),
-
-          // Answer field
-          TextField(
-            controller: _answerController,
-            maxLines: 4,
-            style: GoogleFonts.poppins(fontSize: 13),
-            decoration: InputDecoration(
-              hintText: "Type your answer or use microphone to speak...",
-              filled: true,
-              fillColor: const Color(0xFFFAFAFA),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          Wrap(
-            spacing: 12,
-            runSpacing: 10,
-            children: [
-              ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Answer submitted. Scoring feedback in progress...")));
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryBlue),
-                icon: const Icon(Icons.send_rounded, size: 16, color: Colors.white),
-                label: const Text("Submit Answer", style: TextStyle(color: Colors.white)),
-              ),
-              OutlinedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Microphone active... speak clearly.")));
-                },
-                icon: const Icon(Icons.mic, size: 16),
-                label: const Text("Record Voice"),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -3256,68 +3848,110 @@ class _MockInterviewScreenState extends State<MockInterviewScreen> {
 /// ─────────────────────────────────────────────────────────────────────────────
 /// 5. Opportunity Marketplace Screen (Image 1)
 /// ─────────────────────────────────────────────────────────────────────────────
-class OpportunityMarketplaceScreen extends StatelessWidget {
+class OpportunityMarketplaceScreen extends StatefulWidget {
   final VoidCallback? onBack;
   const OpportunityMarketplaceScreen({super.key, this.onBack});
 
   @override
+  State<OpportunityMarketplaceScreen> createState() => _OpportunityMarketplaceScreenState();
+}
+
+class _OpportunityMarketplaceScreenState extends State<OpportunityMarketplaceScreen> {
+  String _selectedFilter = "All";
+  String _searchQuery = "";
+  final TextEditingController _searchController = TextEditingController();
+
+  final List<Map<String, dynamic>> _opportunities = [
+    {
+      "tag": "Internship",
+      "tagColor": const Color(0xFF0D9488),
+      "tagBg": const Color(0xFFCCFBF1),
+      "badge": "92% match",
+      "badgeBg": const Color(0xFFCCFBF1),
+      "badgeColor": const Color(0xFF0F766E),
+      "title": "Data Analyst Intern — Tiger Analytics",
+      "desc": "SQL, Python, dashboards · Chennai",
+      "progress": 0.92,
+    },
+    {
+      "tag": "Hackathon",
+      "tagColor": const Color(0xFFD97706),
+      "tagBg": const Color(0xFFFEF3C7),
+      "badge": "Registrations close Oct 12",
+      "badgeBg": const Color(0xFFCCFBF1),
+      "badgeColor": const Color(0xFF0F766E),
+      "title": "HackTN 2026",
+      "desc": "State-level hackathon, ₹5L prize pool",
+    },
+    {
+      "tag": "Mentor",
+      "tagColor": const Color(0xFF6366F1),
+      "tagBg": const Color(0xFFEEF2FF),
+      "badge": "Accepting mentees",
+      "badgeBg": const Color(0xFFCCFBF1),
+      "badgeColor": const Color(0xFF0F766E),
+      "title": "Mentor: Priya S. (Data Scientist, Freshworks)",
+      "desc": "Alumnus, batch 2016",
+    },
+    {
+      "tag": "Workshop",
+      "tagColor": const Color(0xFF0284C7),
+      "tagBg": const Color(0xFFE0F2FE),
+      "badge": "Free",
+      "badgeBg": const Color(0xFFCCFBF1),
+      "badgeColor": const Color(0xFF0F766E),
+      "title": "Workshop: Kaggle for beginners",
+      "desc": "Coding Club · Oct 9",
+    },
+    {
+      "tag": "Certification",
+      "tagColor": const Color(0xFFD97706),
+      "tagBg": const Color(0xFFFEF3C7),
+      "badge": "Sponsored seats: 20",
+      "badgeBg": const Color(0xFFCCFBF1),
+      "badgeColor": const Color(0xFF0F766E),
+      "title": "Cloud fundamentals certification",
+      "desc": "Recommended by your skill graph",
+    },
+    {
+      "tag": "Project",
+      "tagColor": const Color(0xFF0D9488),
+      "tagBg": const Color(0xFFCCFBF1),
+      "badge": "Stipend",
+      "badgeBg": const Color(0xFFCCFBF1),
+      "badgeColor": const Color(0xFF0F766E),
+      "title": "Research assistant — IoT lab",
+      "desc": "Faculty project, 6 months",
+    },
+  ];
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final opportunities = [
-      {
-        "tag": "Internship",
-        "tagColor": const Color(0xFF0D9488),
-        "tagBg": const Color(0xFFF0FDFA),
-        "badge": "92% match",
-        "title": "Data Analyst Intern — Tiger Analytics",
-        "desc": "SQL, Python, dashboards · Chennai",
-        "progress": 0.92,
-      },
-      {
-        "tag": "Hackathon",
-        "tagColor": const Color(0xFFD97706),
-        "tagBg": const Color(0xFFFFFBEB),
-        "badge": "Registrations close Oct 12",
-        "title": "HackTN 2026",
-        "desc": "State-level hackathon, ₹5L prize pool",
-      },
-      {
-        "tag": "Mentor",
-        "tagColor": const Color(0xFF6366F1),
-        "tagBg": const Color(0xFFEEF2FF),
-        "badge": "Accepting mentees",
-        "title": "Mentor: Priya S. (Data Scientist, Freshworks)",
-        "desc": "Alumnus, batch 2016",
-      },
-      {
-        "tag": "Workshop",
-        "tagColor": const Color(0xFF0284C7),
-        "tagBg": const Color(0xFFF0F9FF),
-        "badge": "Free",
-        "title": "Workshop: Kaggle for beginners",
-        "desc": "Coding Club · Oct 9",
-      },
-      {
-        "tag": "Certification",
-        "tagColor": const Color(0xFFD97706),
-        "tagBg": const Color(0xFFFFFBEB),
-        "badge": "Sponsored seats: 20",
-        "title": "Cloud fundamentals certification",
-        "desc": "Recommended by your skill graph",
-      },
-      {
-        "tag": "Project",
-        "tagColor": const Color(0xFF0D9488),
-        "tagBg": const Color(0xFFF0FDFA),
-        "badge": "Stipend",
-        "title": "Research assistant — IoT lab",
-        "desc": "Faculty project, 6 months",
-      },
-    ];
+    final filtered = _opportunities.where((op) {
+      if (_selectedFilter != "All" && op["tag"] != _selectedFilter) {
+        return false;
+      }
+      if (_searchQuery.isNotEmpty) {
+        final title = (op["title"] as String).toLowerCase();
+        final desc = (op["desc"] as String).toLowerCase();
+        final tag = (op["tag"] as String).toLowerCase();
+        if (!title.contains(_searchQuery) && !desc.contains(_searchQuery) && !tag.contains(_searchQuery)) {
+          return false;
+        }
+      }
+      return true;
+    }).toList();
 
     return PortalPageBody(
       title: "Opportunity Marketplace",
       category: "Career",
-      onBack: onBack ?? (Navigator.canPop(context) ? () => Navigator.pop(context) : null),
+      onBack: widget.onBack ?? (Navigator.canPop(context) ? () => Navigator.pop(context) : null),
       children: [
         // Blueprint Hero Banner
         const BlueprintHeroBanner(
@@ -3332,142 +3966,285 @@ class OpportunityMarketplaceScreen extends StatelessWidget {
         ),
         const SizedBox(height: 20),
 
-        // Responsive Cards Grid
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final crossAxisCount = constraints.maxWidth >= 950 ? 3 : (constraints.maxWidth >= 600 ? 2 : 1);
-            return Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              children: opportunities.map((op) {
-                final width = crossAxisCount == 1
-                    ? constraints.maxWidth
-                    : (constraints.maxWidth - (16 * (crossAxisCount - 1))) / crossAxisCount;
+        // Department Filter and Search Bar
+        _buildFilterAndSearchBar(),
+        const SizedBox(height: 20),
 
-                return SizedBox(
-                  width: width,
-                  child: Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFE5E7EB)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
+        // Responsive Cards Grid
+        if (filtered.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Center(
+              child: Text(
+                "No opportunities matching '$_selectedFilter' or '$_searchQuery'",
+                style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF64748B)),
+              ),
+            ),
+          )
+        else
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final crossAxisCount = constraints.maxWidth >= 950 ? 3 : (constraints.maxWidth >= 600 ? 2 : 1);
+              return Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: filtered.map((op) {
+                  final width = crossAxisCount == 1
+                      ? constraints.maxWidth
+                      : (constraints.maxWidth - (16 * (crossAxisCount - 1))) / crossAxisCount;
+
+                  return SizedBox(
+                    width: width,
+                    child: _buildOpportunityCard(op),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildFilterAndSearchBar() {
+    final filters = [
+      {"label": "All", "count": 6},
+      {"label": "Internship", "count": 1},
+      {"label": "Hackathon", "count": 1},
+      {"label": "Mentor", "count": 1},
+      {"label": "Workshop", "count": 1},
+      {"label": "Certification", "count": 1},
+      {"label": "Project", "count": 1},
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 800;
+
+          final filterPills = SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                const Icon(Icons.filter_alt_outlined, size: 16, color: Color(0xFF64748B)),
+                const SizedBox(width: 4),
+                Text(
+                  "Department:",
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF334155),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                ...filters.map((f) {
+                  final label = f["label"] as String;
+                  final count = f["count"] as int;
+                  final isSelected = _selectedFilter == label;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: InkWell(
+                      onTap: () => setState(() => _selectedFilter = label),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isSelected ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Flexible(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: op["tagBg"] as Color,
-                                  borderRadius: BorderRadius.circular(100),
-                                ),
-                                child: Text(
-                                  op["tag"] as String,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: op["tagColor"] as Color,
-                                  ),
-                                ),
+                            Text(
+                              label,
+                              style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                color: isSelected ? Colors.white : const Color(0xFF475569),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Flexible(
+                            const SizedBox(width: 5),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: isSelected ? const Color(0xFF334155) : Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                               child: Text(
-                                op["badge"] as String,
-                                overflow: TextOverflow.ellipsis,
+                                "$count",
                                 style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  color: const Color(0xFF64748B),
-                                  fontWeight: FontWeight.w400,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: isSelected ? Colors.white : const Color(0xFF64748B),
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          op["title"] as String,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1E293B),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          op["desc"] as String,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: const Color(0xFF64748B),
-                          ),
-                        ),
-                        if (op["progress"] != null) ...[
-                          const SizedBox(height: 14),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: op["progress"] as double,
-                              minHeight: 5,
-                              backgroundColor: const Color(0xFFF1F5F9),
-                              valueColor: const AlwaysStoppedAnimation(Color(0xFF0D9488)),
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () => _showOpportunityDetailsDialog(context, op),
-                                icon: const Icon(Icons.visibility_outlined, size: 13),
-                                label: const Text("View Details"),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 7),
-                                  side: const BorderSide(color: Color(0xFFE2E8F0)),
-                                  foregroundColor: const Color(0xFF0F766E),
-                                  textStyle: GoogleFonts.poppins(fontSize: 11),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () => _showEditOpportunityApplicationDialog(context, op),
-                                icon: const Icon(Icons.edit_outlined, size: 13),
-                                label: const Text("Edit App"),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 7),
-                                  side: const BorderSide(color: Color(0xFFE2E8F0)),
-                                  foregroundColor: const Color(0xFF4338CA),
-                                  textStyle: GoogleFonts.poppins(fontSize: 11),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          );
+
+          final searchBox = SizedBox(
+            width: isNarrow ? double.infinity : 240,
+            height: 36,
+            child: TextField(
+              controller: _searchController,
+              onChanged: (v) => setState(() => _searchQuery = v.trim().toLowerCase()),
+              style: GoogleFonts.poppins(fontSize: 12),
+              decoration: InputDecoration(
+                hintText: "Search labs & practicals...",
+                hintStyle: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF94A3B8)),
+                prefixIcon: const Icon(Icons.search, size: 16, color: Color(0xFF94A3B8)),
+                contentPadding: EdgeInsets.zero,
+                filled: true,
+                fillColor: const Color(0xFFF8FAFC),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+              ),
+            ),
+          );
+
+          if (isNarrow) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                filterPills,
+                const SizedBox(height: 10),
+                searchBox,
+              ],
+            );
+          }
+
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(child: filterPills),
+              const SizedBox(width: 16),
+              searchBox,
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildOpportunityCard(Map<String, dynamic> op) {
+    return InkWell(
+      onTap: () => _showOpportunityDetailsDialog(context, op),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                  decoration: BoxDecoration(
+                    color: op["tagBg"] as Color,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    op["tag"] as String,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: op["tagColor"] as Color,
                     ),
                   ),
-                );
-              }).toList(),
-            );
-          },
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: op["badgeBg"] as Color,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      op["badge"] as String,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: op["badgeColor"] as Color,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Text(
+              op["title"] as String,
+              style: GoogleFonts.poppins(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF1E293B),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              op["desc"] as String,
+              style: GoogleFonts.poppins(
+                fontSize: 11.5,
+                color: const Color(0xFF64748B),
+              ),
+            ),
+            if (op["progress"] != null) ...[
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: op["progress"] as double,
+                  minHeight: 5,
+                  backgroundColor: const Color(0xFFF1F5F9),
+                  valueColor: const AlwaysStoppedAnimation(Color(0xFF0D9488)),
+                ),
+              ),
+            ],
+          ],
         ),
-      ],
+      ),
     );
   }
 

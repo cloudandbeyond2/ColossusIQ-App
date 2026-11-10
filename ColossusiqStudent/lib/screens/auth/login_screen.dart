@@ -20,6 +20,9 @@ class StudentProfile {
   });
 }
 
+/// Ultra-Modern, Responsive Full-Screen Student Portal Sign In
+/// Features a 2-column split on desktop (Image 2 Showcase + Modern Form)
+/// and a responsive tabbed/fluid view on mobile and tablet.
 class LoginScreen extends StatefulWidget {
   final bool wasSignedOut;
 
@@ -41,6 +44,8 @@ class _LoginScreenState extends State<LoginScreen>
   late AnimationController _entranceController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  late AnimationController _floatController;
+  late Animation<double> _floatAnimation;
 
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -72,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen>
 
     _entranceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 900),
     );
 
     _fadeAnimation = CurvedAnimation(
@@ -81,13 +86,22 @@ class _LoginScreenState extends State<LoginScreen>
     );
 
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 0.06),
+      begin: const Offset(0.0, 0.04),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(
         parent: _entranceController,
         curve: Curves.easeOutCubic,
       ),
+    );
+
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat(reverse: true);
+
+    _floatAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(
+      CurvedAnimation(parent: _floatController, curve: Curves.easeInOutSine),
     );
 
     _entranceController.forward();
@@ -98,6 +112,7 @@ class _LoginScreenState extends State<LoginScreen>
     _emailController.dispose();
     _passwordController.dispose();
     _entranceController.dispose();
+    _floatController.dispose();
     super.dispose();
   }
 
@@ -106,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen>
 
     setState(() => _isLoading = true);
 
-    Future.delayed(const Duration(milliseconds: 550), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       if (!mounted) return;
       setState(() => _isLoading = false);
 
@@ -122,16 +137,9 @@ class _LoginScreenState extends State<LoginScreen>
             college: _selectedCollege,
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 0.05);
-            const end = Offset.zero;
-            const curve = Curves.easeOutCubic;
-            final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: FadeTransition(opacity: animation, child: child),
-            );
+            return FadeTransition(opacity: animation, child: child);
           },
-          transitionDuration: const Duration(milliseconds: 350),
+          transitionDuration: const Duration(milliseconds: 300),
         ),
       );
     });
@@ -231,216 +239,213 @@ class _LoginScreenState extends State<LoginScreen>
       backgroundColor: const Color(0xFFF8FAFC),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final isDesktop = constraints.maxWidth >= 940;
+          final isDesktop = constraints.maxWidth >= 980;
 
           if (isDesktop) {
             return Row(
               children: [
-                // 1. LEFT BRAND SHOWCASE PANEL
+                // 1. LEFT: FULL-SCREEN SHOWCASE (MATCHING IMAGE 2)
                 Expanded(
-                  flex: 42,
-                  child: _buildDesktopLeftShowcase(),
+                  flex: 52,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF8FAFC),
+                      border: Border(right: BorderSide(color: Color(0xFFE2E8F0))),
+                    ),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 36),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Top bar inside showcase
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _buildBrandLogo(),
+                              _buildAyBadge(),
+                            ],
+                          ),
+                          const SizedBox(height: 36),
+
+                          // Center Hero with 3D Cap Icon
+                          _buildCenterHeroContent(),
+                          const SizedBox(height: 32),
+
+                          // Interactive Browser Mockup Window
+                          AnimatedBuilder(
+                            animation: _floatAnimation,
+                            builder: (context, child) {
+                              return Transform.translate(
+                                offset: Offset(0, _floatAnimation.value),
+                                child: _buildBrowserMockup(),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 28),
+
+                          // Compliance Footer
+                          _buildSecurityBadge(),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
 
-                // 2. RIGHT LOGIN FORM PANEL
+                // 2. RIGHT: CLEAN, MODERN FULL-SCREEN LOGIN FORM
                 Expanded(
-                  flex: 58,
-                  child: _buildFormPanel(isDesktop: true),
+                  flex: 48,
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 36),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 460),
+                        child: FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: SlideTransition(
+                            position: _slideAnimation,
+                            child: _buildLoginFormCard(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             );
           }
 
-          // Single Column for Mobile & Tablet (Full Screen Responsive)
-          return _buildFormPanel(isDesktop: false);
+          // Mobile & Tablet Responsive Full Screen View (Centered with Equal Top & Bottom Gaps)
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight > 32 ? constraints.maxHeight - 32 : 0,
+                ),
+                child: IntrinsicHeight(
+                  child: Column(
+                    children: [
+                      // Top Row Header
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildBrandLogo(),
+                          _buildAyBadge(),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      const Spacer(),
+
+                      // Centered Sign In Card with Equal Gaps
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 460),
+                        child: FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: SlideTransition(
+                            position: _slideAnimation,
+                            child: _buildLoginFormCard(),
+                          ),
+                        ),
+                      ),
+
+                      const Spacer(),
+                      const SizedBox(height: 12),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
         },
       ),
     );
   }
 
   // ===========================================================================
-  // 1. LEFT BLUEPRINT BRAND SHOWCASE PANEL (DESKTOP)
+  // TOP BRAND LOGO & AY BADGE (MATCHING IMAGE 2)
   // ===========================================================================
-  Widget _buildDesktopLeftShowcase() {
-    return Container(
-      height: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF0A1647), Color(0xFF0F2475), Color(0xFF1E3A8A)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Stack(
-        children: [
-          // Blueprint grid overlay
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _BlueprintDarkGridPainter(),
+  Widget _buildBrandLogo() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
             ),
-          ),
-
-          // Faint Background Watermark Icon
-          Positioned(
-            right: -20,
-            bottom: -30,
-            child: Opacity(
-              opacity: 0.06,
-              child: const Icon(
-                Icons.school_rounded,
-                size: 340,
-                color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2563EB).withValues(alpha: 0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
               ),
+            ],
+          ),
+          child: const Icon(
+            Icons.school_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: 10),
+        RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: "Colossus",
+                style: GoogleFonts.poppins(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF0F172A),
+                  letterSpacing: -0.4,
+                ),
+              ),
+              TextSpan(
+                text: "IQ",
+                style: GoogleFonts.poppins(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w900,
+                  color: const Color(0xFF2563EB),
+                  letterSpacing: -0.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAyBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: Color(0xFF10B981),
+              shape: BoxShape.circle,
             ),
           ),
-
-          // Content Inside Showcase
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 48),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Brand Header
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-                      ),
-                      child: const Icon(
-                        Icons.school_rounded,
-                        color: Color(0xFFFBBF24),
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "Colossus",
-                            style: GoogleFonts.poppins(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                          ),
-                          TextSpan(
-                            text: "IQ",
-                            style: GoogleFonts.poppins(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w900,
-                              color: const Color(0xFF60A5FA),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-
-                // Headline & Subtitle
-                Text(
-                  "ColossusIQ StudentApp.",
-                  style: GoogleFonts.poppins(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    height: 1.25,
-                    letterSpacing: -0.6,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  "All your coursework, AI study twin, class notes, mock tests, and career placement readiness in one intelligent unified portal.",
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: const Color(0xFFCBD5E1),
-                    height: 1.55,
-                  ),
-                ),
-                const SizedBox(height: 32),
-
-                // Student Testimonial Quote Card
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "\"ColossusIQ keeps all my lecture notes, AI mock tests, lab submissions, and placement roadmap organized in one single app.\"",
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.white.withValues(alpha: 0.9),
-                          height: 1.45,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          const CircleAvatar(
-                            radius: 14,
-                            backgroundColor: Color(0xFFFBBF24),
-                            child: Icon(Icons.person_rounded, size: 16, color: Color(0xFF0F172A)),
-                          ),
-                          const SizedBox(width: 10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Anand R · 22CS104",
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Text(
-                                "B.E. Computer Science · Anna Institute of Technology",
-                                style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  color: const Color(0xFF94A3B8),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const Spacer(),
-
-                // Bottom Security Compliance Badges
-                Row(
-                  children: [
-                    const Icon(Icons.verified_user_rounded, size: 15, color: Color(0xFF34D399)),
-                    const SizedBox(width: 6),
-                    Text(
-                      "StudentApp Verified",
-                      style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFFCBD5E1)),
-                    ),
-                    const SizedBox(width: 20),
-                    const Icon(Icons.lock_rounded, size: 14, color: Color(0xFF34D399)),
-                    const SizedBox(width: 6),
-                    Text(
-                      "TLS 1.3 Encryption",
-                      style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFFCBD5E1)),
-                    ),
-                  ],
-                ),
-              ],
+          const SizedBox(width: 6),
+          Text(
+            "AY 26-27",
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1D4ED8),
+              letterSpacing: 0.3,
             ),
           ),
         ],
@@ -449,233 +454,97 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   // ===========================================================================
-  // 2. RIGHT LOGIN FORM PANEL (FULL SCREEN RESPONSIVE)
+  // CENTER HERO ICON & TYPOGRAPHY (MATCHING IMAGE 2)
   // ===========================================================================
-  Widget _buildFormPanel({required bool isDesktop}) {
-    return Container(
-      color: const Color(0xFFF8FAFC),
-      child: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isNarrow = constraints.maxWidth < 460;
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.symmetric(
-                horizontal: isDesktop ? 40 : (isNarrow ? 16 : 24),
-                vertical: isDesktop ? 32 : 18,
-              ),
-              child: Align(
-                alignment: isDesktop ? Alignment.center : Alignment.topCenter,
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: Container(
-                      constraints: const BoxConstraints(maxWidth: 480),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // 1. TOP HERO BLUEPRINT BANNER
-                          _buildStudentPortalBanner(),
-                          const SizedBox(height: 16),
-
-                          // 2. MAIN LOGIN CARD CONTAINER
-                          Container(
-                            padding: EdgeInsets.all(isNarrow ? 20 : 28),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x0A0F172A),
-                                  blurRadius: 20,
-                                  offset: Offset(0, 8),
-                                ),
-                              ],
-                            ),
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Card Top Role Badge Row
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFEFF6FF),
-                                          borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(color: const Color(0xFFBFDBFE)),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Container(
-                                              width: 6,
-                                              height: 6,
-                                              decoration: const BoxDecoration(
-                                                color: Color(0xFF2563EB),
-                                                shape: BoxShape.circle,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 6),
-                                            Text(
-                                              "STUDENT ACCESS",
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w700,
-                                                color: const Color(0xFF1D4ED8),
-                                                letterSpacing: 0.6,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const Spacer(),
-                                      Text(
-                                        "v2.4",
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: const Color(0xFF94A3B8),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 14),
-
-                                  // Card Title & Subtitle
-                                  Text(
-                                    "Student Portal Sign In",
-                                    style: GoogleFonts.poppins(
-                                      fontSize: isNarrow ? 22 : 24,
-                                      fontWeight: FontWeight.w800,
-                                      color: const Color(0xFF0F172A),
-                                      letterSpacing: -0.5,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    "Sign in with your student register number or college email.",
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 13,
-                                      color: const Color(0xFF64748B),
-                                      height: 1.45,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-
-                                  // Campus Selector Dropdown Card
-                                  _buildCampusSelector(),
-                                  const SizedBox(height: 16),
-
-                                  // Email Field
-                                  _buildEmailField(),
-                                  const SizedBox(height: 16),
-
-                                  // Password Field
-                                  _buildPasswordField(),
-                                  const SizedBox(height: 14),
-
-                                  // Remember Me & Forgot Password Row
-                                  _buildRememberForgotRow(),
-                                  const SizedBox(height: 20),
-
-                                  // Primary Continue Button
-                                  _buildSignInButton(),
-                                  const SizedBox(height: 12),
-
-                                  // SSO Button
-                                  _buildSsoButton(),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          // 3. FOOTER COPYRIGHT
-                          Center(
-                            child: Text(
-                              "© 2026 ColossusIQ · Secure Student Portal Access",
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                color: const Color(0xFF94A3B8),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  // ===========================================================================
-  // REMEMBER ME & FORGOT PASSWORD ROW
-  // ===========================================================================
-  Widget _buildRememberForgotRow() {
-    return Row(
+  Widget _buildCenterHeroContent() {
+    return Column(
       children: [
-        SizedBox(
-          height: 20,
-          width: 20,
-          child: Checkbox(
-            value: _rememberMe,
-            onChanged: (val) {
-              setState(() => _rememberMe = val ?? true);
-            },
-            activeColor: const Color(0xFF2563EB),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
+        // 3D Graduation Cap Icon with Glow
+        Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        GestureDetector(
-          onTap: () {
-            setState(() => _rememberMe = !_rememberMe);
-          },
-          child: Text(
-            "Remember me",
-            style: GoogleFonts.poppins(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF475569),
-            ),
-          ),
-        ),
-        const Spacer(),
-        GestureDetector(
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  "Password reset link sent to your student email.",
-                  style: GoogleFonts.poppins(fontSize: 12.5),
-                ),
-                duration: const Duration(seconds: 2),
-                backgroundColor: const Color(0xFF131838),
-                behavior: SnackBarBehavior.floating,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2563EB).withValues(alpha: 0.35),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
               ),
-            );
-          },
+            ],
+          ),
+          child: const Center(
+            child: Icon(
+              Icons.school_rounded,
+              color: Colors.white,
+              size: 38,
+            ),
+          ),
+        ),
+        const SizedBox(height: 18),
+
+        // Brand Name
+        RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: "Colossus",
+                style: GoogleFonts.poppins(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF0F172A),
+                  letterSpacing: -0.6,
+                ),
+              ),
+              TextSpan(
+                text: "IQ",
+                style: GoogleFonts.poppins(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w900,
+                  color: const Color(0xFF2563EB),
+                  letterSpacing: -0.6,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        // ACADEMIC OPERATING SYSTEM Pill
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4.5),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEFF6FF),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFBFDBFE)),
+          ),
           child: Text(
-            "Forgot password?",
+            "ACADEMIC OPERATING SYSTEM",
             style: GoogleFonts.poppins(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF2563EB),
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1D4ED8),
+              letterSpacing: 0.8,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Subtitle
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Text(
+            "Unified intelligence and workflow automation for students, faculty, and administration.",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: const Color(0xFF64748B),
+              height: 1.5,
             ),
           ),
         ),
@@ -684,158 +553,315 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   // ===========================================================================
-  // STUDENT PORTAL HERO BANNER
+  // BROWSER MOCKUP WITH 3 FEATURE CARDS (MATCHING IMAGE 2)
   // ===========================================================================
-  Widget _buildStudentPortalBanner() {
+  Widget _buildBrowserMockup() {
     return Container(
-      width: double.infinity,
+      constraints: const BoxConstraints(maxWidth: 460),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF131838),
-        borderRadius: BorderRadius.circular(18),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF131838),
-            Color(0xFF1B2358),
-            Color(0xFF232D6E),
-          ],
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF131838).withValues(alpha: 0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.06),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: Stack(
+      child: Column(
+        children: [
+          // Browser Top Control Strip
+          Row(
+            children: [
+              Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFFEF4444), shape: BoxShape.circle)),
+              const SizedBox(width: 6),
+              Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFFF59E0B), shape: BoxShape.circle)),
+              const SizedBox(width: 6),
+              Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle)),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.lock_rounded, size: 10, color: Color(0xFF64748B)),
+                    const SizedBox(width: 4),
+                    Text(
+                      "secure.colossusiq.ait.edu",
+                      style: GoogleFonts.poppins(fontSize: 10.5, color: const Color(0xFF64748B)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Feature Card 1: Institutional Pulse
+          _mockFeatureCard(
+            icon: Icons.bar_chart_rounded,
+            iconBg: const Color(0xFFDCFCE7),
+            iconColor: const Color(0xFF15803D),
+            title: "Institutional Pulse · 94.2% Attendance",
+            desc: "CSE, ECE, Mech & Civil data synced in real-time.",
+            badgeText: "Optimal",
+            badgeBg: const Color(0xFFD1FAE5),
+            badgeColor: const Color(0xFF047857),
+          ),
+          const SizedBox(height: 12),
+
+          // Feature Card 2: AI Exam & Question Vault
+          _mockFeatureCard(
+            icon: Icons.auto_awesome_rounded,
+            iconBg: const Color(0xFFEFF6FF),
+            iconColor: const Color(0xFF2563EB),
+            title: "AI Exam & Question Vault",
+            desc: "Bloom's taxonomy balanced with AICTE compliance.",
+            badgeText: "Verified",
+            badgeBg: const Color(0xFFDBEAFE),
+            badgeColor: const Color(0xFF1D4ED8),
+          ),
+          const SizedBox(height: 12),
+
+          // Feature Card 3: Tamper-proof Certificate Authority
+          _mockFeatureCard(
+            icon: Icons.verified_rounded,
+            iconBg: const Color(0xFFFEF3C7),
+            iconColor: const Color(0xFFB45309),
+            title: "Tamper-proof Certificate Authority",
+            desc: "HSM signed QR seals with instant public verification.",
+            badgeText: "Signed",
+            badgeBg: const Color(0xFFFEF3C7),
+            badgeColor: const Color(0xFFB45309),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mockFeatureCard({
+    required IconData icon,
+    required Color iconBg,
+    required Color iconColor,
+    required String title,
+    required String desc,
+    required String badgeText,
+    required Color badgeBg,
+    required Color badgeColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  desc,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    color: const Color(0xFF64748B),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: badgeBg,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              badgeText,
+              style: GoogleFonts.poppins(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: badgeColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSecurityBadge() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.verified_user_outlined, size: 14, color: Color(0xFF059669)),
+        const SizedBox(width: 6),
+        Text(
+          "Zero-Trust TLS 1.3 • AICTE & NEP 2020 Compliant",
+          style: GoogleFonts.poppins(
+            fontSize: 11,
+            color: const Color(0xFF64748B),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ===========================================================================
+  // MAIN LOGIN FORM CARD (CLEAN & MODERN)
+  // ===========================================================================
+  Widget _buildLoginFormCard() {
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F172A).withValues(alpha: 0.05),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Blueprint Dark Grid Pattern
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _BlueprintDarkGridPainter(),
-              ),
-            ),
-
-            // Decorative Vertical Capsule Pills (Right side)
-            Positioned(
-              right: 18,
-              top: 12,
-              bottom: 12,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(
-                  3,
-                  (index) => Container(
-                    margin: const EdgeInsets.only(left: 6),
-                    width: 14,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.045),
-                      borderRadius: BorderRadius.circular(7),
-                    ),
+            // Top Badge: Student Access & Version
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF2563EB),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        "STUDENT ACCESS",
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1D4ED8),
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ),
-
-            // Faint Institution Watermark
-            Positioned(
-              right: -10,
-              bottom: -15,
-              child: Opacity(
-                opacity: 0.06,
-                child: const Icon(
-                  Icons.account_balance_rounded,
-                  size: 130,
-                  color: Colors.white,
+                Text(
+                  "v2.4",
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF94A3B8),
+                  ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Card Title & Subtitle
+            Text(
+              "Student Portal Sign In",
+              style: GoogleFonts.poppins(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF0F172A),
+                letterSpacing: -0.5,
               ),
             ),
+            const SizedBox(height: 4),
+            Text(
+              "Sign in with your student register number or college email.",
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: const Color(0xFF64748B),
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 20),
 
-            // Banner Content
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-              child: Row(
-                children: [
-                  // Gold Squircle Icon Container
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.20),
-                        width: 1.2,
-                      ),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.account_balance_rounded,
-                        color: Color(0xFFFBBF24),
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
+            // Campus Selector Dropdown
+            _buildCampusSelector(),
+            const SizedBox(height: 16),
 
-                  // Brand Title & Student Portal Badge
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          spacing: 8,
-                          runSpacing: 4,
-                          children: [
-                            Text(
-                              "ColossusIQ",
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withValues(alpha: 0.25),
-                                borderRadius: BorderRadius.circular(5),
-                                border: Border.all(
-                                  color: const Color(0xFF10B981).withValues(alpha: 0.4),
-                                  width: 0.8,
-                                ),
-                              ),
-                              child: Text(
-                                "STUDENT PORTAL",
-                                style: GoogleFonts.poppins(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF6EE7B7),
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          "Student Portal Login",
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.white.withValues(alpha: 0.85),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+            // Student Email / Register No. Field
+            _buildEmailField(),
+            const SizedBox(height: 16),
+
+            // Password Field
+            _buildPasswordField(),
+            const SizedBox(height: 14),
+
+            // Remember Me & Forgot Password Row
+            _buildRememberForgotRow(),
+            const SizedBox(height: 20),
+
+            // Primary Sign In Button
+            _buildSignInButton(),
+            const SizedBox(height: 12),
+
+            // SSO Button
+            _buildSsoButton(),
+            const SizedBox(height: 24),
+
+            // Footer
+            Center(
+              child: Text(
+                "© 2026 ColossusIQ · Secure Student Portal Access",
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  color: const Color(0xFF94A3B8),
+                ),
               ),
             ),
           ],
@@ -844,17 +870,12 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-
-
-  // ===========================================================================
-  // 4. CAMPUS SELECTOR
-  // ===========================================================================
+  // --- CAMPUS SELECTOR (MATCHING IMAGE 1) ---
   Widget _buildCampusSelector() {
     return InkWell(
       onTap: _showCollegePicker,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: const Color(0xFFFFFBEB),
@@ -871,28 +892,25 @@ class _LoginScreenState extends State<LoginScreen>
                 shape: BoxShape.circle,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
+            Text(
+              "Campus: ",
+              style: GoogleFonts.poppins(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFFB45309),
+              ),
+            ),
             Expanded(
-              child: RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: "Campus: ",
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: const Color(0xFF78350F),
-                      ),
-                    ),
-                    TextSpan(
-                      text: _selectedCollege,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF78350F),
-                      ),
-                    ),
-                  ],
+              child: Text(
+                _selectedCollege,
+                style: GoogleFonts.poppins(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF78350F),
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             const Icon(
@@ -906,9 +924,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ===========================================================================
-  // 5. EMAIL FIELD
-  // ===========================================================================
+  // --- EMAIL FIELD ---
   Widget _buildEmailField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -916,34 +932,23 @@ class _LoginScreenState extends State<LoginScreen>
         Text(
           "Student Email / Register No.",
           style: GoogleFonts.poppins(
-            fontSize: 12.5,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF334155),
+            color: const Color(0xFF1E293B),
           ),
         ),
         const SizedBox(height: 6),
         TextFormField(
           controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          style: GoogleFonts.poppins(
-            fontSize: 13.5,
-            color: const Color(0xFF0F172A),
-            fontWeight: FontWeight.w500,
-          ),
+          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
           decoration: InputDecoration(
-            hintText: "student1@ait.edu.in or 22CS104",
-            hintStyle: GoogleFonts.poppins(
-              fontSize: 13,
-              color: const Color(0xFF94A3B8),
-            ),
-            prefixIcon: const Icon(
-              Icons.alternate_email_rounded,
-              size: 19,
-              color: Color(0xFF64748B),
-            ),
+            prefixIcon: const Icon(Icons.alternate_email_rounded, size: 18, color: Color(0xFF64748B)),
+            hintText: "student1@ait.edu.in",
+            hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
             filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            fillColor: const Color(0xFFF8FAFC),
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
@@ -954,13 +959,11 @@ class _LoginScreenState extends State<LoginScreen>
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.8),
+              borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
             ),
           ),
           validator: (val) {
-            if (val == null || val.trim().isEmpty) {
-              return "Please enter your student email or roll number";
-            }
+            if (val == null || val.trim().isEmpty) return "Please enter your student email or register number.";
             return null;
           },
         ),
@@ -968,9 +971,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ===========================================================================
-  // 6. PASSWORD FIELD
-  // ===========================================================================
+  // --- PASSWORD FIELD ---
   Widget _buildPasswordField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -978,42 +979,32 @@ class _LoginScreenState extends State<LoginScreen>
         Text(
           "Password",
           style: GoogleFonts.poppins(
-            fontSize: 12.5,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF334155),
+            color: const Color(0xFF1E293B),
           ),
         ),
         const SizedBox(height: 6),
         TextFormField(
           controller: _passwordController,
           obscureText: _obscurePassword,
-          style: GoogleFonts.poppins(
-            fontSize: 13.5,
-            color: const Color(0xFF0F172A),
-            fontWeight: FontWeight.w500,
-          ),
+          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
           decoration: InputDecoration(
-            hintText: "••••••••••••",
-            hintStyle: GoogleFonts.poppins(
-              fontSize: 13,
-              color: const Color(0xFF94A3B8),
-            ),
-            prefixIcon: const Icon(
-              Icons.lock_outline_rounded,
-              size: 19,
-              color: Color(0xFF64748B),
-            ),
+            prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18, color: Color(0xFF64748B)),
             suffixIcon: IconButton(
               icon: Icon(
                 _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                size: 19,
+                size: 18,
                 color: const Color(0xFF64748B),
               ),
               onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
             ),
+            hintText: "••••••••••",
+            hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
             filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            fillColor: const Color(0xFFF8FAFC),
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
@@ -1024,13 +1015,11 @@ class _LoginScreenState extends State<LoginScreen>
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.8),
+              borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
             ),
           ),
           validator: (val) {
-            if (val == null || val.isEmpty) {
-              return "Please enter your password";
-            }
+            if (val == null || val.trim().isEmpty) return "Please enter your password.";
             return null;
           },
         ),
@@ -1038,134 +1027,135 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ===========================================================================
-  // 7. SIGN IN PRIMARY ACTION
-  // ===========================================================================
-  Widget _buildSignInButton() {
-    return Container(
-      width: double.infinity,
-      height: 48,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2563EB).withValues(alpha: 0.30),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _isLoading ? null : _handleSignIn,
-          borderRadius: BorderRadius.circular(12),
-          child: Center(
-            child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.2,
-                      color: Colors.white,
-                    ),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Sign in to StudentApp",
-                        style: GoogleFonts.poppins(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
+  // --- REMEMBER ME & FORGOT PASSWORD ---
+  Widget _buildRememberForgotRow() {
+    return Row(
+      children: [
+        SizedBox(
+          height: 18,
+          width: 18,
+          child: Checkbox(
+            value: _rememberMe,
+            onChanged: (val) => setState(() => _rememberMe = val ?? true),
+            activeColor: const Color(0xFF2563EB),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
           ),
         ),
-      ),
+        const SizedBox(width: 8),
+        InkWell(
+          onTap: () => setState(() => _rememberMe = !_rememberMe),
+          child: Text(
+            "Remember me",
+            style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF334155), fontWeight: FontWeight.w500),
+          ),
+        ),
+        const Spacer(),
+        InkWell(
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Contact your campus administrative office or student cell to reset password."),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+          child: Text(
+            "Forgot password?",
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF2563EB),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  // ===========================================================================
-  // 8. INSTITUTION SSO BUTTON
-  // ===========================================================================
-  Widget _buildSsoButton() {
+  // --- SIGN IN BUTTON ---
+  Widget _buildSignInButton() {
     return Container(
       width: double.infinity,
       height: 46,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFCBD5E1)),
-        color: Colors.white,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _handleSignIn,
-          borderRadius: BorderRadius.circular(12),
-          child: Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.shield_outlined,
-                  size: 17,
-                  color: Color(0xFF334155),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  "Sign in with Student SSO",
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF334155),
-                  ),
-                ),
-              ],
-            ),
-          ),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
         ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2563EB).withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _handleSignIn,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        child: _isLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.arrow_forward_rounded, size: 16, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Sign in to StudentApp",
+                    style: GoogleFonts.poppins(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
 
-
-}
-
-// =============================================================================
-// BLUEPRINT GRID PAINTER FOR DESKTOP SHOWCASE
-// =============================================================================
-class _BlueprintDarkGridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.05)
-      ..strokeWidth = 1.0;
-
-    const double step = 28.0;
-
-    for (double x = 0; x < size.width; x += step) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-    for (double y = 0; y < size.height; y += step) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
+  // --- SSO BUTTON ---
+  Widget _buildSsoButton() {
+    return Container(
+      width: double.infinity,
+      height: 46,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFCBD5E1)),
+      ),
+      child: OutlinedButton(
+        onPressed: () {
+          _handleSignIn();
+        },
+        style: OutlinedButton.styleFrom(
+          side: BorderSide.none,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.security_rounded, size: 16, color: Color(0xFF475569)),
+            const SizedBox(width: 8),
+            Text(
+              "Sign in with Student SSO",
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF334155),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

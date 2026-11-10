@@ -3,9 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_badge.dart';
 import '../../core/widgets/blueprint_hero_banner.dart';
-import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/portal_page_body.dart';
-import '../../core/widgets/responsive_search_bar.dart';
 
 /// ─────────────────────────────────────────────────────────────────────────────
 /// Campus Events Screen [P3] (Image 4)
@@ -123,80 +121,676 @@ class _CampusEventsScreenState extends State<CampusEventsScreen> {
   }
 
   void _showEditEventDialog(Map<String, dynamic> e) {
-    final titleCtrl = TextEditingController(text: e["title"] as String);
-    final venueCtrl = TextEditingController(text: e["venue"] as String);
-    final dateCtrl = TextEditingController(text: e["date"] as String);
-    final capacityCtrl = TextEditingController(text: e["capacity"] as String);
+    _showCreateEventDialog(e);
+  }
+
+  void _showCreateEventDialog([Map<String, dynamic>? initialData]) {
+    final isEdit = initialData != null;
+    final titleCtrl = TextEditingController(text: initialData?["title"] as String? ?? "");
+    final startDateCtrl = TextEditingController(
+      text: initialData?["startDate"] as String? ?? (initialData?["date"] as String? ?? ""),
+    );
+    final endDateCtrl = TextEditingController(text: initialData?["endDate"] as String? ?? "");
+    final timeCtrl = TextEditingController(text: initialData?["time"] as String? ?? "");
+    final venueCtrl = TextEditingController(text: initialData?["venue"] as String? ?? "");
+    final organizerCtrl = TextEditingController(
+      text: initialData?["organizer"] as String? ?? "Department / Faculty",
+    );
+    final capacityCtrl = TextEditingController(
+      text: initialData != null ? (initialData["capacity"]?.toString() ?? "0") : "0",
+    );
+    final descCtrl = TextEditingController(text: initialData?["description"] as String? ?? "");
+
+    String selectedType = initialData?["type"] as String? ?? "Academic";
+    String selectedStatus = initialData?["status"] as String? ?? "Upcoming";
+
+    final typeOptions = const [
+      "Academic",
+      "Cultural",
+      "Sports",
+      "Workshop",
+      "Seminar",
+      "Technical",
+      "Other",
+    ];
+
+    final statusOptions = const [
+      "Upcoming",
+      "Active",
+      "Published",
+      "Draft",
+      "Completed",
+      "Cancelled",
+    ];
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text("Edit Campus Event", style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16)),
-        content: Container(
-          width: double.maxFinite,
-          constraints: const BoxConstraints(maxWidth: 440),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: titleCtrl,
-                  decoration: const InputDecoration(labelText: "Event Title", border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: venueCtrl,
-                  decoration: const InputDecoration(labelText: "Venue / Ground", border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: dateCtrl,
-                        decoration: const InputDecoration(labelText: "Date", border: OutlineInputBorder()),
-                      ),
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          Future<void> pickDate(TextEditingController controller) async {
+            final now = DateTime.now();
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: now,
+              firstDate: DateTime(2025),
+              lastDate: DateTime(2030),
+              builder: (context, child) {
+                return Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: const ColorScheme.light(
+                      primary: Color(0xFF7E84EC),
+                      onPrimary: Colors.white,
+                      onSurface: Color(0xFF0F172A),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        controller: capacityCtrl,
-                        decoration: const InputDecoration(labelText: "Capacity", border: OutlineInputBorder()),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text("Cancel", style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                e["title"] = titleCtrl.text.trim();
-                e["venue"] = venueCtrl.text.trim();
-                e["date"] = dateCtrl.text.trim();
-                e["capacity"] = capacityCtrl.text.trim();
+                  ),
+                  child: child!,
+                );
+              },
+            );
+            if (picked != null) {
+              setDialogState(() {
+                controller.text =
+                    "${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}";
               });
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text("Event '${e["title"]}' updated!"),
-                  backgroundColor: const Color(0xFF15803D),
-                  behavior: SnackBarBehavior.floating,
+            }
+          }
+
+          Future<void> pickTime(TextEditingController controller) async {
+            final picked = await showTimePicker(
+              context: context,
+              initialTime: TimeOfDay.now(),
+              builder: (context, child) {
+                return Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: const ColorScheme.light(
+                      primary: Color(0xFF7E84EC),
+                      onPrimary: Colors.white,
+                      onSurface: Color(0xFF0F172A),
+                    ),
+                  ),
+                  child: child!,
+                );
+              },
+            );
+            if (picked != null) {
+              final hour = picked.hourOfPeriod == 0 ? 12 : picked.hourOfPeriod;
+              final minute = picked.minute.toString().padLeft(2, '0');
+              final period = picked.period == DayPeriod.am ? "AM" : "PM";
+              setDialogState(() {
+                controller.text = "${hour.toString().padLeft(2, '0')}:$minute $period";
+              });
+            }
+          }
+
+          Widget buildLabel(String label) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1E293B),
                 ),
-              );
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF141938), foregroundColor: Colors.white),
-            child: Text("Save Changes", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-          ),
-        ],
+              ),
+            );
+          }
+
+          Widget buildTextField({
+            required TextEditingController controller,
+            required String hintText,
+            IconData? suffixIcon,
+            VoidCallback? onSuffixTap,
+            int minLines = 1,
+            int maxLines = 1,
+            TextInputType? keyboardType,
+          }) {
+            return TextField(
+              controller: controller,
+              minLines: minLines,
+              maxLines: maxLines,
+              keyboardType: keyboardType,
+              style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+              decoration: InputDecoration(
+                hintText: hintText,
+                hintStyle: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF94A3B8)),
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                suffixIcon: suffixIcon != null
+                    ? InkWell(
+                        onTap: onSuffixTap,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Icon(suffixIcon, size: 18, color: const Color(0xFF64748B)),
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFF7E84EC), width: 1.5),
+                ),
+              ),
+            );
+          }
+
+          Widget buildDropdown({
+            required String value,
+            required List<String> items,
+            required ValueChanged<String?> onChanged,
+          }) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: items.contains(value) ? value : items.first,
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: Color(0xFF64748B)),
+                  style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                  items: items.map((opt) {
+                    return DropdownMenuItem<String>(
+                      value: opt,
+                      child: Text(opt, overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: onChanged,
+                ),
+              ),
+            );
+          }
+
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 16,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 540, maxHeight: 720),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Dialog Header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          isEdit ? "Edit Event" : "Create Event",
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0F172A),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, size: 20, color: Color(0xFF64748B)),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+
+                  // Scrollable Form
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Event Title *
+                          buildLabel("Event Title *"),
+                          buildTextField(
+                            controller: titleCtrl,
+                            hintText: "Annual Tech Symposium",
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Type & Status Row
+                          LayoutBuilder(
+                            builder: (context, c) {
+                              if (c.maxWidth < 420) {
+                                return Column(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Type"),
+                                        buildDropdown(
+                                          value: selectedType,
+                                          items: typeOptions,
+                                          onChanged: (val) {
+                                            if (val != null) setDialogState(() => selectedType = val);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Status"),
+                                        buildDropdown(
+                                          value: selectedStatus,
+                                          items: statusOptions,
+                                          onChanged: (val) {
+                                            if (val != null) setDialogState(() => selectedStatus = val);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Type"),
+                                        buildDropdown(
+                                          value: selectedType,
+                                          items: typeOptions,
+                                          onChanged: (val) {
+                                            if (val != null) setDialogState(() => selectedType = val);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Status"),
+                                        buildDropdown(
+                                          value: selectedStatus,
+                                          items: statusOptions,
+                                          onChanged: (val) {
+                                            if (val != null) setDialogState(() => selectedStatus = val);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Start Date * & End Date Row
+                          LayoutBuilder(
+                            builder: (context, c) {
+                              if (c.maxWidth < 420) {
+                                return Column(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Start Date *"),
+                                        buildTextField(
+                                          controller: startDateCtrl,
+                                          hintText: "mm/dd/yyyy",
+                                          suffixIcon: Icons.calendar_today_outlined,
+                                          onSuffixTap: () => pickDate(startDateCtrl),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("End Date"),
+                                        buildTextField(
+                                          controller: endDateCtrl,
+                                          hintText: "mm/dd/yyyy",
+                                          suffixIcon: Icons.calendar_today_outlined,
+                                          onSuffixTap: () => pickDate(endDateCtrl),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Start Date *"),
+                                        buildTextField(
+                                          controller: startDateCtrl,
+                                          hintText: "mm/dd/yyyy",
+                                          suffixIcon: Icons.calendar_today_outlined,
+                                          onSuffixTap: () => pickDate(startDateCtrl),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("End Date"),
+                                        buildTextField(
+                                          controller: endDateCtrl,
+                                          hintText: "mm/dd/yyyy",
+                                          suffixIcon: Icons.calendar_today_outlined,
+                                          onSuffixTap: () => pickDate(endDateCtrl),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Time & Venue Row
+                          LayoutBuilder(
+                            builder: (context, c) {
+                              if (c.maxWidth < 420) {
+                                return Column(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Time"),
+                                        buildTextField(
+                                          controller: timeCtrl,
+                                          hintText: "--:-- --",
+                                          suffixIcon: Icons.access_time_rounded,
+                                          onSuffixTap: () => pickTime(timeCtrl),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Venue"),
+                                        buildTextField(
+                                          controller: venueCtrl,
+                                          hintText: "Auditorium, Hall A...",
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Time"),
+                                        buildTextField(
+                                          controller: timeCtrl,
+                                          hintText: "--:-- --",
+                                          suffixIcon: Icons.access_time_rounded,
+                                          onSuffixTap: () => pickTime(timeCtrl),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Venue"),
+                                        buildTextField(
+                                          controller: venueCtrl,
+                                          hintText: "Auditorium, Hall A...",
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Organizer & Capacity Row
+                          LayoutBuilder(
+                            builder: (context, c) {
+                              if (c.maxWidth < 420) {
+                                return Column(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Organizer"),
+                                        buildTextField(
+                                          controller: organizerCtrl,
+                                          hintText: "Department / Faculty",
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Capacity"),
+                                        buildTextField(
+                                          controller: capacityCtrl,
+                                          hintText: "0",
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Organizer"),
+                                        buildTextField(
+                                          controller: organizerCtrl,
+                                          hintText: "Department / Faculty",
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Capacity"),
+                                        buildTextField(
+                                          controller: capacityCtrl,
+                                          hintText: "0",
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Description
+                          buildLabel("Description"),
+                          buildTextField(
+                            controller: descCtrl,
+                            hintText: "Brief event description...",
+                            minLines: 3,
+                            maxLines: 4,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Actions Footer
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFF334155),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          child: Text(
+                            "Cancel",
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF7E84EC),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () {
+                            final title = titleCtrl.text.trim();
+                            final startDate = startDateCtrl.text.trim();
+
+                            if (title.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Please enter the Event Title."),
+                                  backgroundColor: Color(0xFFEF4444),
+                                ),
+                              );
+                              return;
+                            }
+                            if (startDate.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Please specify a Start Date."),
+                                  backgroundColor: Color(0xFFEF4444),
+                                ),
+                              );
+                              return;
+                            }
+
+                            setState(() {
+                              Color typeColor;
+                              Color typeBg;
+                              switch (selectedType) {
+                                case "Cultural":
+                                  typeColor = const Color(0xFF4F46E5);
+                                  typeBg = const Color(0xFFEEF2FF);
+                                  break;
+                                case "Workshop":
+                                  typeColor = const Color(0xFF7C3AED);
+                                  typeBg = const Color(0xFFF5F3FF);
+                                  break;
+                                case "Sports":
+                                  typeColor = const Color(0xFFEA580C);
+                                  typeBg = const Color(0xFFFFF7ED);
+                                  break;
+                                case "Seminar":
+                                  typeColor = const Color(0xFF0D9488);
+                                  typeBg = const Color(0xFFCCFBF1);
+                                  break;
+                                case "Technical":
+                                  typeColor = const Color(0xFF0284C7);
+                                  typeBg = const Color(0xFFE0F2FE);
+                                  break;
+                                case "Academic":
+                                default:
+                                  typeColor = const Color(0xFF2563EB);
+                                  typeBg = const Color(0xFFEFF6FF);
+                                  break;
+                              }
+
+                              if (isEdit) {
+                                initialData["title"] = title;
+                                initialData["type"] = selectedType;
+                                initialData["typeColor"] = typeColor;
+                                initialData["typeBg"] = typeBg;
+                                initialData["status"] = selectedStatus;
+                                initialData["date"] = startDate;
+                                initialData["startDate"] = startDate;
+                                initialData["endDate"] = endDateCtrl.text.trim();
+                                initialData["time"] = timeCtrl.text.trim();
+                                initialData["venue"] = venueCtrl.text.trim().isEmpty ? "Campus Hall" : venueCtrl.text.trim();
+                                initialData["capacity"] = capacityCtrl.text.trim().isEmpty ? "100" : capacityCtrl.text.trim();
+                                initialData["organizer"] = organizerCtrl.text.trim();
+                                initialData["description"] = descCtrl.text.trim();
+                                initialData["updated"] = "Today";
+                              } else {
+                                final newEvent = {
+                                  "id": "EVT-${1064 + _events.length}",
+                                  "title": title,
+                                  "type": selectedType,
+                                  "typeColor": typeColor,
+                                  "typeBg": typeBg,
+                                  "status": selectedStatus,
+                                  "date": startDate,
+                                  "startDate": startDate,
+                                  "endDate": endDateCtrl.text.trim(),
+                                  "time": timeCtrl.text.trim(),
+                                  "venue": venueCtrl.text.trim().isEmpty ? "Auditorium, Hall A" : venueCtrl.text.trim(),
+                                  "capacity": capacityCtrl.text.trim().isEmpty ? "100" : capacityCtrl.text.trim(),
+                                  "organizer": organizerCtrl.text.trim().isEmpty ? "Department / Faculty" : organizerCtrl.text.trim(),
+                                  "description": descCtrl.text.trim(),
+                                  "updated": "Today",
+                                };
+                                _events.insert(0, newEvent);
+                              }
+                            });
+
+                            Navigator.of(ctx).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isEdit
+                                      ? "Event '$title' updated successfully!"
+                                      : "Event '$title' created successfully!",
+                                ),
+                                backgroundColor: const Color(0xFF10B981),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                          child: Text(
+                            isEdit ? "Save Changes" : "Create Event",
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -263,7 +857,7 @@ class _CampusEventsScreenState extends State<CampusEventsScreen> {
       category: "Campus Life",
       onBack: widget.onBack ?? (Navigator.canPop(context) ? () => Navigator.pop(context) : null),
       children: [
-        // 1. Blueprint Hero Banner with View Only lock badge
+        // 1. Blueprint Hero Banner with Create Event action
         BlueprintHeroBanner(
           breadcrumb: "Home  ›  Campus Life  ›  Campus Events",
           category: "CAMPUS LIFE",
@@ -273,46 +867,42 @@ class _CampusEventsScreenState extends State<CampusEventsScreen> {
           title: "Campus Events",
           subtitle: "College and department events, seminars, workshops, cultural and alumni events.",
           watermarkIcon: Icons.celebration_rounded,
-          action: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+          action: ElevatedButton.icon(
+            onPressed: () => _showCreateEventDialog(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF1E1B4B),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.lock_outline, size: 13, color: Colors.white),
-                const SizedBox(width: 5),
-                Text(
-                  "View only",
-                  style: GoogleFonts.poppins(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+            icon: const Icon(Icons.add, size: 16, color: Color(0xFF1E1B4B)),
+            label: Text(
+              "Create Event",
+              style: GoogleFonts.poppins(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF1E1B4B),
+              ),
             ),
           ),
         ),
         const SizedBox(height: 18),
 
-        // 2. Status summary tabs (All 3, Draft 0, Published 3, Completed 0, Cancelled 0)
+        // 2. Status summary tabs (Dynamic counts)
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              _statusTab("All", 3),
+              _statusTab("All", _events.length),
               const SizedBox(width: 8),
-              _statusTab("Draft", 0),
+              _statusTab("Draft", _events.where((e) => e["status"] == "Draft").length),
               const SizedBox(width: 8),
-              _statusTab("Published", 3),
+              _statusTab("Published", _events.where((e) => e["status"] == "Published").length),
               const SizedBox(width: 8),
-              _statusTab("Completed", 0),
+              _statusTab("Completed", _events.where((e) => e["status"] == "Completed").length),
               const SizedBox(width: 8),
-              _statusTab("Cancelled", 0),
+              _statusTab("Cancelled", _events.where((e) => e["status"] == "Cancelled").length),
             ],
           ),
         ),
@@ -378,6 +968,22 @@ class _CampusEventsScreenState extends State<CampusEventsScreen> {
                       child: Text(
                         "${filteredEvents.length} records",
                         style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF475569)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton.icon(
+                      onPressed: () => _showCreateEventDialog(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF7E84EC),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      icon: const Icon(Icons.add, size: 16),
+                      label: Text(
+                        "Create Event",
+                        style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
@@ -811,131 +1417,385 @@ class _ClubsScreenState extends State<ClubsScreen> {
   void _showClubDetailsDialog(Map<String, dynamic> club) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEEF2FF),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.groups_outlined, color: Color(0xFF4F46E5), size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(club["name"] as String, style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700)),
-                  Text(club["category"] as String, style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF64748B))),
-                ],
-              ),
-            ),
-          ],
-        ),
-        content: Container(
-          width: double.maxFinite,
-          constraints: const BoxConstraints(maxWidth: 440),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final isMember = club["isMember"] == true;
+          final category = club["category"] as String? ?? "Technical";
+          final status = club["status"] as String? ?? "Active";
+          final membersCount = int.tryParse(club["members"]?.toString() ?? "1") ?? 1;
+
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 16,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top Tags & Close Button
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: club["categoryBg"] as Color? ?? const Color(0xFFEEF2FF),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            category,
+                            style: GoogleFonts.poppins(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: club["categoryColor"] as Color? ?? const Color(0xFF4F46E5),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDCFCE7),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            status,
+                            style: GoogleFonts.poppins(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF15803D),
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(Icons.close, size: 20, color: Color(0xFF64748B)),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Club Title
+                    Text(
+                      club["name"] as String? ?? "Club Name",
+                      style: GoogleFonts.poppins(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Club Description
+                    Text(
+                      club["description"] as String? ??
+                          "To encourage students to explore technology, creative thinking, and collaborative project development. Open to all students.",
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: const Color(0xFF475569),
+                        height: 1.55,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // 2x2 Info Grid Card (Matching Image 1)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFBFBF9),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFF1F0E8)),
+                      ),
+                      child: Column(
                         children: [
-                          Text("Club Lead", style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF64748B))),
-                          const SizedBox(height: 2),
-                          Text(club["lead"] as String, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A))),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Student Lead",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.person_outline, size: 16, color: Color(0xFF475569)),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            club["lead"] as String? ?? "bala",
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF0F172A),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Faculty Advisor",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.auto_awesome, size: 15, color: Color(0xFFD97706)),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            club["advisor"] as String? ?? "Dr. Lakshmi Sundaram",
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF0F172A),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Current Members",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.people_outline, size: 16, color: Color(0xFF059669)),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            "$membersCount students",
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF0F172A),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Meeting Venue",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Padding(
+                                          padding: EdgeInsets.only(top: 1),
+                                          child: Icon(Icons.location_on_outlined, size: 16, color: Color(0xFFDC2626)),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            club["venue"] as String? ?? "Computer Science Lab – Block B",
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF0F172A),
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(color: const Color(0xFFDCFCE7), borderRadius: BorderRadius.circular(6)),
-                        child: Text("${club["members"]} Members", style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF15803D))),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Next Activity / Schedule Card (Matching Image 1)
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    const Icon(Icons.event_available_rounded, size: 16, color: Color(0xFF64748B)),
-                    const SizedBox(width: 6),
-                    Text("Activity: ${club["activity"]}", style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF334155), fontWeight: FontWeight.w500)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.access_time_rounded, size: 16, color: Color(0xFF475569)),
+                              const SizedBox(width: 8),
+                              Text(
+                                "NEXT ACTIVITY / SCHEDULE",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF64748B),
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const Spacer(),
+                              InkWell(
+                                onTap: () => _showChangeScheduleDialog(club),
+                                child: Text(
+                                  "Change",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1E1B4B),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            club["activity"] as String? ?? "Every Saturday – 10:00 AM",
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                    const SizedBox(height: 16),
+
+                    // Footer Action: Leave Club / Join Club
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: isMember ? const Color(0xFF0F172A) : Colors.white,
+                          backgroundColor: isMember ? Colors.white : const Color(0xFF1E1B4B),
+                          side: BorderSide(color: isMember ? const Color(0xFFCBD5E1) : const Color(0xFF1E1B4B)),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            if (isMember) {
+                              club["isMember"] = false;
+                              final c = int.tryParse(club["members"]?.toString() ?? "1") ?? 1;
+                              club["members"] = (c > 0 ? c - 1 : 0).toString();
+                            } else {
+                              club["isMember"] = true;
+                              final c = int.tryParse(club["members"]?.toString() ?? "0") ?? 0;
+                              club["members"] = (c + 1).toString();
+                            }
+                          });
+                          Navigator.of(ctx).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                isMember ? "You have left ${club["name"]}." : "You joined ${club["name"]}!",
+                              ),
+                              backgroundColor: isMember ? const Color(0xFF475569) : const Color(0xFF10B981),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                        child: Text(
+                          isMember ? "Leave Club" : "Join Club",
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                const Divider(height: 1, color: Color(0xFFE2E8F0)),
-                const SizedBox(height: 12),
-                Text("About the Community", style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF94A3B8))),
-                const SizedBox(height: 4),
-                Text(
-                  "Student-run club hosting workshops, hackathons, guest speakers, and project showcases across the academic calendar.",
-                  style: GoogleFonts.poppins(fontSize: 12.5, height: 1.45, color: const Color(0xFF475569)),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text("Close", style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _showEditClubMembershipDialog(club);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF141938), foregroundColor: Colors.white),
-            child: const Text("Edit Membership"),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  void _showEditClubMembershipDialog(Map<String, dynamic> club) {
-    final roleCtrl = TextEditingController(text: "Active Member");
-    final interestCtrl = TextEditingController(text: "Competitive programming, open-source projects");
-
+  void _showChangeScheduleDialog(Map<String, dynamic> club, {bool fromDetails = true}) {
+    final scheduleCtrl = TextEditingController(text: club["activity"] as String? ?? "Every Saturday – 10:00 AM");
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text("Edit Club Participation", style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16)),
-        content: Container(
-          width: double.maxFinite,
-          constraints: const BoxConstraints(maxWidth: 440),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: roleCtrl,
-                  decoration: const InputDecoration(labelText: "Your Role / Contribution", border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: interestCtrl,
-                  maxLines: 2,
-                  decoration: const InputDecoration(labelText: "Interest Focus Areas", border: OutlineInputBorder()),
-                ),
-              ],
-            ),
+        title: Text(
+          "Update Meeting Schedule",
+          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
+        content: TextField(
+          controller: scheduleCtrl,
+          decoration: const InputDecoration(
+            labelText: "Next Activity / Schedule",
+            hintText: "e.g. Every Saturday – 10:00 AM",
+            border: OutlineInputBorder(),
           ),
         ),
         actions: [
@@ -944,25 +1804,521 @@ class _ClubsScreenState extends State<ClubsScreen> {
             child: Text("Cancel", style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1E1B4B),
+              foregroundColor: Colors.white,
+            ),
             onPressed: () {
+              final newSched = scheduleCtrl.text.trim();
+              if (newSched.isNotEmpty) {
+                setState(() {
+                  club["activity"] = newSched;
+                });
+              }
               Navigator.pop(ctx);
+              if (fromDetails) {
+                Navigator.pop(context); // close parent dialog to refresh
+                _showClubDetailsDialog(club);
+              }
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text("Membership preferences for '${club["name"]}' saved!"),
-                  backgroundColor: const Color(0xFF15803D),
-                  behavior: SnackBarBehavior.floating,
+                const SnackBar(
+                  content: Text("Club meeting schedule updated!"),
+                  backgroundColor: Color(0xFF10B981),
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF141938), foregroundColor: Colors.white),
-            child: Text("Save Preferences", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+            child: const Text("Save"),
           ),
         ],
       ),
     );
   }
 
+  void _showEditClubMembershipDialog(Map<String, dynamic> club) {
+    _showChangeScheduleDialog(club, fromDetails: false);
+  }
+
+  /// Start a Campus Club Dialog (Matching Image 2)
+  void _showStartClubDialog() {
+    final nameCtrl = TextEditingController();
+    final scheduleCtrl = TextEditingController(text: "Every Saturday – 10:00 AM");
+    final venueCtrl = TextEditingController(text: "Computer Science Lab – Block B");
+    final missionCtrl = TextEditingController();
+
+    String selectedCategory = "Technical";
+    String selectedLead = "bala";
+    String selectedAdvisor = "Dr. Lakshmi Sundaram";
+
+    final categoryOptions = const [
+      "Technical",
+      "Cultural",
+      "Social",
+      "Innovation",
+      "Sports",
+      "Literary",
+    ];
+
+    final leadOptions = const [
+      "bala",
+      "Arjun Varma",
+      "Meera Nair",
+      "Harish Patel",
+      "Anand Kumar",
+    ];
+
+    final advisorOptions = const [
+      "Dr. Lakshmi Sundaram",
+      "Dr. K. Saravanan",
+      "Dr. P. Ramanathan",
+      "Dr. S. Meenakshi",
+    ];
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          Widget buildLabel(String text) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                text,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF475569),
+                  letterSpacing: 0.5,
+                ),
+              ),
+            );
+          }
+
+          Widget buildTextField({
+            required TextEditingController controller,
+            required String hintText,
+            int minLines = 1,
+            int maxLines = 1,
+          }) {
+            return TextField(
+              controller: controller,
+              minLines: minLines,
+              maxLines: maxLines,
+              style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+              decoration: InputDecoration(
+                hintText: hintText,
+                hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFF312E81), width: 1.5),
+                ),
+              ),
+            );
+          }
+
+          Widget buildDropdown({
+            required String value,
+            required List<String> items,
+            required ValueChanged<String?> onChanged,
+          }) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: items.contains(value) ? value : items.first,
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: Color(0xFF64748B)),
+                  style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                  items: items.map((opt) {
+                    return DropdownMenuItem<String>(
+                      value: opt,
+                      child: Text(opt, overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: onChanged,
+                ),
+              ),
+            );
+          }
+
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 16,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520, maxHeight: 720),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Start a Campus Club",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF0F172A),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                "Register a new student club with activities and faculty guidance.",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, size: 20, color: Color(0xFF64748B)),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+
+                  // Scrollable Form
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Club Name *
+                          buildLabel("CLUB NAME *"),
+                          buildTextField(
+                            controller: nameCtrl,
+                            hintText: "e.g. AI Builders Club, Fine Arts Society",
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Category *
+                          buildLabel("CATEGORY *"),
+                          buildDropdown(
+                            value: selectedCategory,
+                            items: categoryOptions,
+                            onChanged: (val) {
+                              if (val != null) setDialogState(() => selectedCategory = val);
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Student Lead * & Faculty Advisor Row
+                          LayoutBuilder(
+                            builder: (context, c) {
+                              if (c.maxWidth < 420) {
+                                return Column(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("STUDENT LEAD *"),
+                                        buildDropdown(
+                                          value: selectedLead,
+                                          items: leadOptions,
+                                          onChanged: (val) {
+                                            if (val != null) setDialogState(() => selectedLead = val);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("FACULTY ADVISOR"),
+                                        buildDropdown(
+                                          value: selectedAdvisor,
+                                          items: advisorOptions,
+                                          onChanged: (val) {
+                                            if (val != null) setDialogState(() => selectedAdvisor = val);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("STUDENT LEAD *"),
+                                        buildDropdown(
+                                          value: selectedLead,
+                                          items: leadOptions,
+                                          onChanged: (val) {
+                                            if (val != null) setDialogState(() => selectedLead = val);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("FACULTY ADVISOR"),
+                                        buildDropdown(
+                                          value: selectedAdvisor,
+                                          items: advisorOptions,
+                                          onChanged: (val) {
+                                            if (val != null) setDialogState(() => selectedAdvisor = val);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Meeting Schedule * & Meeting Venue Row
+                          LayoutBuilder(
+                            builder: (context, c) {
+                              if (c.maxWidth < 420) {
+                                return Column(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("MEETING SCHEDULE *"),
+                                        buildTextField(
+                                          controller: scheduleCtrl,
+                                          hintText: "e.g. Weekly contest — Sat",
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("MEETING VENUE"),
+                                        buildTextField(
+                                          controller: venueCtrl,
+                                          hintText: "e.g. CSE Lab 2 / Block B",
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("MEETING SCHEDULE *"),
+                                        buildTextField(
+                                          controller: scheduleCtrl,
+                                          hintText: "e.g. Weekly contest — Sat",
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("MEETING VENUE"),
+                                        buildTextField(
+                                          controller: venueCtrl,
+                                          hintText: "e.g. CSE Lab 2 / Block B",
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Club Mission / About
+                          buildLabel("CLUB MISSION / ABOUT"),
+                          buildTextField(
+                            controller: missionCtrl,
+                            hintText: "What does this club do? Who should join?",
+                            minLines: 3,
+                            maxLines: 4,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Actions Footer
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF1E293B),
+                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: Text(
+                            "Cancel",
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E2C9B),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () {
+                            final name = nameCtrl.text.trim();
+                            final schedule = scheduleCtrl.text.trim();
+
+                            if (name.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Please enter the Club Name."),
+                                  backgroundColor: Color(0xFFEF4444),
+                                ),
+                              );
+                              return;
+                            }
+                            if (schedule.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Please provide a Meeting Schedule."),
+                                  backgroundColor: Color(0xFFEF4444),
+                                ),
+                              );
+                              return;
+                            }
+
+                            Color catColor;
+                            Color catBg;
+                            switch (selectedCategory) {
+                              case "Cultural":
+                                catColor = const Color(0xFF059669);
+                                catBg = const Color(0xFFECFDF5);
+                                break;
+                              case "Social":
+                                catColor = const Color(0xFF2563EB);
+                                catBg = const Color(0xFFEFF6FF);
+                                break;
+                              case "Innovation":
+                                catColor = const Color(0xFFD97706);
+                                catBg = const Color(0xFFFFFBEB);
+                                break;
+                              case "Sports":
+                                catColor = const Color(0xFFEA580C);
+                                catBg = const Color(0xFFFFF7ED);
+                                break;
+                              case "Technical":
+                              default:
+                                catColor = const Color(0xFF4F46E5);
+                                catBg = const Color(0xFFEEF2FF);
+                                break;
+                            }
+
+                            final newClub = {
+                              "name": name,
+                              "category": selectedCategory,
+                              "categoryColor": catColor,
+                              "categoryBg": catBg,
+                              "members": "1",
+                              "lead": selectedLead,
+                              "advisor": selectedAdvisor,
+                              "venue": venueCtrl.text.trim().isEmpty ? "Campus Lab / Block B" : venueCtrl.text.trim(),
+                              "activity": schedule,
+                              "description": missionCtrl.text.trim().isEmpty
+                                  ? "A student club focused on $selectedCategory excellence, practical learning, and campus collaborative initiatives."
+                                  : missionCtrl.text.trim(),
+                              "isMember": true,
+                              "status": "Active",
+                            };
+
+                            setState(() {
+                              _clubs.insert(0, newClub);
+                            });
+
+                            Navigator.of(ctx).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Club \"$name\" registered successfully!"),
+                                backgroundColor: const Color(0xFF10B981),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "Create Club",
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   final List<Map<String, dynamic>> _clubs = [
+    {
+      "name": "AI & Innovation Club",
+      "category": "Technical",
+      "categoryColor": Color(0xFF4F46E5),
+      "categoryBg": Color(0xFFEEF2FF),
+      "members": "1",
+      "lead": "bala",
+      "advisor": "Dr. Lakshmi Sundaram",
+      "venue": "Computer Science Lab – Block B",
+      "activity": "Every Saturday – 10:00 AM",
+      "description":
+          "To encourage students to explore Artificial Intelligence, Machine Learning, Web Development, Flutter, and emerging technologies through workshops, coding competitions, project development, and collaborative learning. Open to all interested students.",
+      "isMember": true,
+      "status": "Active",
+    },
     {
       "name": "Coding Club",
       "category": "Technical",
@@ -970,7 +2326,12 @@ class _ClubsScreenState extends State<ClubsScreen> {
       "categoryBg": Color(0xFFEEF2FF),
       "members": "40",
       "lead": "Arjun Varma",
+      "advisor": "Dr. Lakshmi Sundaram",
+      "venue": "Lab 3 – Tech Block",
       "activity": "Weekly contest — Sat",
+      "description": "Weekly algorithm competitions, open source development, and code reviews.",
+      "isMember": false,
+      "status": "Active",
     },
     {
       "name": "Robotics Society",
@@ -979,7 +2340,12 @@ class _ClubsScreenState extends State<ClubsScreen> {
       "categoryBg": Color(0xFFEEF2FF),
       "members": "77",
       "lead": "Meera Nair",
+      "advisor": "Dr. K. Saravanan",
+      "venue": "Robotics Workshop, Ground Floor",
       "activity": "Weekly contest — Sat",
+      "description": "Designing autonomous robots, drone prototypes, and embedded IoT systems.",
+      "isMember": false,
+      "status": "Active",
     },
     {
       "name": "AI & Data Science Circle",
@@ -988,7 +2354,12 @@ class _ClubsScreenState extends State<ClubsScreen> {
       "categoryBg": Color(0xFFEEF2FF),
       "members": "114",
       "lead": "Harish Patel",
+      "advisor": "Dr. P. Ramanathan",
+      "venue": "Data Lab 2",
       "activity": "Weekly contest — Sat",
+      "description": "Deep learning models, Kaggle competitions, and NLP/CV research sprints.",
+      "isMember": false,
+      "status": "Active",
     },
     {
       "name": "Tamil Mandram",
@@ -997,7 +2368,12 @@ class _ClubsScreenState extends State<ClubsScreen> {
       "categoryBg": Color(0xFFECFDF5),
       "members": "151",
       "lead": "Kavya Gupta",
+      "advisor": "Dr. S. Meenakshi",
+      "venue": "Central Auditorium",
       "activity": "Weekly contest — Sat",
+      "description": "Literature, debate, poetry, and cultural celebration of Tamil language and heritage.",
+      "isMember": false,
+      "status": "Active",
     },
     {
       "name": "Music Club",
@@ -1006,7 +2382,12 @@ class _ClubsScreenState extends State<ClubsScreen> {
       "categoryBg": Color(0xFFECFDF5),
       "members": "188",
       "lead": "Nikhil Sharma",
+      "advisor": "Dr. S. Meenakshi",
+      "venue": "Amphitheater",
       "activity": "Weekly contest — Sat",
+      "description": "Vocalists, instrumentalists, and sound designers creating campus concerts and band shows.",
+      "isMember": false,
+      "status": "Active",
     },
     {
       "name": "NSS Unit",
@@ -1015,7 +2396,12 @@ class _ClubsScreenState extends State<ClubsScreen> {
       "categoryBg": Color(0xFFEFF6FF),
       "members": "65",
       "lead": "Pooja Das",
+      "advisor": "Dr. K. Saravanan",
+      "venue": "Main Quadrangle",
       "activity": "Weekly contest — Sat",
+      "description": "Community outreach, cleanliness drives, green energy programs, and blood donation camps.",
+      "isMember": false,
+      "status": "Active",
     },
     {
       "name": "Entrepreneurship Cell",
@@ -1024,7 +2410,12 @@ class _ClubsScreenState extends State<ClubsScreen> {
       "categoryBg": Color(0xFFFFFBEB),
       "members": "102",
       "lead": "Sanjay Balaji",
+      "advisor": "Dr. Lakshmi Sundaram",
+      "venue": "Incubation Center Room 102",
       "activity": "Weekly contest — Sat",
+      "description": "Pitch events, VC office hours, startup incubator accelerators, and business plan bootcamps.",
+      "isMember": false,
+      "status": "Active",
     },
   ];
 
@@ -1051,8 +2442,8 @@ class _ClubsScreenState extends State<ClubsScreen> {
       category: "Campus Life",
       onBack: widget.onBack ?? (Navigator.canPop(context) ? () => Navigator.pop(context) : null),
       children: [
-        // 1. Blueprint Hero Banner
-        const BlueprintHeroBanner(
+        // 1. Blueprint Hero Banner with Start a Club action
+        BlueprintHeroBanner(
           breadcrumb: "Home  ›  Campus Life  ›  Clubs",
           category: "CAMPUS LIFE",
           phase: "Phase 3",
@@ -1061,6 +2452,21 @@ class _ClubsScreenState extends State<ClubsScreen> {
           title: "Clubs",
           subtitle: "Technical, cultural and social clubs, membership and activities.",
           watermarkIcon: Icons.flag_outlined,
+          action: ElevatedButton.icon(
+            onPressed: _showStartClubDialog,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF1E3A8A),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            icon: const Icon(Icons.add_rounded, size: 18),
+            label: Text(
+              "Start a Club",
+              style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+          ),
         ),
         const SizedBox(height: 20),
 
@@ -1207,11 +2613,7 @@ class _ClubsScreenState extends State<ClubsScreen> {
                               ),
                               const Spacer(),
                               ElevatedButton(
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text("Start a club form opened.")),
-                                  );
-                                },
+                                onPressed: _showStartClubDialog,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primaryBlue,
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
@@ -1274,11 +2676,7 @@ class _ClubsScreenState extends State<ClubsScreen> {
                         ),
                         const SizedBox(width: 14),
                         ElevatedButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Start a club form opened.")),
-                            );
-                          },
+                          onPressed: _showStartClubDialog,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryBlue,
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -1667,6 +3065,243 @@ class _SportsScreenState extends State<SportsScreen> {
     );
   }
 
+  /// Register for Sports Trials Dialog (Matching Image 1)
+  void _showRegisterSportsTrialsDialog([String? defaultSport]) {
+    final positionCtrl = TextEditingController();
+    final experienceCtrl = TextEditingController();
+
+    final sportOptions = const [
+      "Badminton (Men & Women)",
+      "Cricket (Men)",
+      "Football / Soccer",
+      "Basketball (Men & Women)",
+      "Athletics / Track & Field",
+      "Table Tennis",
+      "Volleyball",
+      "Chess",
+    ];
+
+    String selectedSport = (defaultSport != null && sportOptions.contains(defaultSport))
+        ? defaultSport
+        : sportOptions.first;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 16,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Header
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Register for Sports Trials",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF0F172A),
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                "Select an active campus sport to register for upcoming team selection trials.",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: const Color(0xFF64748B),
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(Icons.close, size: 20, color: Color(0xFF64748B)),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // CHOOSE SPORT *
+                    Text(
+                      "CHOOSE SPORT *",
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF475569),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: selectedSport,
+                          icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: Color(0xFF64748B)),
+                          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                          items: sportOptions.map((s) {
+                            return DropdownMenuItem<String>(
+                              value: s,
+                              child: Text(s, overflow: TextOverflow.ellipsis),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setDialogState(() => selectedSport = val);
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // PLAYING POSITION / EVENT
+                    Text(
+                      "PLAYING POSITION / EVENT",
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF475569),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: positionCtrl,
+                      style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                      decoration: InputDecoration(
+                        hintText: "e.g. Forward, Opening Batsman, 100m Sprint, Point Guard",
+                        hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFF2E2C9B), width: 1.5),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // PAST EXPERIENCE
+                    Text(
+                      "PAST EXPERIENCE",
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF475569),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: experienceCtrl,
+                      style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                      decoration: InputDecoration(
+                        hintText: "e.g. School team captain, District level participant",
+                        hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFF2E2C9B), width: 1.5),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Actions Footer
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF1E293B),
+                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: Text(
+                            "Cancel",
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E2C9B),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () {
+                            Navigator.of(ctx).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Registered for $selectedSport selection trials!"),
+                                backgroundColor: const Color(0xFF10B981),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "Submit Registration",
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   final List<Map<String, dynamic>> _sports = [
     {
       "sport": "Cricket",
@@ -1738,8 +3373,8 @@ class _SportsScreenState extends State<SportsScreen> {
       category: "Campus Life",
       onBack: widget.onBack ?? (Navigator.canPop(context) ? () => Navigator.pop(context) : null),
       children: [
-        // 1. Blueprint Hero Banner
-        const BlueprintHeroBanner(
+        // 1. Blueprint Hero Banner with Register action
+        BlueprintHeroBanner(
           breadcrumb: "Home  ›  Campus Life  ›  Sports",
           category: "CAMPUS LIFE",
           phase: "Phase 3",
@@ -1748,6 +3383,21 @@ class _SportsScreenState extends State<SportsScreen> {
           title: "Sports",
           subtitle: "Teams, tournaments, registrations and achievements.",
           watermarkIcon: Icons.sports_soccer_outlined,
+          action: ElevatedButton.icon(
+            onPressed: () => _showRegisterSportsTrialsDialog(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF1E3A8A),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            icon: const Icon(Icons.add_rounded, size: 18),
+            label: Text(
+              "Register for Trials",
+              style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+          ),
         ),
         const SizedBox(height: 20),
 
@@ -1892,11 +3542,7 @@ class _SportsScreenState extends State<SportsScreen> {
                               ),
                               const Spacer(),
                               ElevatedButton(
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text("Register for sports trials modal opened.")),
-                                  );
-                                },
+                                onPressed: () => _showRegisterSportsTrialsDialog(),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primaryBlue,
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
@@ -1957,11 +3603,7 @@ class _SportsScreenState extends State<SportsScreen> {
                         ),
                         const SizedBox(width: 14),
                         ElevatedButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Register for sports trials modal opened.")),
-                            );
-                          },
+                          onPressed: () => _showRegisterSportsTrialsDialog(),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryBlue,
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -2286,7 +3928,7 @@ class _SportsScreenState extends State<SportsScreen> {
 }
 
 /// ─────────────────────────────────────────────────────────────────────────────
-/// Experience Passport Screen [P3] (Image 2)
+/// Experience Passport Screen [P3] (Images 2, 3, 4, 5)
 /// ─────────────────────────────────────────────────────────────────────────────
 class ExperiencePassportScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -2298,7 +3940,61 @@ class ExperiencePassportScreen extends StatefulWidget {
 
 class _ExperiencePassportScreenState extends State<ExperiencePassportScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _filter = "All";
+  String _categoryFilter = "All";
+  String _statusFilter = "Any status";
+
+  final List<Map<String, dynamic>> _activities = [
+    {
+      "id": "1",
+      "title": "Blood Donation Camp",
+      "category": "Volunteering",
+      "role": "Team Lead",
+      "organisation": "Event",
+      "dates": "Oct 2026",
+      "startDate": "October 2026",
+      "endDate": "October 2026",
+      "isCurrent": false,
+      "description": "Planting 1000 trees",
+      "evidenceLink": "https://chat.openai.com",
+      "status": "Verified",
+      "verifier": "by Dr. Meena Raghavan (Faculty), 15 Oct 2026",
+      "feedback": "",
+    },
+    {
+      "id": "2",
+      "title": "Smart India Hackathon 2026 - 1st Runner Up",
+      "category": "Competition",
+      "role": "Team Lead & ML Developer",
+      "organisation": "Ministry of Education & AICTE",
+      "dates": "Sep 2026 – Oct 2026",
+      "startDate": "September 2026",
+      "endDate": "October 2026",
+      "isCurrent": false,
+      "description":
+          "Built a real-time smart agriculture AI kit. Won ₹75,000 cash prize among 1,200 participating teams across India.",
+      "evidenceLink": "https://smartindiahackathon.gov.in",
+      "status": "Needs changes",
+      "verifier": "",
+      "feedback": "Dr. Meena Raghavan says: verify the link",
+    },
+    {
+      "id": "3",
+      "title": "National Cyber Security Hackathon - First Prize",
+      "category": "Competition",
+      "role": "Team Lead & Security Researcher",
+      "organisation": "IEEE Computer Society & IIT Madras",
+      "dates": "Aug 2026 – Sep 2026",
+      "startDate": "August 2026",
+      "endDate": "September 2026",
+      "isCurrent": false,
+      "description":
+          "Built an automated cloud vulnerability scanner with 98.4% accuracy. Secured 1st place among 120 national teams and received a ₹50,000 cash award.",
+      "evidenceLink": "",
+      "status": "Verified",
+      "verifier": "by Dr. Meena Raghavan (Faculty), 15 Oct 2026",
+      "feedback": "",
+    },
+  ];
 
   @override
   void dispose() {
@@ -2306,87 +4002,1603 @@ class _ExperiencePassportScreenState extends State<ExperiencePassportScreen> {
     super.dispose();
   }
 
+  void _showAddActivityDialog() {
+    final titleCtrl = TextEditingController();
+    final roleCtrl = TextEditingController();
+    final orgCtrl = TextEditingController();
+    final startCtrl = TextEditingController(text: "October 2026");
+    final endCtrl = TextEditingController(text: "October 2026");
+    final achieveCtrl = TextEditingController();
+    final linkCtrl = TextEditingController();
+
+    String selectedCategory = "Volunteering";
+    bool isCurrent = false;
+
+    final categories = ["Volunteering", "Competition", "Leadership", "Project", "Other"];
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 16,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520, maxHeight: 780),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Dialog Header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Add an activity",
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(Icons.close, size: 20, color: Color(0xFF64748B)),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+
+                  // Scrollable Form
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // What did you do?
+                          _buildFieldLabel("What did you do?"),
+                          TextField(
+                            controller: titleCtrl,
+                            style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                            decoration: _inputDecoration("e.g. Blood donation camp coordinator"),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Category & Your role
+                          LayoutBuilder(
+                            builder: (context, c) {
+                              if (c.maxWidth < 420) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    _buildFieldLabel("Category"),
+                                    _buildDropdown(
+                                      value: selectedCategory,
+                                      items: categories,
+                                      onChanged: (v) {
+                                        if (v != null) setDialogState(() => selectedCategory = v);
+                                      },
+                                    ),
+                                    const SizedBox(height: 16),
+                                    _buildFieldLabel("Your role"),
+                                    TextField(
+                                      controller: roleCtrl,
+                                      style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                                      decoration: _inputDecoration("e.g. Volunteer, Team lead"),
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _buildFieldLabel("Category"),
+                                        _buildDropdown(
+                                          value: selectedCategory,
+                                          items: categories,
+                                          onChanged: (v) {
+                                            if (v != null) setDialogState(() => selectedCategory = v);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _buildFieldLabel("Your role"),
+                                        TextField(
+                                          controller: roleCtrl,
+                                          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                                          decoration: _inputDecoration("e.g. Volunteer, Team lead"),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Organisation or event
+                          _buildFieldLabel("Organisation or event"),
+                          TextField(
+                            controller: orgCtrl,
+                            style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                            decoration: _inputDecoration(""),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Started & Ended
+                          LayoutBuilder(
+                            builder: (context, c) {
+                              if (c.maxWidth < 420) {
+                                return Column(
+                                  children: [
+                                    _buildFieldLabel("Started"),
+                                    TextField(
+                                      controller: startCtrl,
+                                      style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                                      decoration: _inputDecoration("---------- ----", icon: Icons.calendar_today_outlined),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    _buildFieldLabel("Ended"),
+                                    TextField(
+                                      controller: endCtrl,
+                                      enabled: !isCurrent,
+                                      style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                                      decoration: _inputDecoration("---------- ----", icon: Icons.calendar_today_outlined),
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _buildFieldLabel("Started"),
+                                        TextField(
+                                          controller: startCtrl,
+                                          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                                          decoration: _inputDecoration("---------- ----", icon: Icons.calendar_today_outlined),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _buildFieldLabel("Ended"),
+                                        TextField(
+                                          controller: endCtrl,
+                                          enabled: !isCurrent,
+                                          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                                          decoration: _inputDecoration("---------- ----", icon: Icons.calendar_today_outlined),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Checkbox: I am still doing this
+                          InkWell(
+                            onTap: () {
+                              setDialogState(() {
+                                isCurrent = !isCurrent;
+                                if (isCurrent) {
+                                  endCtrl.text = "Present";
+                                } else {
+                                  endCtrl.text = "October 2026";
+                                }
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                Checkbox(
+                                  value: isCurrent,
+                                  onChanged: (v) {
+                                    setDialogState(() {
+                                      isCurrent = v ?? false;
+                                      if (isCurrent) {
+                                        endCtrl.text = "Present";
+                                      } else {
+                                        endCtrl.text = "October 2026";
+                                      }
+                                    });
+                                  },
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                  activeColor: const Color(0xFF2E2C9B),
+                                ),
+                                Text(
+                                  "I am still doing this",
+                                  style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF334155)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // What did you achieve? (optional)
+                          _buildFieldLabel("What did you achieve? (optional)"),
+                          TextField(
+                            controller: achieveCtrl,
+                            minLines: 3,
+                            maxLines: 4,
+                            style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                            decoration: _inputDecoration(""),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Numbers help: people reached, funds raised, position won.",
+                            style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF94A3B8)),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Evidence link (optional)
+                          _buildFieldLabel("Evidence link (optional)"),
+                          TextField(
+                            controller: linkCtrl,
+                            style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                            decoration: _inputDecoration("https://"),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "A certificate, event page or post the verifier can open.",
+                            style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF94A3B8)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Actions Footer
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF1E293B),
+                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: Text(
+                            "Cancel",
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E2C9B),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () {
+                            final title = titleCtrl.text.trim();
+                            if (title.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Please enter what you did."),
+                                  backgroundColor: Color(0xFFEF4444),
+                                ),
+                              );
+                              return;
+                            }
+
+                            final startDate = startCtrl.text.trim();
+                            final endDate = isCurrent ? "Present" : endCtrl.text.trim();
+                            final dates = startDate == endDate ? startDate : "$startDate – $endDate";
+
+                            setState(() {
+                              _activities.insert(0, {
+                                "id": DateTime.now().millisecondsSinceEpoch.toString(),
+                                "title": title,
+                                "category": selectedCategory,
+                                "role": roleCtrl.text.trim().isEmpty ? "Participant" : roleCtrl.text.trim(),
+                                "organisation": orgCtrl.text.trim().isEmpty ? "Campus Event" : orgCtrl.text.trim(),
+                                "dates": dates.isEmpty ? "Oct 2026" : dates,
+                                "startDate": startDate,
+                                "endDate": endDate,
+                                "isCurrent": isCurrent,
+                                "description": achieveCtrl.text.trim(),
+                                "evidenceLink": linkCtrl.text.trim(),
+                                "status": "Waiting",
+                                "verifier": "",
+                                "feedback": "",
+                              });
+                            });
+
+                            Navigator.of(ctx).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Activity added to your Experience Passport!"),
+                                backgroundColor: Color(0xFF10B981),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "Add to passport",
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showEditActivityDialog(Map<String, dynamic> activity) {
+    final titleCtrl = TextEditingController(text: activity["title"] as String? ?? "");
+    final roleCtrl = TextEditingController(text: activity["role"] as String? ?? "");
+    final orgCtrl = TextEditingController(text: activity["organisation"] as String? ?? "");
+    final startCtrl = TextEditingController(text: activity["startDate"] as String? ?? "October 2026");
+    final endCtrl = TextEditingController(text: activity["endDate"] as String? ?? "October 2026");
+    final achieveCtrl = TextEditingController(text: activity["description"] as String? ?? "");
+    final linkCtrl = TextEditingController(text: activity["evidenceLink"] as String? ?? "");
+
+    String selectedCategory = activity["category"] as String? ?? "Volunteering";
+    bool isCurrent = activity["isCurrent"] == true;
+
+    final categories = ["Volunteering", "Competition", "Leadership", "Project", "Other"];
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 16,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520, maxHeight: 800),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Dialog Header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Edit activity",
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(Icons.close, size: 20, color: Color(0xFF64748B)),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+
+                  // Scrollable Form
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // What did you do?
+                          _buildFieldLabel("What did you do?"),
+                          TextField(
+                            controller: titleCtrl,
+                            style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                            decoration: _inputDecoration("e.g. Blood donation camp coordinator"),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Category & Your role
+                          LayoutBuilder(
+                            builder: (context, c) {
+                              if (c.maxWidth < 420) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    _buildFieldLabel("Category"),
+                                    _buildDropdown(
+                                      value: selectedCategory,
+                                      items: categories,
+                                      onChanged: (v) {
+                                        if (v != null) setDialogState(() => selectedCategory = v);
+                                      },
+                                    ),
+                                    const SizedBox(height: 16),
+                                    _buildFieldLabel("Your role"),
+                                    TextField(
+                                      controller: roleCtrl,
+                                      style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                                      decoration: _inputDecoration("Team Lead"),
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _buildFieldLabel("Category"),
+                                        _buildDropdown(
+                                          value: selectedCategory,
+                                          items: categories,
+                                          onChanged: (v) {
+                                            if (v != null) setDialogState(() => selectedCategory = v);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _buildFieldLabel("Your role"),
+                                        TextField(
+                                          controller: roleCtrl,
+                                          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                                          decoration: _inputDecoration("Team Lead"),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Organisation or event
+                          _buildFieldLabel("Organisation or event"),
+                          TextField(
+                            controller: orgCtrl,
+                            style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                            decoration: _inputDecoration("Event"),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Started & Ended
+                          LayoutBuilder(
+                            builder: (context, c) {
+                              if (c.maxWidth < 420) {
+                                return Column(
+                                  children: [
+                                    _buildFieldLabel("Started"),
+                                    TextField(
+                                      controller: startCtrl,
+                                      style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                                      decoration: _inputDecoration("October 2026", icon: Icons.calendar_today_outlined),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    _buildFieldLabel("Ended"),
+                                    TextField(
+                                      controller: endCtrl,
+                                      enabled: !isCurrent,
+                                      style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                                      decoration: _inputDecoration("October 2026", icon: Icons.calendar_today_outlined),
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _buildFieldLabel("Started"),
+                                        TextField(
+                                          controller: startCtrl,
+                                          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                                          decoration: _inputDecoration("October 2026", icon: Icons.calendar_today_outlined),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _buildFieldLabel("Ended"),
+                                        TextField(
+                                          controller: endCtrl,
+                                          enabled: !isCurrent,
+                                          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                                          decoration: _inputDecoration("October 2026", icon: Icons.calendar_today_outlined),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Checkbox: I am still doing this
+                          InkWell(
+                            onTap: () {
+                              setDialogState(() {
+                                isCurrent = !isCurrent;
+                                if (isCurrent) {
+                                  endCtrl.text = "Present";
+                                } else {
+                                  endCtrl.text = "October 2026";
+                                }
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                Checkbox(
+                                  value: isCurrent,
+                                  onChanged: (v) {
+                                    setDialogState(() {
+                                      isCurrent = v ?? false;
+                                      if (isCurrent) {
+                                        endCtrl.text = "Present";
+                                      } else {
+                                        endCtrl.text = "October 2026";
+                                      }
+                                    });
+                                  },
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                  activeColor: const Color(0xFF2E2C9B),
+                                ),
+                                Text(
+                                  "I am still doing this",
+                                  style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF334155)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // What did you achieve? (optional)
+                          _buildFieldLabel("What did you achieve? (optional)"),
+                          TextField(
+                            controller: achieveCtrl,
+                            minLines: 3,
+                            maxLines: 4,
+                            style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                            decoration: _inputDecoration("Planting 1000 trees"),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Numbers help: people reached, funds raised, position won.",
+                            style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF94A3B8)),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Evidence link (optional)
+                          _buildFieldLabel("Evidence link (optional)"),
+                          TextField(
+                            controller: linkCtrl,
+                            style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                            decoration: _inputDecoration("https://chat.openai.com"),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "A certificate, event page or post the verifier can open.",
+                            style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF94A3B8)),
+                          ),
+                          const SizedBox(height: 18),
+
+                          // Warning Note Box (Matching Image 4)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF3C7),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: const Color(0xFFFDE68A)),
+                            ),
+                            child: Text(
+                              "Saving changes sends this activity back for verification.",
+                              style: GoogleFonts.poppins(
+                                fontSize: 12.5,
+                                color: const Color(0xFF92400E),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Actions Footer
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF1E293B),
+                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: Text(
+                            "Cancel",
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E2C9B),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () {
+                            final title = titleCtrl.text.trim();
+                            if (title.isEmpty) return;
+
+                            final startDate = startCtrl.text.trim();
+                            final endDate = isCurrent ? "Present" : endCtrl.text.trim();
+                            final dates = startDate == endDate ? startDate : "$startDate – $endDate";
+
+                            setState(() {
+                              activity["title"] = title;
+                              activity["category"] = selectedCategory;
+                              activity["role"] = roleCtrl.text.trim();
+                              activity["organisation"] = orgCtrl.text.trim();
+                              activity["dates"] = dates;
+                              activity["startDate"] = startDate;
+                              activity["endDate"] = endDate;
+                              activity["isCurrent"] = isCurrent;
+                              activity["description"] = achieveCtrl.text.trim();
+                              activity["evidenceLink"] = linkCtrl.text.trim();
+                              if (activity["status"] == "Needs changes") {
+                                activity["status"] = "Waiting";
+                                activity["feedback"] = "";
+                              }
+                            });
+
+                            Navigator.of(ctx).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Activity updated and sent for verification!"),
+                                backgroundColor: Color(0xFF10B981),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "Save changes",
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showCertificateDialog(Map<String, dynamic> activity) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.verified_rounded, color: Color(0xFF059669), size: 24),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                "Verified Certificate",
+                style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              activity["title"] as String? ?? "Activity",
+              style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "${activity["role"]} · ${activity["organisation"]}",
+              style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF64748B)),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Verification Details", style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF64748B))),
+                  const SizedBox(height: 4),
+                  Text(activity["verifier"] as String? ?? "Verified by Faculty", style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF334155))),
+                  const SizedBox(height: 4),
+                  Text("Credential ID: PASSPORT-EXP-${activity["id"] ?? "2026"}", style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF4F46E5), fontWeight: FontWeight.w500)),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text("Close", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteActivity(Map<String, dynamic> act) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          "Delete Activity?",
+          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          "Are you sure you want to remove \"${act["title"]}\" from your Experience Passport?",
+          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF475569)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text("Cancel", style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              final idx = _activities.indexOf(act);
+              setState(() {
+                _activities.remove(act);
+              });
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("\"${act["title"]}\" removed from passport."),
+                  action: SnackBarAction(
+                    label: "Undo",
+                    textColor: Colors.white,
+                    onPressed: () {
+                      setState(() {
+                        if (idx >= 0 && idx <= _activities.length) {
+                          _activities.insert(idx, act);
+                        } else {
+                          _activities.add(act);
+                        }
+                      });
+                    },
+                  ),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            child: const Text("Delete"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _buildFieldLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text(
+        text,
+        style: GoogleFonts.poppins(
+          fontSize: 12.5,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF1E293B),
+        ),
+      ),
+    );
+  }
+
+  static InputDecoration _inputDecoration(String hintText, {IconData? icon}) {
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      suffixIcon: icon != null ? Icon(icon, size: 18, color: const Color(0xFF64748B)) : null,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF2E2C9B), width: 1.5),
+      ),
+    );
+  }
+
+  static Widget _buildDropdown({
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          value: items.contains(value) ? value : items.first,
+          icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: Color(0xFF64748B)),
+          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+          items: items.map((opt) {
+            return DropdownMenuItem<String>(
+              value: opt,
+              child: Text(opt, overflow: TextOverflow.ellipsis),
+            );
+          }).toList(),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final query = _searchController.text.trim().toLowerCase();
+
+    final filtered = _activities.where((a) {
+      final matchesQuery = query.isEmpty ||
+          (a["title"] as String).toLowerCase().contains(query) ||
+          (a["role"] as String).toLowerCase().contains(query) ||
+          (a["organisation"] as String).toLowerCase().contains(query) ||
+          (a["description"] as String).toLowerCase().contains(query);
+
+      final matchesCategory = _categoryFilter == "All" || a["category"] == _categoryFilter;
+      final matchesStatus = _statusFilter == "Any status" || a["status"] == _statusFilter;
+
+      return matchesQuery && matchesCategory && matchesStatus;
+    }).toList();
+
+    final totalCount = _activities.length;
+    final verifiedCount = _activities.where((a) => a["status"] == "Verified").length;
+    final waitingCount = _activities.where((a) => a["status"] == "Waiting").length;
+    final needChangesCount = _activities.where((a) => a["status"] == "Needs changes").length;
+
     return PortalPageBody(
       title: "Experience Passport",
       category: "Campus Life",
       onBack: widget.onBack ?? (Navigator.canPop(context) ? () => Navigator.pop(context) : null),
       children: [
-        // 1. Blueprint Hero Banner
-        const BlueprintHeroBanner(
+        // 1. Blueprint Hero Banner (Matching Image 2)
+        BlueprintHeroBanner(
           breadcrumb: "Home  ›  Campus Life  ›  Experience Passport",
           category: "CAMPUS LIFE",
           phase: "Phase 3",
           isMvp: false,
           icon: Icons.star_rounded,
           title: "Experience Passport",
-          subtitle: "Volunteering, leadership, competitions, conferences and social service — verified.",
+          subtitle: "Record volunteering, leadership, competitions and more; faculty verify each entry.",
           watermarkIcon: Icons.star_rounded,
+          action: ElevatedButton.icon(
+            onPressed: _showAddActivityDialog,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF1E3A8A),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            icon: const Icon(Icons.add_rounded, size: 18),
+            label: Text(
+              "Add Activity",
+              style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+          ),
         ),
         const SizedBox(height: 20),
 
-        // 2. Responsive Search & Action Bar (Image 4)
-        ResponsiveSearchBar(
-          controller: _searchController,
-          hintText: "Search experience passport...",
-          filterValue: _filter,
-          filterOptions: const ["All", "Volunteering", "Leadership", "Competitions"],
-          onFilterChanged: (val) {
-            if (val != null) setState(() => _filter = val);
-          },
-          actionLabel: "Add activity",
-          onActionPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Add activity form opened.")),
-            );
+        // 2. 4 Metric Cards (Matching Image 2)
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final w = constraints.maxWidth;
+            if (w > 820) {
+              return Row(
+                children: [
+                  Expanded(
+                    child: _buildMetricCard("Activities", "$totalCount", Icons.bookmark_outline_rounded, const Color(0xFFEEF2FF), const Color(0xFF4F46E5)),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: _buildMetricCard("Verified", "$verifiedCount", Icons.verified_user_outlined, const Color(0xFFECFDF5), const Color(0xFF059669)),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: _buildMetricCard("Waiting", "$waitingCount", Icons.access_time_rounded, const Color(0xFFFEF3C7), const Color(0xFFD97706)),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: _buildMetricCard("Need changes", "$needChangesCount", Icons.refresh_rounded, const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
+                  ),
+                ],
+              );
+            } else if (w > 480) {
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildMetricCard("Activities", "$totalCount", Icons.bookmark_outline_rounded, const Color(0xFFEEF2FF), const Color(0xFF4F46E5)),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: _buildMetricCard("Verified", "$verifiedCount", Icons.verified_user_outlined, const Color(0xFFECFDF5), const Color(0xFF059669)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildMetricCard("Waiting", "$waitingCount", Icons.access_time_rounded, const Color(0xFFFEF3C7), const Color(0xFFD97706)),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: _buildMetricCard("Need changes", "$needChangesCount", Icons.refresh_rounded, const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            } else {
+              return Column(
+                children: [
+                  _buildMetricCard("Activities", "$totalCount", Icons.bookmark_outline_rounded, const Color(0xFFEEF2FF), const Color(0xFF4F46E5)),
+                  const SizedBox(height: 12),
+                  _buildMetricCard("Verified", "$verifiedCount", Icons.verified_user_outlined, const Color(0xFFECFDF5), const Color(0xFF059669)),
+                  const SizedBox(height: 12),
+                  _buildMetricCard("Waiting", "$waitingCount", Icons.access_time_rounded, const Color(0xFFFEF3C7), const Color(0xFFD97706)),
+                  const SizedBox(height: 12),
+                  _buildMetricCard("Need changes", "$needChangesCount", Icons.refresh_rounded, const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
+                ],
+              );
+            }
           },
         ),
         const SizedBox(height: 20),
 
-        // 3. Light Blueprint Grid Empty State (Image 2)
+        // 3. Search & Filter Bar (Matching Image 2)
         Container(
-          width: double.infinity,
-          height: 260,
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
-          child: Stack(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _LightBlueprintGridPainter(),
+              // Search input
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
-              ),
-              Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                child: Row(
                   children: [
-                    Text(
-                      "No matching records",
-                      style: GoogleFonts.poppins(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF334155),
+                    const Icon(Icons.search, size: 20, color: Color(0xFF64748B)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (_) => setState(() {}),
+                        style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF1E293B)),
+                        decoration: InputDecoration(
+                          hintText: "Search your activities...",
+                          hintStyle: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF94A3B8)),
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    if (_searchController.text.isNotEmpty)
+                      GestureDetector(
+                        onTap: () => setState(() => _searchController.clear()),
+                        child: const Icon(Icons.close, size: 16, color: Color(0xFF94A3B8)),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Dropdown Filters Row
+              LayoutBuilder(
+                builder: (context, c) {
+                  if (c.maxWidth < 620) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildFilterDropdown(
+                          value: _categoryFilter,
+                          items: const ["All", "Volunteering", "Competition", "Leadership", "Project"],
+                          onChanged: (v) {
+                            if (v != null) setState(() => _categoryFilter = v);
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        _buildFilterDropdown(
+                          value: _statusFilter,
+                          items: const ["Any status", "Verified", "Waiting", "Needs changes"],
+                          onChanged: (v) {
+                            if (v != null) setState(() => _statusFilter = v);
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton.icon(
+                          onPressed: _showAddActivityDialog,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E2C9B),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          icon: const Icon(Icons.add, size: 18),
+                          label: Text(
+                            "Add activity",
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: _buildFilterDropdown(
+                          value: _categoryFilter,
+                          items: const ["All", "Volunteering", "Competition", "Leadership", "Project"],
+                          onChanged: (v) {
+                            if (v != null) setState(() => _categoryFilter = v);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildFilterDropdown(
+                          value: _statusFilter,
+                          items: const ["Any status", "Verified", "Waiting", "Needs changes"],
+                          onChanged: (v) {
+                            if (v != null) setState(() => _statusFilter = v);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      ElevatedButton.icon(
+                        onPressed: _showAddActivityDialog,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2E2C9B),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.add, size: 18),
+                        label: Text(
+                          "Add activity",
+                          style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // 4. Activities List
+        if (filtered.isEmpty)
+          Container(
+            width: double.infinity,
+            height: 260,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _LightBlueprintGridPainter(),
+                  ),
+                ),
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "No matching records",
+                        style: GoogleFonts.poppins(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        "Try a different search or filter.",
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: const Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: filtered.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final act = filtered[index];
+              return _buildActivityCard(act);
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildMetricCard(String title, String count, IconData icon, Color iconBg, Color iconColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF475569),
+                ),
+              ),
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 16, color: iconColor),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            count,
+            style: GoogleFonts.poppins(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF0F172A),
+              letterSpacing: -0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterDropdown({
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          value: items.contains(value) ? value : items.first,
+          icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Color(0xFF64748B)),
+          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF1E293B)),
+          items: items.map((opt) {
+            return DropdownMenuItem<String>(
+              value: opt,
+              child: Text(opt, overflow: TextOverflow.ellipsis),
+            );
+          }).toList(),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActivityCard(Map<String, dynamic> act) {
+    final title = act["title"] as String? ?? "";
+    final category = act["category"] as String? ?? "Activity";
+    final role = act["role"] as String? ?? "";
+    final org = act["organisation"] as String? ?? "";
+    final dates = act["dates"] as String? ?? "";
+    final desc = act["description"] as String? ?? "";
+    final status = act["status"] as String? ?? "Waiting";
+    final verifier = act["verifier"] as String? ?? "";
+    final feedback = act["feedback"] as String? ?? "";
+    final link = act["evidenceLink"] as String? ?? "";
+
+    Color catBg;
+    Color catColor;
+    if (category == "Volunteering") {
+      catBg = const Color(0xFFF5EBE1);
+      catColor = const Color(0xFF78350F);
+    } else if (category == "Competition") {
+      catBg = const Color(0xFFF1F5F9);
+      catColor = const Color(0xFF475569);
+    } else if (category == "Leadership") {
+      catBg = const Color(0xFFEEF2FF);
+      catColor = const Color(0xFF4F46E5);
+    } else {
+      catBg = const Color(0xFFECFDF5);
+      catColor = const Color(0xFF059669);
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top Row: Title, Category pill, Edit & Delete buttons
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 10,
+                  runSpacing: 6,
+                  children: [
                     Text(
-                      "Try a different search or filter.",
+                      title,
                       style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: const Color(0xFF94A3B8),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: catBg,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        category,
+                        style: GoogleFonts.poppins(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: catColor,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
+              // Action buttons: Edit & Delete
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF475569),
+                      side: const BorderSide(color: Color(0xFFE2E8F0)),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onPressed: () => _showEditActivityDialog(act),
+                    icon: const Icon(Icons.edit_outlined, size: 14),
+                    label: Text(
+                      "Edit",
+                      style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Color(0xFFEF4444)),
+                    onPressed: () => _deleteActivity(act),
+                  ),
+                ],
+              ),
             ],
           ),
-        ),
-      ],
+          const SizedBox(height: 6),
+
+          // Subtitle: Role · Organisation
+          if (role.isNotEmpty || org.isNotEmpty)
+            Text(
+              role.isNotEmpty && org.isNotEmpty ? "$role · $org" : (role.isNotEmpty ? role : org),
+              style: GoogleFonts.poppins(
+                fontSize: 12.5,
+                color: const Color(0xFF64748B),
+              ),
+            ),
+          const SizedBox(height: 2),
+
+          // Dates
+          if (dates.isNotEmpty)
+            Text(
+              dates,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: const Color(0xFF94A3B8),
+              ),
+            ),
+          const SizedBox(height: 10),
+
+          // Description / Achievement
+          if (desc.isNotEmpty) ...[
+            Text(
+              desc,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: const Color(0xFF334155),
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Buttons: View Certificate & External Link
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF0F172A),
+                  side: const BorderSide(color: Color(0xFFE2E8F0)),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: () => _showCertificateDialog(act),
+                icon: const Icon(Icons.card_membership_outlined, size: 15, color: Color(0xFF475569)),
+                label: Text(
+                  "View Certificate",
+                  style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600),
+                ),
+              ),
+              if (link.isNotEmpty)
+                InkWell(
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Opening evidence: $link")),
+                    );
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "External Link",
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.open_in_new_rounded, size: 13, color: Color(0xFF64748B)),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Status & Verifier / Needs changes Notice
+          if (status == "Verified") ...[
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDCFCE7),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    "Verified",
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF15803D),
+                    ),
+                  ),
+                ),
+                if (verifier.isNotEmpty)
+                  Text(
+                    verifier,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11.5,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+              ],
+            ),
+          ] else if (status == "Needs changes") ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEE2E2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                "Needs changes",
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFFB91C1C),
+                ),
+              ),
+            ),
+            if (feedback.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFBEB),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFFDE68A)),
+                ),
+                child: Text(
+                  feedback,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF92400E),
+                  ),
+                ),
+              ),
+            ],
+          ] else ...[
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    "Waiting",
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFD97706),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  "Submitted for faculty verification",
+                  style: GoogleFonts.poppins(
+                    fontSize: 11.5,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -2394,18 +5606,338 @@ class _ExperiencePassportScreenState extends State<ExperiencePassportScreen> {
 /// ─────────────────────────────────────────────────────────────────────────────
 /// Refresh Zone Screen [P3] (Image 3)
 /// ─────────────────────────────────────────────────────────────────────────────
-class RefreshZoneScreen extends StatelessWidget {
+/// ─────────────────────────────────────────────────────────────────────────────
+/// Refresh Zone Screen [P3] (Images 2 & 3)
+/// ─────────────────────────────────────────────────────────────────────────────
+class RefreshZoneScreen extends StatefulWidget {
   final VoidCallback? onBack;
   const RefreshZoneScreen({super.key, this.onBack});
 
   @override
+  State<RefreshZoneScreen> createState() => _RefreshZoneScreenState();
+}
+
+class _RefreshZoneScreenState extends State<RefreshZoneScreen> {
+  // Current active mode: null = main dashboard, "quiz_battle" = Subject Quiz Battle
+  String? _activeGame;
+
+  int _todayBreaks = 0;
+  final int _maxBreaks = 3;
+  int _quizQuestionIndex = 0;
+  int _quizScore = 0;
+  int? _selectedOptionIndex;
+  bool _answered = false;
+
+  final List<Map<String, dynamic>> _quizQuestions = [
+    {
+      "question": "Which layer of the OSI model is responsible for routing?",
+      "options": ["Data link", "Session", "Transport", "Network"],
+      "answer": 3,
+      "explanation": "The Network layer (Layer 3) handles packet routing, forwarding, and IP addressing.",
+    },
+    {
+      "question": "What is the worst-case time complexity of QuickSort?",
+      "options": ["O(n log n)", "O(n²)", "O(log n)", "O(n)"],
+      "answer": 1,
+      "explanation": "When the chosen pivot is always the smallest or largest element, QuickSort degrades to O(n²).",
+    },
+    {
+      "question": "Which data structure follows the LIFO (Last In First Out) principle?",
+      "options": ["Queue", "Binary Tree", "Stack", "Linked List"],
+      "answer": 2,
+      "explanation": "A Stack operates on Last-In, First-Out where the most recently inserted item is popped first.",
+    },
+    {
+      "question": "In relational databases, which SQL clause is used to filter aggregated group rows?",
+      "options": ["WHERE", "HAVING", "GROUP BY", "ORDER BY"],
+      "answer": 1,
+      "explanation": "HAVING filters groups created by GROUP BY, while WHERE filters individual rows before grouping.",
+    },
+    {
+      "question": "What does ACID stand for in Database Management Systems?",
+      "options": [
+        "Atomicity, Consistency, Isolation, Durability",
+        "Array, Column, Index, Domain",
+        "Access, Control, Interface, Data",
+        "Accuracy, Concurrency, Integrity, Distribution"
+      ],
+      "answer": 0,
+      "explanation": "ACID properties ensure reliable processing of database transactions.",
+    },
+    {
+      "question": "Which protocol is primarily used for secure, encrypted web communication?",
+      "options": ["HTTP", "FTP", "HTTPS", "SMTP"],
+      "answer": 2,
+      "explanation": "HTTPS transmits web traffic over TLS/SSL encryption on port 443.",
+    },
+    {
+      "question": "In OOP, what concept allows a subclass to provide a specific implementation of a parent method?",
+      "options": ["Encapsulation", "Method Overriding", "Method Overloading", "Abstraction"],
+      "answer": 1,
+      "explanation": "Method Overriding allows a derived class to rewrite a method defined in its superclass.",
+    },
+    {
+      "question": "Which CPU scheduling algorithm gives CPU to the process with the smallest burst time?",
+      "options": ["Round Robin", "First Come First Served", "Shortest Job First (SJF)", "Priority Scheduling"],
+      "answer": 2,
+      "explanation": "Shortest Job First (SJF) selects the waiting process with the smallest execution time.",
+    },
+  ];
+
+  void _startQuizBattle() {
+    setState(() {
+      _activeGame = "quiz_battle";
+      _quizQuestionIndex = 0;
+      _quizScore = 0;
+      _selectedOptionIndex = null;
+      _answered = false;
+    });
+  }
+
+  void _handleOptionSelect(int index) {
+    if (_answered) return;
+    setState(() {
+      _selectedOptionIndex = index;
+      _answered = true;
+      if (index == _quizQuestions[_quizQuestionIndex]["answer"]) {
+        _quizScore++;
+      }
+    });
+
+    Future.delayed(const Duration(milliseconds: 700), () {
+      if (!mounted) return;
+      if (_quizQuestionIndex < _quizQuestions.length - 1) {
+        setState(() {
+          _quizQuestionIndex++;
+          _selectedOptionIndex = null;
+          _answered = false;
+        });
+      } else {
+        _finishQuiz();
+      }
+    });
+  }
+
+  void _skipQuestion() {
+    if (_quizQuestionIndex < _quizQuestions.length - 1) {
+      setState(() {
+        _quizQuestionIndex++;
+        _selectedOptionIndex = null;
+        _answered = false;
+      });
+    } else {
+      _finishQuiz();
+    }
+  }
+
+  void _finishQuiz() {
+    setState(() {
+      if (_todayBreaks < _maxBreaks) {
+        _todayBreaks++;
+      }
+    });
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.emoji_events_rounded, color: Color(0xFFD97706), size: 26),
+            const SizedBox(width: 10),
+            Text(
+              "Battle Complete!",
+              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "You scored $_quizScore out of ${_quizQuestions.length} questions correctly (${((_quizScore / _quizQuestions.length) * 100).round()}%).",
+              style: GoogleFonts.poppins(fontSize: 13.5, color: const Color(0xFF334155)),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFECFDF5),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.bolt_rounded, color: Color(0xFF059669), size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "+25 XP awarded · Today's brain break logged ($_todayBreaks/3)!",
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF065F46),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() => _activeGame = null);
+            },
+            child: Text("Back to Refresh Zone", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2E2C9B),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              _startQuizBattle();
+            },
+            child: Text("Play Again", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBreathingBreakDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE0F2FE),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.air_rounded, color: Color(0xFF0284C7), size: 20),
+            ),
+            const SizedBox(width: 10),
+            Text("Breathing Break", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const RadialGradient(
+                  colors: [Color(0xFFBAE6FD), Color(0xFF38BDF8)],
+                ),
+                boxShadow: [
+                  BoxShadow(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), blurRadius: 20, spreadRadius: 4),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  "Breathe In\n4s",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF0C4A6E)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              "Take a 2-minute mindful breathing pause to reset mental focus before your next study block.",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF64748B)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text("Close", style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0284C7),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                if (_todayBreaks < _maxBreaks) _todayBreaks++;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Breathing session completed! Feeling refreshed."),
+                  backgroundColor: Color(0xFF0284C7),
+                ),
+              );
+            },
+            child: const Text("Start 2m Timer"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showGamePlaceholder(String title) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(title, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700)),
+        content: Text(
+          "Launching $title session! Sharpen your brain skills and placement readiness.",
+          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF475569)),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Close")),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2E2C9B),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                if (_todayBreaks < _maxBreaks) _todayBreaks++;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("$title completed! Break logged ($_todayBreaks/3)."),
+                  backgroundColor: const Color(0xFF10B981),
+                ),
+              );
+            },
+            child: const Text("Complete Round"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_activeGame == "quiz_battle") {
+      return _buildQuizBattleScreen();
+    }
+
     return PortalPageBody(
       title: "Refresh Zone",
       category: "Campus Life",
-      onBack: onBack ?? (Navigator.canPop(context) ? () => Navigator.pop(context) : null),
+      onBack: widget.onBack ?? (Navigator.canPop(context) ? () => Navigator.pop(context) : null),
       children: [
-        // 1. Blueprint Hero Banner
+        // 1. Blueprint Hero Banner (Matching Image 2)
         const BlueprintHeroBanner(
           breadcrumb: "Home  ›  Campus Life  ›  Refresh Zone",
           category: "CAMPUS LIFE",
@@ -2413,192 +5945,844 @@ class RefreshZoneScreen extends StatelessWidget {
           isMvp: false,
           icon: Icons.sports_esports_rounded,
           title: "Refresh Zone",
-          subtitle: "Brain, memory, logic and word games, coding challenges and quiz battles.",
+          subtitle: "Short brain breaks with saved scores: subject quiz battles, aptitude and vocabulary rounds, a memory game and guided breathing.",
           watermarkIcon: Icons.sports_esports_rounded,
         ),
         const SizedBox(height: 20),
 
-        // 2. Games Grid (Image 3)
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final w = constraints.maxWidth;
-            final crossAxisCount = w > 850 ? 3 : (w > 540 ? 2 : 1);
+        // 2. Today's breaks Card (Matching Image 2)
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth > 580;
+              final progressFraction = (_todayBreaks / _maxBreaks).clamp(0.0, 1.0);
 
-            final items = [
-              _GameCardData(
-                category: "Memory",
-                categoryBg: Color(0xFFECFDF5),
-                categoryColor: Color(0xFF059669),
-                duration: "3 min",
-                title: "Memory Match",
-                desc: "Short-term memory card game",
-              ),
-              _GameCardData(
-                category: "Logical reasoning",
-                categoryBg: Color(0xFFEEF2FF),
-                categoryColor: Color(0xFF4F46E5),
-                duration: "5 min",
-                title: "Logic Grid",
-                desc: "Deduction puzzles",
-              ),
-              _GameCardData(
-                category: "Word",
-                categoryBg: Color(0xFFFFFBEB),
-                categoryColor: Color(0xFFD97706),
-                duration: "3 min",
-                title: "Word Ladder",
-                desc: "Vocabulary builder",
-              ),
-              _GameCardData(
-                category: "Coding challenge",
-                categoryBg: Color(0xFFEFF6FF),
-                categoryColor: Color(0xFF2563EB),
-                duration: "10 min",
-                title: "SQL Sprint",
-                desc: "Race to write correct queries",
-              ),
-              _GameCardData(
-                category: "Quiz",
-                categoryBg: Color(0xFFFEF2F2),
-                categoryColor: Color(0xFFDC2626),
-                duration: "Live",
-                title: "Quiz Battle",
-                desc: "Challenge a classmate on DBMS",
-              ),
-              _GameCardData(
-                category: "Team",
-                categoryBg: Color(0xFFFFF7ED),
-                categoryColor: Color(0xFFEA580C),
-                duration: "This Friday",
-                title: "Campus Challenge",
-                desc: "Department vs department trivia",
-              ),
-            ];
-
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: items.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                mainAxisExtent: 130,
-              ),
-              itemBuilder: (context, index) {
-                final item = items[index];
-                return InkWell(
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Launching ${item.title}...")),
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFE5E7EB)),
+              final leftSide = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Today's breaks",
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF64748B),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                              decoration: BoxDecoration(
-                                color: item.categoryBg,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                item.category,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: item.categoryColor,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              item.duration,
-                              style: GoogleFonts.poppins(
-                                fontSize: 11.5,
-                                color: const Color(0xFF64748B),
-                              ),
-                            ),
-                          ],
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        "$_todayBreaks",
+                        style: GoogleFonts.poppins(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF0F172A),
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.title,
-                              style: GoogleFonts.poppins(
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF1E293B),
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              item.desc,
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: const Color(0xFF64748B),
-                              ),
-                            ),
-                          ],
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        "of $_maxBreaks",
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: progressFraction,
+                      minHeight: 5,
+                      backgroundColor: const Color(0xFFF1F5F9),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2E2C9B)),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      const Icon(Icons.local_fire_department_outlined, size: 16, color: Color(0xFF64748B)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          "No streak yet. Play one game today. · best 0 · 22% correct overall",
+                          style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF64748B)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+
+              final weekDays = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"];
+              final rightSide = Row(
+                mainAxisSize: MainAxisSize.min,
+                children: weekDays.map((day) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 22,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF3F4F6),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          day,
+                          style: GoogleFonts.poppins(fontSize: 10.5, color: const Color(0xFF94A3B8)),
                         ),
                       ],
                     ),
-                  ),
+                  );
+                }).toList(),
+              );
+
+              if (isWide) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(child: leftSide),
+                    const SizedBox(width: 24),
+                    rightSide,
+                  ],
                 );
-              },
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  leftSide,
+                  const SizedBox(height: 16),
+                  Center(child: rightSide),
+                ],
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // 3. 5 Brain Break Cards (Matching Image 2)
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final w = constraints.maxWidth;
+            final isTwoCol = w > 680;
+
+            final card1 = _buildBreakCard(
+              title: "Subject quiz battle",
+              badge: "Quiz battle",
+              badgeBg: const Color(0xFFFEF3C7),
+              badgeColor: const Color(0xFFD97706),
+              icon: Icons.sports_esports_rounded,
+              iconBg: const Color(0xFFFEF2F2),
+              iconColor: const Color(0xFFDC2626),
+              desc: "Ten rapid-fire questions from your own subject area, scored with explanations.",
+              secondary: "From the Computer Science & Engineering question bank.",
+              scoreText: "Best 63% · played 3x",
+              onPlay: _startQuizBattle,
+            );
+
+            final card2 = _buildBreakCard(
+              title: "Aptitude sprint",
+              badge: "Logic & aptitude",
+              badgeBg: const Color(0xFFEEF2FF),
+              badgeColor: const Color(0xFF4F46E5),
+              icon: Icons.sports_esports_rounded,
+              iconBg: const Color(0xFFEFF6FF),
+              iconColor: const Color(0xFF2563EB),
+              desc: "Percentages, time and work, ratios and number series, built fresh every round for placement tests.",
+              secondary: "Questions are generated from formulas, so every answer is exact.",
+              scoreText: "Best 0% · played 1x",
+              onPlay: () => _showGamePlaceholder("Aptitude sprint"),
+            );
+
+            final card3 = _buildBreakCard(
+              title: "Vocabulary power",
+              badge: "Language",
+              badgeBg: const Color(0xFFFEF3C7),
+              badgeColor: const Color(0xFFD97706),
+              icon: Icons.sports_esports_rounded,
+              iconBg: const Color(0xFFFFFBEB),
+              iconColor: const Color(0xFFD97706),
+              desc: "Ten GRE and CAT level words. Pick the right meaning before the clock runs out.",
+              secondary: "",
+              scoreText: "Best 40% · played 2x",
+              onPlay: () => _showGamePlaceholder("Vocabulary power"),
+            );
+
+            final card4 = _buildBreakCard(
+              title: "Memory matrix",
+              badge: "Brain fitness",
+              badgeBg: const Color(0xFFCCFBF1),
+              badgeColor: const Color(0xFF0F766E),
+              icon: Icons.grid_view_rounded,
+              iconBg: const Color(0xFFECFDF5),
+              iconColor: const Color(0xFF059669),
+              desc: "Watch the pattern, then repeat it. Every level adds one more square.",
+              secondary: "Best is the highest level you cleared.",
+              scoreText: "Not played yet",
+              onPlay: () => _showGamePlaceholder("Memory matrix"),
+            );
+
+            final card5 = _buildBreakCard(
+              title: "Breathing break",
+              badge: "Reset",
+              badgeBg: const Color(0xFFE0F2FE),
+              badgeColor: const Color(0xFF0284C7),
+              icon: Icons.air_rounded,
+              iconBg: const Color(0xFFF0F9FF),
+              iconColor: const Color(0xFF0284C7),
+              desc: "A guided breathing circle to settle your mind between study blocks.",
+              secondary: "Best shows your total minutes of calm.",
+              scoreText: "Not played yet",
+              onPlay: _showBreathingBreakDialog,
+            );
+
+            if (isTwoCol) {
+              return Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: card1),
+                      const SizedBox(width: 16),
+                      Expanded(child: card2),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: card3),
+                      const SizedBox(width: 16),
+                      Expanded(child: card4),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: card5),
+                      const SizedBox(width: 16),
+                      const Expanded(child: SizedBox()),
+                    ],
+                  ),
+                ],
+              );
+            }
+
+            return Column(
+              children: [
+                card1,
+                const SizedBox(height: 14),
+                card2,
+                const SizedBox(height: 14),
+                card3,
+                const SizedBox(height: 14),
+                card4,
+                const SizedBox(height: 14),
+                card5,
+              ],
             );
           },
         ),
       ],
     );
   }
-}
 
-class _GameCardData {
-  final String category;
-  final Color categoryBg;
-  final Color categoryColor;
-  final String duration;
-  final String title;
-  final String desc;
+  Widget _buildBreakCard({
+    required String title,
+    required String badge,
+    required Color badgeBg,
+    required Color badgeColor,
+    required IconData icon,
+    required Color iconBg,
+    required Color iconColor,
+    required String desc,
+    required String secondary,
+    required String scoreText,
+    required VoidCallback onPlay,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header: Icon + Badge
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 17, color: iconColor),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: badgeBg,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  badge,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: badgeColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
 
-  _GameCardData({
-    required this.category,
-    required this.categoryBg,
-    required this.categoryColor,
-    required this.duration,
-    required this.title,
-    required this.desc,
-  });
+          // Description
+          Text(
+            desc,
+            style: GoogleFonts.poppins(
+              fontSize: 12.5,
+              color: const Color(0xFF334155),
+              height: 1.45,
+            ),
+          ),
+          if (secondary.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              secondary,
+              style: GoogleFonts.poppins(
+                fontSize: 11.5,
+                color: const Color(0xFF94A3B8),
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+
+          // Footer: Score + Play Button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.emoji_events_outlined, size: 15, color: Color(0xFF64748B)),
+                  const SizedBox(width: 6),
+                  Text(
+                    scoreText,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2E2C9B),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: onPlay,
+                child: Text(
+                  "Play",
+                  style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Interactive Quiz Battle Play Screen (Matching Image 3)
+  Widget _buildQuizBattleScreen() {
+    final currentQ = _quizQuestions[_quizQuestionIndex];
+    final questionText = currentQ["question"] as String;
+    final options = currentQ["options"] as List<String>;
+    final letters = ["A", "B", "C", "D"];
+    final progress = (_quizQuestionIndex + 1) / _quizQuestions.length;
+
+    return PortalPageBody(
+      title: "Subject quiz battle",
+      category: "Campus Life",
+      onBack: () => setState(() => _activeGame = null),
+      children: [
+        // Top Back Row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Subject quiz battle",
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF0F172A),
+              ),
+            ),
+            InkWell(
+              onTap: () => setState(() => _activeGame = null),
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.arrow_back, size: 16, color: Color(0xFF475569)),
+                    const SizedBox(width: 4),
+                    Text(
+                      "Back",
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF475569),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+
+        // Centered Quiz Card (Matching Image 3)
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 680),
+            child: Container(
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Top progress & Timer
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Question ${_quizQuestionIndex + 1} of ${_quizQuestions.length}",
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                      Text(
+                        "40s",
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Progress Bar
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 4,
+                      backgroundColor: const Color(0xFFF1F5F9),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2E2C9B)),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // Question Text
+                  Text(
+                    questionText,
+                    style: GoogleFonts.poppins(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF0F172A),
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // 4 Option Buttons
+                  ...List.generate(options.length, (i) {
+                    final isSelected = _selectedOptionIndex == i;
+                    final isCorrect = _answered && i == currentQ["answer"];
+                    final isWrong = _answered && isSelected && !isCorrect;
+
+                    Color borderColor = const Color(0xFFE2E8F0);
+                    Color bgColor = Colors.white;
+                    if (isCorrect) {
+                      borderColor = const Color(0xFF10B981);
+                      bgColor = const Color(0xFFECFDF5);
+                    } else if (isWrong) {
+                      borderColor = const Color(0xFFEF4444);
+                      bgColor = const Color(0xFFFEF2F2);
+                    } else if (isSelected) {
+                      borderColor = const Color(0xFF2E2C9B);
+                      bgColor = const Color(0xFFEEF2FF);
+                    }
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: InkWell(
+                        onTap: () => _handleOptionSelect(i),
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: bgColor,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: borderColor, width: isSelected || isCorrect ? 1.5 : 1),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF8FAFC),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    letters[i],
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF475569),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Text(
+                                  options[i],
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w500,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 12),
+
+                  // Bottom Skip Action
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _skipQuestion,
+                      child: Text(
+                        "Skip",
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 /// ─────────────────────────────────────────────────────────────────────────────
-/// XP & Badges Screen [P3] (Image 4)
+/// XP & Badges Screen [P3] (Images 4 & 5)
 /// ─────────────────────────────────────────────────────────────────────────────
-class XpBadgesScreen extends StatelessWidget {
+class XpBadgesScreen extends StatefulWidget {
   final VoidCallback? onBack;
   const XpBadgesScreen({super.key, this.onBack});
+
+  @override
+  State<XpBadgesScreen> createState() => _XpBadgesScreenState();
+}
+
+class _XpBadgesScreenState extends State<XpBadgesScreen> {
+  String _badgeFilter = "All"; // "All", "Earned", "Locked"
+
+  final List<Map<String, dynamic>> _badgesList = [
+    // QUIZZES
+    {
+      "category": "QUIZZES",
+      "title": "First steps",
+      "desc": "Attempt your first quiz",
+      "isEarned": true,
+      "progress": null,
+      "icon": Icons.military_tech_outlined,
+      "iconColor": Color(0xFF2563EB),
+      "iconBg": Color(0xFFEFF6FF),
+    },
+    {
+      "category": "QUIZZES",
+      "title": "Quiz regular",
+      "desc": "Attempt 10 quizzes",
+      "isEarned": true,
+      "progress": null,
+      "icon": Icons.military_tech_outlined,
+      "iconColor": Color(0xFF2563EB),
+      "iconBg": Color(0xFFEFF6FF),
+    },
+    {
+      "category": "QUIZZES",
+      "title": "Quiz marathon",
+      "desc": "Attempt 25 quizzes",
+      "isEarned": false,
+      "progress": "10 of 25",
+      "progressFraction": 10 / 25,
+      "icon": Icons.lock_outline_rounded,
+      "iconColor": Color(0xFF94A3B8),
+      "iconBg": Color(0xFFF1F5F9),
+    },
+    {
+      "category": "QUIZZES",
+      "title": "Passed it",
+      "desc": "Pass a quiz",
+      "isEarned": true,
+      "progress": null,
+      "icon": Icons.military_tech_outlined,
+      "iconColor": Color(0xFF059669),
+      "iconBg": Color(0xFFECFDF5),
+    },
+    {
+      "category": "QUIZZES",
+      "title": "Hat-trick",
+      "desc": "Pass 3 different quizzes",
+      "isEarned": true,
+      "progress": null,
+      "icon": Icons.military_tech_outlined,
+      "iconColor": Color(0xFF059669),
+      "iconBg": Color(0xFFECFDF5),
+    },
+    {
+      "category": "QUIZZES",
+      "title": "Perfect score",
+      "desc": "Score 100% on a quiz",
+      "isEarned": true,
+      "progress": null,
+      "icon": Icons.military_tech_outlined,
+      "iconColor": Color(0xFFD97706),
+      "iconBg": Color(0xFFFEF3C7),
+    },
+
+    // COURSES
+    {
+      "category": "COURSES",
+      "title": "Certified",
+      "desc": "Earn your first certificate",
+      "isEarned": true,
+      "progress": null,
+      "icon": Icons.card_membership_outlined,
+      "iconColor": Color(0xFFD97706),
+      "iconBg": Color(0xFFFEF3C7),
+    },
+    {
+      "category": "COURSES",
+      "title": "Certificate collector",
+      "desc": "Earn 3 certificates",
+      "isEarned": true,
+      "progress": null,
+      "icon": Icons.card_membership_outlined,
+      "iconColor": Color(0xFFD97706),
+      "iconBg": Color(0xFFFEF3C7),
+    },
+    {
+      "category": "COURSES",
+      "title": "Lesson reader",
+      "desc": "Finish 20 lessons",
+      "isEarned": true,
+      "progress": null,
+      "icon": Icons.menu_book_outlined,
+      "iconColor": Color(0xFF0D9488),
+      "iconBg": Color(0xFFCCFBF1),
+    },
+    {
+      "category": "COURSES",
+      "title": "Course finisher",
+      "desc": "Finish every lesson of a course",
+      "isEarned": true,
+      "progress": null,
+      "icon": Icons.school_outlined,
+      "iconColor": Color(0xFF4F46E5),
+      "iconBg": Color(0xFFEEF2FF),
+    },
+
+    // ASSIGNMENTS
+    {
+      "category": "ASSIGNMENTS",
+      "title": "Always on time",
+      "desc": "Hand in 3 assignments before the deadline",
+      "isEarned": true,
+      "progress": null,
+      "icon": Icons.alarm_on_outlined,
+      "iconColor": Color(0xFFD97706),
+      "iconBg": Color(0xFFFEF3C7),
+    },
+    {
+      "category": "ASSIGNMENTS",
+      "title": "Assignment ace",
+      "desc": "Score 80% or more on an assignment",
+      "isEarned": true,
+      "progress": null,
+      "icon": Icons.assignment_turned_in_outlined,
+      "iconColor": Color(0xFFDC2626),
+      "iconBg": Color(0xFFFEE2E2),
+    },
+
+    // EXAM PREP
+    {
+      "category": "EXAM PREP",
+      "title": "Aptitude habit",
+      "desc": "Take the daily aptitude test 7 days in a row",
+      "isEarned": false,
+      "progress": "0 of 7",
+      "progressFraction": 0.0,
+      "icon": Icons.lock_outline_rounded,
+      "iconColor": Color(0xFF94A3B8),
+      "iconBg": Color(0xFFF1F5F9),
+    },
+    {
+      "category": "EXAM PREP",
+      "title": "Mock marathon",
+      "desc": "Finish 5 practice mocks",
+      "isEarned": false,
+      "progress": "0 of 5",
+      "progressFraction": 0.0,
+      "icon": Icons.lock_outline_rounded,
+      "iconColor": Color(0xFF94A3B8),
+      "iconBg": Color(0xFFF1F5F9),
+    },
+    {
+      "category": "EXAM PREP",
+      "title": "News reader",
+      "desc": "Take a weekly current-affairs quiz",
+      "isEarned": true,
+      "progress": null,
+      "icon": Icons.newspaper_outlined,
+      "iconColor": Color(0xFF0D9488),
+      "iconBg": Color(0xFFCCFBF1),
+    },
+
+    // CONSISTENCY
+    {
+      "category": "CONSISTENCY",
+      "title": "3-day streak",
+      "desc": "Be active 3 days in a row",
+      "isEarned": true,
+      "progress": null,
+      "icon": Icons.local_fire_department_outlined,
+      "iconColor": Color(0xFFD97706),
+      "iconBg": Color(0xFFFEF3C7),
+    },
+    {
+      "category": "CONSISTENCY",
+      "title": "Week warrior",
+      "desc": "Be active 7 days in a row",
+      "isEarned": false,
+      "progress": "3 of 7",
+      "progressFraction": 3 / 7,
+      "icon": Icons.lock_outline_rounded,
+      "iconColor": Color(0xFF94A3B8),
+      "iconBg": Color(0xFFF1F5F9),
+    },
+    {
+      "category": "CONSISTENCY",
+      "title": "Unstoppable",
+      "desc": "Be active 30 days in a row",
+      "isEarned": false,
+      "progress": "3 of 30",
+      "progressFraction": 3 / 30,
+      "icon": Icons.lock_outline_rounded,
+      "iconColor": Color(0xFF94A3B8),
+      "iconBg": Color(0xFFF1F5F9),
+    },
+
+    // PROGRESS
+    {
+      "category": "PROGRESS",
+      "title": "Halfway hero",
+      "desc": "Reach 50% course progress",
+      "isEarned": true,
+      "progress": null,
+      "icon": Icons.trending_up_rounded,
+      "iconColor": Color(0xFF2563EB),
+      "iconBg": Color(0xFFEFF6FF),
+    },
+    {
+      "category": "PROGRESS",
+      "title": "Knowledge sponge",
+      "desc": "Complete 10 module units",
+      "isEarned": true,
+      "progress": null,
+      "icon": Icons.auto_awesome,
+      "iconColor": Color(0xFF7C3AED),
+      "iconBg": Color(0xFFF3E8FF),
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     return PortalPageBody(
       title: "XP & Badges",
       category: "Campus Life",
-      onBack: onBack ?? (Navigator.canPop(context) ? () => Navigator.pop(context) : null),
+      onBack: widget.onBack ?? (Navigator.canPop(context) ? () => Navigator.pop(context) : null),
       children: [
-        // 1. Blueprint Hero Banner
+        // 1. Blueprint Hero Banner (Matching Image 4)
         const BlueprintHeroBanner(
           breadcrumb: "Home  ›  Campus Life  ›  XP & Badges",
           category: "CAMPUS LIFE",
@@ -2606,158 +6790,533 @@ class XpBadgesScreen extends StatelessWidget {
           isMvp: false,
           icon: Icons.emoji_events_rounded,
           title: "XP & Badges",
-          subtitle: "Streaks, badges, skill points and configurable leaderboards.",
+          subtitle: "Your XP, level, streak and badges from real quizzes, courses and assignments, plus your class rank.",
           watermarkIcon: Icons.emoji_events_rounded,
         ),
         const SizedBox(height: 20),
 
-        // 2. Badges Grid (Image 4)
+        // 2. Level & Streak Row (Matching Image 4)
         LayoutBuilder(
           builder: (context, constraints) {
             final w = constraints.maxWidth;
-            final crossAxisCount = w > 850 ? 3 : (w > 540 ? 2 : 1);
+            final isWide = w > 650;
 
-            final badges = [
-              _BadgeData(
-                pillText: "Badge",
-                pillBg: Color(0xFFFEF3C7),
-                pillColor: Color(0xFFD97706),
-                statusRight: "Earned",
-                title: "7-Day Learning Streak",
-                subtitle: "Studied every day for a week",
-                progressValue: 1.0,
-                progressColor: Color(0xFFD97706),
+            final levelCard = Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
               ),
-              _BadgeData(
-                pillText: "Badge",
-                pillBg: Color(0xFFECFDF5),
-                pillColor: Color(0xFF059669),
-                statusRight: "Earned",
-                title: "First Project Completed",
-                subtitle: "Shipped your first project",
-                progressValue: 1.0,
-                progressColor: Color(0xFF0F766E),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF141938),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "LEVEL",
+                          style: GoogleFonts.poppins(fontSize: 8.5, fontWeight: FontWeight.w700, color: Colors.white70),
+                        ),
+                        Text(
+                          "6",
+                          style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              "Expert",
+                              style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
+                            ),
+                            const Spacer(),
+                            Text(
+                              "1,655 XP",
+                              style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w800, color: const Color(0xFF0F172A)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: const LinearProgressIndicator(
+                            value: 0.85,
+                            minHeight: 5,
+                            backgroundColor: Color(0xFFF1F5F9),
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF141938)),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          "145 XP to level 7",
+                          style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF94A3B8)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              _BadgeData(
-                pillText: "Badge",
-                pillBg: Color(0xFFEEF2FF),
-                pillColor: Color(0xFF4F46E5),
-                statusRight: "84 / 100",
-                title: "100 Questions Solved",
-                subtitle: "Across all subjects",
-                progressValue: 0.84,
-                progressColor: AppColors.primaryBlue,
+            );
+
+            final streakCard = Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
               ),
-              _BadgeData(
-                pillText: "Badge",
-                pillBg: Color(0xFFEFF6FF),
-                pillColor: Color(0xFF2563EB),
-                statusRight: "Earned",
-                title: "First Mock Interview",
-                subtitle: "Completed an AI interview",
-                progressValue: 1.0,
-                progressColor: Color(0xFF2563EB),
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.local_fire_department_outlined, size: 24, color: Color(0xFF64748B)),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "0 day streak",
+                          style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w800, color: const Color(0xFF0F172A)),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          "Take a quiz or hand in work to start one · best 3",
+                          style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF64748B)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              _BadgeData(
-                pillText: "Badge",
-                pillBg: Color(0xFFFFFBEB),
-                pillColor: Color(0xFFD97706),
-                statusRight: "59 / 65",
-                title: "Communication Level Up",
-                subtitle: "Reach Intermediate+",
-                progressValue: 59.0 / 65.0,
-                progressColor: Color(0xFFC2410C),
+            );
+
+            if (isWide) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(flex: 3, child: levelCard),
+                  const SizedBox(width: 16),
+                  Expanded(flex: 2, child: streakCard),
+                ],
+              );
+            }
+
+            return Column(
+              children: [
+                levelCard,
+                const SizedBox(height: 14),
+                streakCard,
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 18),
+
+        // 3. 4 Quick Stat Cards (Matching Image 4)
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final w = constraints.maxWidth;
+            if (w > 820) {
+              return Row(
+                children: [
+                  Expanded(child: _buildStatItem("Badges earned", "15/20", Icons.military_tech_outlined)),
+                  const SizedBox(width: 14),
+                  Expanded(child: _buildStatItem("Quizzes passed", "7", Icons.check_circle_outline)),
+                  const SizedBox(width: 14),
+                  Expanded(child: _buildStatItem("Certificates", "5", Icons.card_membership_outlined)),
+                  const SizedBox(width: 14),
+                  Expanded(child: _buildStatItem("Class rank", "#1 of 3", Icons.leaderboard_outlined)),
+                ],
+              );
+            } else if (w > 480) {
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: _buildStatItem("Badges earned", "15/20", Icons.military_tech_outlined)),
+                      const SizedBox(width: 14),
+                      Expanded(child: _buildStatItem("Quizzes passed", "7", Icons.check_circle_outline)),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(child: _buildStatItem("Certificates", "5", Icons.card_membership_outlined)),
+                      const SizedBox(width: 14),
+                      Expanded(child: _buildStatItem("Class rank", "#1 of 3", Icons.leaderboard_outlined)),
+                    ],
+                  ),
+                ],
+              );
+            } else {
+              return Column(
+                children: [
+                  _buildStatItem("Badges earned", "15/20", Icons.military_tech_outlined),
+                  const SizedBox(height: 12),
+                  _buildStatItem("Quizzes passed", "7", Icons.check_circle_outline),
+                  const SizedBox(height: 12),
+                  _buildStatItem("Certificates", "5", Icons.card_membership_outlined),
+                  const SizedBox(height: 12),
+                  _buildStatItem("Class rank", "#1 of 3", Icons.leaderboard_outlined),
+                ],
+              );
+            }
+          },
+        ),
+        const SizedBox(height: 22),
+
+        // 4. Next Up Section (Matching Image 4)
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Next up",
+                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
               ),
-              _BadgeData(
-                pillText: "Badge",
-                pillBg: Color(0xFFFEF2F2),
-                pillColor: Color(0xFFDC2626),
-                statusRight: "Earned",
-                title: "Hackathon Participant",
-                subtitle: "Joined a hackathon",
-                progressValue: 1.0,
-                progressColor: Color(0xFFDC2626),
+              const SizedBox(height: 2),
+              Text(
+                "The badges you are closest to",
+                style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF64748B)),
               ),
-            ];
+              const SizedBox(height: 16),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final w = constraints.maxWidth;
+                  final isWide = w > 680;
+
+                  final next1 = _buildNextUpCard("Week warrior", "Be active 7 days in a row", "3 of 7", 3 / 7);
+                  final next2 = _buildNextUpCard("Quiz marathon", "Attempt 25 quizzes", "10 of 25", 10 / 25);
+                  final next3 = _buildNextUpCard("Unstoppable", "Be active 30 days in a row", "3 of 30", 3 / 30);
+
+                  if (isWide) {
+                    return Row(
+                      children: [
+                        Expanded(child: next1),
+                        const SizedBox(width: 14),
+                        Expanded(child: next2),
+                        const SizedBox(width: 14),
+                        Expanded(child: next3),
+                      ],
+                    );
+                  }
+
+                  return Column(
+                    children: [
+                      next1,
+                      const SizedBox(height: 12),
+                      next2,
+                      const SizedBox(height: 12),
+                      next3,
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 22),
+
+        // 5. Badges Catalog Section (Matching Images 4 & 5)
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header: Badges & Filters (All, Earned, Locked)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Badges",
+                    style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildFilterPill("All"),
+                      const SizedBox(width: 8),
+                      _buildFilterPill("Earned"),
+                      const SizedBox(width: 8),
+                      _buildFilterPill("Locked"),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Categorized Badges List
+              ..._buildCategorizedBadges(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatItem(String label, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: const Color(0xFF64748B)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF64748B)),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w800, color: const Color(0xFF0F172A)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNextUpCard(String title, String subtitle, String progressText, double progressFraction) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFBFBF9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFF1F0E8)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF64748B)),
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: LinearProgressIndicator(
+              value: progressFraction,
+              minHeight: 4,
+              backgroundColor: const Color(0xFFE2E8F0),
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF141938)),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            progressText,
+            style: GoogleFonts.poppins(fontSize: 10.5, color: const Color(0xFF94A3B8)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterPill(String label) {
+    final isSelected = _badgeFilter == label;
+    return InkWell(
+      onTap: () => setState(() => _badgeFilter = label),
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF141938) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isSelected ? Colors.white : const Color(0xFF64748B),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildCategorizedBadges() {
+    final categories = ["QUIZZES", "COURSES", "ASSIGNMENTS", "EXAM PREP", "CONSISTENCY", "PROGRESS"];
+
+    final List<Widget> widgets = [];
+
+    for (final cat in categories) {
+      final badgesInCat = _badgesList.where((b) {
+        if (b["category"] != cat) return false;
+        if (_badgeFilter == "Earned") return b["isEarned"] == true;
+        if (_badgeFilter == "Locked") return b["isEarned"] == false;
+        return true;
+      }).toList();
+
+      if (badgesInCat.isEmpty) continue;
+
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 10, bottom: 12),
+          child: Text(
+            cat,
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF64748B),
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+      );
+
+      widgets.add(
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final w = constraints.maxWidth;
+            final crossAxisCount = w > 860 ? 3 : (w > 540 ? 2 : 1);
 
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: badges.length,
+              itemCount: badgesInCat.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                mainAxisExtent: 135,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 14,
+                mainAxisExtent: 96,
               ),
               itemBuilder: (context, index) {
-                final b = badges[index];
+                final b = badgesInCat[index];
+                final isEarned = b["isEarned"] == true;
+                final progressStr = b["progress"] as String?;
+                final progressFraction = b["progressFraction"] as double?;
+
                 return Container(
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    color: const Color(0xFFFAFAFA),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0xFFE5E7EB)),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Row(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                            decoration: BoxDecoration(
-                              color: b.pillBg,
-                              borderRadius: BorderRadius.circular(6),
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: b["iconBg"] as Color,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(b["icon"] as IconData, size: 20, color: b["iconColor"] as Color),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    b["title"] as String,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (isEarned)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFDCFCE7),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      "Earned",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF15803D),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
-                            child: Text(
-                              b.pillText,
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: b.pillColor,
+                            const SizedBox(height: 2),
+                            Text(
+                              b["desc"] as String,
+                              style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF64748B)),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (!isEarned && progressFraction != null) ...[
+                              const SizedBox(height: 6),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(2),
+                                child: LinearProgressIndicator(
+                                  value: progressFraction,
+                                  minHeight: 3,
+                                  backgroundColor: const Color(0xFFE2E8F0),
+                                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF141938)),
+                                ),
                               ),
-                            ),
-                          ),
-                          Text(
-                            b.statusRight,
-                            style: GoogleFonts.poppins(
-                              fontSize: 11.5,
-                              color: const Color(0xFF64748B),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            b.title,
-                            style: GoogleFonts.poppins(
-                              fontSize: 14.5,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF1E293B),
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            b.subtitle,
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: const Color(0xFF64748B),
-                            ),
-                          ),
-                        ],
-                      ),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(3),
-                        child: LinearProgressIndicator(
-                          value: b.progressValue,
-                          minHeight: 4,
-                          backgroundColor: const Color(0xFFF1F5F9),
-                          valueColor: AlwaysStoppedAnimation<Color>(b.progressColor),
+                              const SizedBox(height: 2),
+                              if (progressStr != null)
+                                Text(
+                                  progressStr,
+                                  style: GoogleFonts.poppins(fontSize: 9.5, color: const Color(0xFF94A3B8)),
+                                ),
+                            ],
+                          ],
                         ),
                       ),
                     ],
@@ -2767,31 +7326,12 @@ class XpBadgesScreen extends StatelessWidget {
             );
           },
         ),
-      ],
-    );
+      );
+      widgets.add(const SizedBox(height: 10));
+    }
+
+    return widgets;
   }
-}
-
-class _BadgeData {
-  final String pillText;
-  final Color pillBg;
-  final Color pillColor;
-  final String statusRight;
-  final String title;
-  final String subtitle;
-  final double progressValue;
-  final Color progressColor;
-
-  _BadgeData({
-    required this.pillText,
-    required this.pillBg,
-    required this.pillColor,
-    required this.statusRight,
-    required this.title,
-    required this.subtitle,
-    required this.progressValue,
-    required this.progressColor,
-  });
 }
 
 /// ─────────────────────────────────────────────────────────────────────────────
@@ -3645,6 +8185,9 @@ class _CampusAssistantScreenState extends State<CampusAssistantScreen> {
 /// Alumni Network Screen [P3]
 /// Matches ColossusIQ web UI design with Blueprint hero banner, filter search bar,
 /// "Request mentorship" action, and notebook grid empty state / verified alumni cards.
+/// ─────────────────────────────────────────────────────────────────────────────
+/// Alumni Network Screen [P3] (Images 2, 3, 4)
+/// ─────────────────────────────────────────────────────────────────────────────
 class AlumniNetworkScreen extends StatefulWidget {
   final VoidCallback? onBack;
   const AlumniNetworkScreen({super.key, this.onBack});
@@ -3653,53 +8196,147 @@ class AlumniNetworkScreen extends StatefulWidget {
   State<AlumniNetworkScreen> createState() => _AlumniNetworkScreenState();
 }
 
-class AlumniRecord {
-  final String name;
-  final String role;
-  final String company;
-  final String batch;
-  final String mentorship;
-  final String domain;
-
-  const AlumniRecord({
-    required this.name,
-    required this.role,
-    required this.company,
-    required this.batch,
-    required this.mentorship,
-    required this.domain,
-  });
-}
-
 class _AlumniNetworkScreenState extends State<AlumniNetworkScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedFilter = "All";
+  int _selectedTab = 0; // 0 = Alumni Mentors, 1 = My Mentorship Requests
+  String _selectedTopic = "All Topics";
+  bool _availableOnly = false;
 
-  static const List<AlumniRecord> _allAlumni = [
-    AlumniRecord(
-      name: "Priya Sundaram",
-      batch: "Class of 2022",
-      role: "Senior Software Engineer",
-      company: "Google, Mountain View",
-      mentorship: "Distributed Systems & US Masters Prep",
-      domain: "Tech & Cloud",
-    ),
-    AlumniRecord(
-      name: "Vigneshwaran K",
-      batch: "Class of 2020",
-      role: "Founder & CTO",
-      company: "NeuralWave AI (YC W23)",
-      mentorship: "Startup Fundraising & DeepTech MVPs",
-      domain: "Founders",
-    ),
-    AlumniRecord(
-      name: "Sneha Narayan",
-      batch: "Class of 2023",
-      role: "Cloud Infrastructure Engineer",
-      company: "Microsoft IDC",
-      mentorship: "Campus Placement & Resume Reviews",
-      domain: "Tech & Cloud",
-    ),
+  final List<Map<String, dynamic>> _mentors = [
+    {
+      "id": "1",
+      "initials": "AK",
+      "name": "Anand Kumar",
+      "location": "Hyderabad, India",
+      "batch": "Batch 2019",
+      "degree": "B.E. Computer Science & Engineering",
+      "role": "Tech Lead",
+      "company": "Microsoft",
+      "topic": "Mock Interviews & System Design",
+      "topicBg": Color(0xFFEEF2FF),
+      "topicColor": Color(0xFF4F46E5),
+      "score": 94,
+      "available": true,
+    },
+    {
+      "id": "2",
+      "initials": "RS",
+      "name": "Revathi Srinivasan",
+      "location": "Bengaluru, India",
+      "batch": "Batch 2019",
+      "degree": "B.E. Computer Science & Engineering",
+      "role": "Tech Lead",
+      "company": "IBM",
+      "topic": "Placement Prep",
+      "topicBg": Color(0xFFECFDF5),
+      "topicColor": Color(0xFF059669),
+      "score": 94,
+      "available": true,
+    },
+    {
+      "id": "3",
+      "initials": "RI",
+      "name": "Rohan Iyer",
+      "location": "Bengaluru / Singapore",
+      "batch": "Batch 2022",
+      "degree": "B.Tech Information Technology",
+      "role": "Data Scientist",
+      "company": "Google",
+      "topic": "ML & Analytics Career Guidance",
+      "topicBg": Color(0xFFEFF6FF),
+      "topicColor": Color(0xFF2563EB),
+      "score": 94,
+      "available": true,
+    },
+    {
+      "id": "4",
+      "initials": "KS",
+      "name": "Karthik Sharma",
+      "location": "Bengaluru, India",
+      "batch": "Batch 2021",
+      "degree": "B.E. Computer Science & Engineering",
+      "role": "System Analyst",
+      "company": "Microsoft",
+      "topic": "Placement Prep",
+      "topicBg": Color(0xFFECFDF5),
+      "topicColor": Color(0xFF059669),
+      "score": 90,
+      "available": true,
+    },
+    {
+      "id": "5",
+      "initials": "PH",
+      "name": "Pooja Hegde",
+      "location": "Chennai, India",
+      "batch": "Batch 2020",
+      "degree": "B.Tech Information Technology",
+      "role": "Senior Frontend Engineer",
+      "company": "Zoho Corporation",
+      "topic": "Placement Prep",
+      "topicBg": Color(0xFFECFDF5),
+      "topicColor": Color(0xFF059669),
+      "score": 90,
+      "available": true,
+    },
+    {
+      "id": "6",
+      "initials": "NS",
+      "name": "Nikhil Sharma",
+      "location": "Bengaluru, India",
+      "batch": "Batch 2021",
+      "degree": "B.E. Computer Science & Engineering",
+      "role": "Data Scientist",
+      "company": "Amazon",
+      "topic": "Resume Review & Startups",
+      "topicBg": Color(0xFFFFFBEB),
+      "topicColor": Color(0xFFD97706),
+      "score": 88,
+      "available": true,
+    },
+    {
+      "id": "7",
+      "initials": "MV",
+      "name": "Meera Varma",
+      "location": "Pune, India",
+      "batch": "Batch 2020",
+      "degree": "B.E. Computer Science & Engineering",
+      "role": "Product Manager",
+      "company": "Flipkart",
+      "topic": "Product Management & Strategy",
+      "topicBg": Color(0xFFF3E8FF),
+      "topicColor": Color(0xFF7C3AED),
+      "score": 86,
+      "available": true,
+    },
+    {
+      "id": "8",
+      "initials": "SB",
+      "name": "Sanjay Balaji",
+      "location": "Chennai, India",
+      "batch": "Batch 2018",
+      "degree": "B.E. Computer Science & Engineering",
+      "role": "Engineering Manager",
+      "company": "Cisco",
+      "topic": "Cloud Architecture & Networking",
+      "topicBg": Color(0xFFEFF6FF),
+      "topicColor": Color(0xFF2563EB),
+      "score": 85,
+      "available": true,
+    },
+  ];
+
+  final List<Map<String, dynamic>> _myRequests = [
+    {
+      "id": "req-1",
+      "mentorName": "Anand Kumar",
+      "mentorCompany": "Microsoft",
+      "status": "Pending",
+      "topic": "Mock Interviews & System Design",
+      "mode": "Virtual Call",
+      "date": "8 Oct 2026",
+      "goals":
+          "Share your goals (e.g. preparing for technical interview, reviewing resume, or transitioning to data science)...",
+    },
   ];
 
   @override
@@ -3708,411 +8345,1032 @@ class _AlumniNetworkScreenState extends State<AlumniNetworkScreen> {
     super.dispose();
   }
 
-  List<AlumniRecord> get _filteredAlumni {
-    final query = _searchController.text.trim().toLowerCase();
-    return _allAlumni.where((a) {
-      final matchesSearch = query.isEmpty ||
-          a.name.toLowerCase().contains(query) ||
-          a.company.toLowerCase().contains(query) ||
-          a.mentorship.toLowerCase().contains(query) ||
-          a.role.toLowerCase().contains(query);
+  void _showRequestMentorshipDialog([Map<String, dynamic>? preselectedMentor]) {
+    final mentor = preselectedMentor ?? _mentors.first;
+    final topicOptions = const [
+      "Mock Interviews & System Design",
+      "Placement Prep",
+      "ML & Analytics Career Guidance",
+      "Resume Review & Startups",
+      "Product Management & Strategy",
+      "Cloud Architecture & Networking",
+    ];
 
-      if (!matchesSearch) return false;
+    String selectedTopic = (mentor["topic"] as String?) ?? topicOptions.first;
+    if (!topicOptions.contains(selectedTopic)) {
+      selectedTopic = topicOptions.first;
+    }
 
-      if (_selectedFilter == "Tech & Cloud") {
-        return a.domain == "Tech & Cloud";
-      } else if (_selectedFilter == "Founders") {
-        return a.domain == "Founders";
-      }
-      return true;
-    }).toList();
+    String selectedMode = "Virtual Call";
+    final goalsCtrl = TextEditingController(
+      text:
+          "Share your goals (e.g. preparing for technical interview, reviewing resume, or transitioning to data science)...",
+    );
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 16,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 540),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Header
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Request Mentorship with ${mentor["name"]}",
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(Icons.close, size: 20, color: Color(0xFF64748B)),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Top Profile Card (Matching Image 3)
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFBFBF9),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFF1F0E8)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "${mentor["role"]} at ${mentor["company"]}",
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            "${mentor["batch"]} • ${mentor["degree"]}",
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Mentorship Topic Dropdown
+                    Text(
+                      "Mentorship Topic",
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1E293B),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: selectedTopic,
+                          icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: Color(0xFF64748B)),
+                          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                          items: topicOptions.map((t) {
+                            return DropdownMenuItem<String>(
+                              value: t,
+                              child: Text(t, overflow: TextOverflow.ellipsis),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) setDialogState(() => selectedTopic = val);
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Preferred Mode Dropdown
+                    Text(
+                      "Preferred Mode",
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1E293B),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: selectedMode,
+                          icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: Color(0xFF64748B)),
+                          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                          items: const [
+                            DropdownMenuItem(value: "Virtual Call", child: Text("Virtual Call")),
+                            DropdownMenuItem(value: "Email Guidance", child: Text("Email Guidance")),
+                            DropdownMenuItem(value: "In-person Meet", child: Text("In-person Meet")),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) setDialogState(() => selectedMode = val);
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Specific Questions or Goals
+                    Text(
+                      "Specific Questions or Goals",
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1E293B),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: goalsCtrl,
+                      minLines: 3,
+                      maxLines: 4,
+                      style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                      decoration: InputDecoration(
+                        hintText: "Share your goals (e.g. preparing for technical interview, reviewing resume, or transitioning to data science)...",
+                        hintStyle: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF94A3B8)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFF2E2C9B), width: 1.5),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Confirmation Note Box (Matching Image 3)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFAFAFA),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Text(
+                        "✓ Once submitted, your request is forwarded to the mentor and saved in your institution's alumni mentorship pipeline.",
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: const Color(0xFF475569),
+                          height: 1.45,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Footer Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF1E293B),
+                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: Text(
+                            "Cancel",
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E2C9B),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _myRequests.insert(0, {
+                                "id": "req-${DateTime.now().millisecondsSinceEpoch}",
+                                "mentorName": mentor["name"],
+                                "mentorCompany": mentor["company"],
+                                "status": "Pending",
+                                "topic": selectedTopic,
+                                "mode": selectedMode,
+                                "date": "Today, 8 Oct 2026",
+                                "goals": goalsCtrl.text.trim(),
+                              });
+                              _selectedTab = 1; // switch to requests tab
+                            });
+
+                            Navigator.of(ctx).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Mentorship request sent to ${mentor["name"]}!"),
+                                backgroundColor: const Color(0xFF10B981),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "Send Request",
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _cancelRequest(Map<String, dynamic> req) {
+    setState(() {
+      _myRequests.remove(req);
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Mentorship request to ${req["mentorName"]} cancelled."),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final list = _filteredAlumni;
+    final query = _searchController.text.trim().toLowerCase();
+
+    final filteredMentors = _mentors.where((m) {
+      final matchesQuery = query.isEmpty ||
+          (m["name"] as String).toLowerCase().contains(query) ||
+          (m["company"] as String).toLowerCase().contains(query) ||
+          (m["role"] as String).toLowerCase().contains(query) ||
+          (m["topic"] as String).toLowerCase().contains(query);
+
+      final matchesTopic = _selectedTopic == "All Topics" || m["topic"] == _selectedTopic;
+      final matchesAvail = !_availableOnly || m["available"] == true;
+
+      return matchesQuery && matchesTopic && matchesAvail;
+    }).toList();
 
     return PortalPageBody(
       title: "Alumni Network",
       category: "Campus Life",
-      onBack: widget.onBack,
-      badge: const AppBadge(label: "PHASE 3", tone: BadgeTone.brand),
+      onBack: widget.onBack ?? (Navigator.canPop(context) ? () => Navigator.pop(context) : null),
       children: [
-        // 1. Hero Glow Blueprint Banner matching web screenshot
+        // 1. Blueprint Hero Banner (Matching Image 2)
         const BlueprintHeroBanner(
           breadcrumb: "Home  ›  Campus Life  ›  Alumni Network",
           category: "CAMPUS LIFE",
           phase: "Phase 3",
-          icon: Icons.lan_outlined,
-          watermarkIcon: Icons.chair_alt_outlined,
+          isMvp: false,
+          icon: Icons.chair_alt_outlined,
           title: "Alumni Network",
           subtitle: "Mentors, speakers, recruiters and project advisors matched to your goals.",
+          watermarkIcon: Icons.chair_alt_outlined,
+        ),
+        const SizedBox(height: 20),
+
+        // 2. 4 Stat KPI Cards (Matching Image 2)
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final w = constraints.maxWidth;
+            if (w > 860) {
+              return Row(
+                children: [
+                  Expanded(child: _buildKpiCard("Alumni Mentors", "8", "Verified alumni directory", Icons.people_outline_rounded, const Color(0xFFEEF2FF), const Color(0xFF4F46E5))),
+                  const SizedBox(width: 14),
+                  Expanded(child: _buildKpiCard("Available Now", "8", "Taking new mentees", Icons.person_pin_circle_outlined, const Color(0xFFECFDF5), const Color(0xFF059669))),
+                  const SizedBox(width: 14),
+                  Expanded(child: _buildKpiCard("My Requests", "${_myRequests.length}", "0 accepted", Icons.chat_bubble_outline_rounded, const Color(0xFFEFF6FF), const Color(0xFF2563EB))),
+                  const SizedBox(width: 14),
+                  Expanded(child: _buildKpiCard("Top Employers", "Microsoft, IBM, Google", "Hiring partner alumni", Icons.business_center_outlined, const Color(0xFFFFFBEB), const Color(0xFFD97706), isTextValue: true)),
+                ],
+              );
+            } else if (w > 500) {
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: _buildKpiCard("Alumni Mentors", "8", "Verified alumni directory", Icons.people_outline_rounded, const Color(0xFFEEF2FF), const Color(0xFF4F46E5))),
+                      const SizedBox(width: 14),
+                      Expanded(child: _buildKpiCard("Available Now", "8", "Taking new mentees", Icons.person_pin_circle_outlined, const Color(0xFFECFDF5), const Color(0xFF059669))),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(child: _buildKpiCard("My Requests", "${_myRequests.length}", "0 accepted", Icons.chat_bubble_outline_rounded, const Color(0xFFEFF6FF), const Color(0xFF2563EB))),
+                      const SizedBox(width: 14),
+                      Expanded(child: _buildKpiCard("Top Employers", "Microsoft, IBM, Google", "Hiring partner alumni", Icons.business_center_outlined, const Color(0xFFFFFBEB), const Color(0xFFD97706), isTextValue: true)),
+                    ],
+                  ),
+                ],
+              );
+            } else {
+              return Column(
+                children: [
+                  _buildKpiCard("Alumni Mentors", "8", "Verified alumni directory", Icons.people_outline_rounded, const Color(0xFFEEF2FF), const Color(0xFF4F46E5)),
+                  const SizedBox(height: 12),
+                  _buildKpiCard("Available Now", "8", "Taking new mentees", Icons.person_pin_circle_outlined, const Color(0xFFECFDF5), const Color(0xFF059669)),
+                  const SizedBox(height: 12),
+                  _buildKpiCard("My Requests", "${_myRequests.length}", "0 accepted", Icons.chat_bubble_outline_rounded, const Color(0xFFEFF6FF), const Color(0xFF2563EB)),
+                  const SizedBox(height: 12),
+                  _buildKpiCard("Top Employers", "Microsoft, IBM, Google", "Hiring partner alumni", Icons.business_center_outlined, const Color(0xFFFFFBEB), const Color(0xFFD97706), isTextValue: true),
+                ],
+              );
+            }
+          },
+        ),
+        const SizedBox(height: 20),
+
+        // 3. Tab Pills (Matching Images 2 & 4 - Overflow Safe)
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildTabPill(0, "Alumni Mentors", "8"),
+              const SizedBox(width: 10),
+              _buildTabPill(1, "My Mentorship Requests", "${_myRequests.length}"),
+            ],
+          ),
         ),
         const SizedBox(height: 18),
 
-        // 2. Search, Filter, and Action Bar matching Web UI
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFEBEFF4), width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF162044).withValues(alpha: 0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.search, size: 20, color: Color(0xFF9CA3AF)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (_) => setState(() {}),
-                  style: GoogleFonts.poppins(fontSize: 13, color: AppColors.ink),
-                  decoration: InputDecoration(
-                    hintText: "Search alumni network...",
-                    hintStyle: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF9CA3AF)),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    errorBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
-                    filled: false,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-              ),
-              if (_searchController.text.isNotEmpty)
-                GestureDetector(
-                  onTap: () {
-                    _searchController.clear();
-                    setState(() {});
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4),
-                    child: Icon(Icons.close, size: 16, color: Color(0xFF9CA3AF)),
-                  ),
-                ),
-              Container(
-                height: 22,
-                width: 1,
-                color: const Color(0xFFE5E7EB),
-                margin: const EdgeInsets.symmetric(horizontal: 8),
-              ),
-              // Filter Dropdown
-              PopupMenuButton<String>(
-                initialValue: _selectedFilter,
-                onSelected: (val) => setState(() => _selectedFilter = val),
-                color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.filter_list, size: 15, color: Color(0xFF6B7280)),
-                    const SizedBox(width: 4),
-                    Text(
-                      _selectedFilter,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.ink,
-                      ),
-                    ),
-                    const SizedBox(width: 2),
-                    const Icon(Icons.keyboard_arrow_down, size: 16, color: Color(0xFF6B7280)),
-                  ],
-                ),
-                itemBuilder: (context) => [
-                  _filterMenuItem("All"),
-                  _filterMenuItem("Tech & Cloud"),
-                  _filterMenuItem("Founders"),
-                ],
-              ),
-              const SizedBox(width: 8),
-              // "Request mentorship" button
-              ElevatedButton(
-                onPressed: _showRequestMentorshipModal,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  elevation: 0,
-                ),
-                child: Text(
-                  "Request mentorship",
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // 3. Results Container
-        // If query is empty or simulate empty, display NotebookEmptyCard as in Screenshot 2
-        if (list.isEmpty)
-          const NotebookEmptyCard(
-            title: "No matching records",
-            subtitle: "Try a different search or filter.",
-            height: 180,
-          )
-        else
-          Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Alumni Mentors (${list.length})",
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.ink3,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      _searchController.text = "empty_test";
-                      setState(() {});
-                    },
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      "Simulate Empty",
-                      style: GoogleFonts.poppins(fontSize: 11.5, color: AppColors.ink3),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              ...list.map((alumni) => _buildAlumniCard(alumni)),
-            ],
-          ),
-        const SizedBox(height: 20),
-      ],
-    );
-  }
-
-  PopupMenuItem<String> _filterMenuItem(String value) {
-    return PopupMenuItem(
-      value: value,
-      child: Text(
-        value,
-        style: GoogleFonts.poppins(
-          fontSize: 12.5,
-          fontWeight: _selectedFilter == value ? FontWeight.w600 : FontWeight.w400,
-          color: _selectedFilter == value ? AppColors.primaryBlue : AppColors.ink,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAlumniCard(AlumniRecord alumni) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFEBEFF4), width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF162044).withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: const Color(0xFFE8EBF6),
-                child: Text(
-                  alumni.name[0],
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primaryBlue,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "${alumni.name} (${alumni.batch})",
-                      style: GoogleFonts.poppins(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.ink,
-                      ),
-                    ),
-                    Text(
-                      "${alumni.role} @ ${alumni.company}",
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF4A5BD4),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
+        // 4. Tab Body
+        if (_selectedTab == 0) ...[
+          // Search & Filter Card (Fully Adaptive & Overflow Safe)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFFFAF8F3),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFE4DFD3), width: 0.8),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
             ),
-            child: Row(
-              children: [
-                const Icon(Icons.school_outlined, size: 16, color: Color(0xFF0F766E)),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    "Mentorship: ${alumni.mentorship}",
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: AppColors.ink2,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 1060;
+                final isMedium = constraints.maxWidth >= 640;
+
+                final searchField = Container(
+                  height: 42,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.search, size: 18, color: Color(0xFF64748B)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: (_) => setState(() {}),
+                          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                          decoration: InputDecoration(
+                            hintText: "Search alumni network...",
+                            hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                        ),
+                      ),
+                      if (_searchController.text.isNotEmpty)
+                        GestureDetector(
+                          onTap: () => setState(() => _searchController.clear()),
+                          child: const Icon(Icons.close, size: 16, color: Color(0xFF94A3B8)),
+                        ),
+                    ],
+                  ),
+                );
+
+                final topicDropdown = Container(
+                  height: 42,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+                      value: _selectedTopic,
+                      icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Color(0xFF64748B)),
+                      style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF0F172A)),
+                      items: const [
+                        DropdownMenuItem(value: "All Topics", child: Text("All Topics", overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: "Mock Interviews & System Design", child: Text("Mock Interviews & System Design", overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: "Placement Prep", child: Text("Placement Prep", overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: "ML & Analytics Career Guidance", child: Text("ML & Analytics Career Guidance", overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: "Resume Review & Startups", child: Text("Resume Review & Startups", overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: "Product Management & Strategy", child: Text("Product Management & Strategy", overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: "Cloud Architecture & Networking", child: Text("Cloud Architecture & Networking", overflow: TextOverflow.ellipsis)),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) setState(() => _selectedTopic = val);
+                      },
                     ),
+                  ),
+                );
+
+                final availCheckbox = InkWell(
+                  onTap: () => setState(() => _availableOnly = !_availableOnly),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Checkbox(
+                        value: _availableOnly,
+                        onChanged: (v) => setState(() => _availableOnly = v ?? false),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                        activeColor: const Color(0xFF2E2C9B),
+                      ),
+                      Text(
+                        "Available only",
+                        style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF334155)),
+                      ),
+                    ],
+                  ),
+                );
+
+                final requestBtn = ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2E2C9B),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () => _showRequestMentorshipDialog(),
+                  child: Text(
+                    "Request mentorship",
+                    style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600),
+                  ),
+                );
+
+                if (isWide) {
+                  return Row(
+                    children: [
+                      Expanded(child: searchField),
+                      const SizedBox(width: 12),
+                      SizedBox(width: 260, child: topicDropdown),
+                      const SizedBox(width: 8),
+                      availCheckbox,
+                      const SizedBox(width: 12),
+                      requestBtn,
+                    ],
+                  );
+                }
+
+                if (isMedium) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      searchField,
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(child: topicDropdown),
+                          const SizedBox(width: 10),
+                          availCheckbox,
+                          const SizedBox(width: 12),
+                          requestBtn,
+                        ],
+                      ),
+                    ],
+                  );
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    searchField,
+                    const SizedBox(height: 10),
+                    topicDropdown,
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        availCheckbox,
+                        requestBtn,
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Mentors Data Table Container (Matching Image 2)
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  headingRowColor: WidgetStateProperty.all(const Color(0xFFF8FAFC)),
+                  headingTextStyle: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF64748B),
+                    letterSpacing: 0.5,
+                  ),
+                  dataRowMinHeight: 64,
+                  dataRowMaxHeight: 64,
+                  horizontalMargin: 20,
+                  columnSpacing: 28,
+                  columns: const [
+                    DataColumn(label: Text("ALUMNUS / MENTOR")),
+                    DataColumn(label: Text("BATCH")),
+                    DataColumn(label: Text("CURRENT POSITION")),
+                    DataColumn(label: Text("COMPANY")),
+                    DataColumn(label: Text("CAN MENTOR IN")),
+                    DataColumn(label: Text("MATCH SCORE")),
+                    DataColumn(label: Text("ACTION")),
+                  ],
+                  rows: filteredMentors.map((m) {
+                    final initials = m["initials"] as String;
+                    final name = m["name"] as String;
+                    final loc = m["location"] as String;
+                    final batch = m["batch"] as String;
+                    final role = m["role"] as String;
+                    final company = m["company"] as String;
+                    final topic = m["topic"] as String;
+                    final topicBg = m["topicBg"] as Color;
+                    final topicColor = m["topicColor"] as Color;
+                    final score = m["score"] as int;
+
+                    return DataRow(
+                      cells: [
+                        // ALUMNUS / MENTOR with avatar
+                        DataCell(
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CircleAvatar(
+                                radius: 16,
+                                backgroundColor: const Color(0xFFEEF2FF),
+                                child: Text(
+                                  initials,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF4F46E5),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    name,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        loc,
+                                        style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF64748B)),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        "LinkedIn ↗",
+                                        style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF4F46E5)),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        // BATCH
+                        DataCell(
+                          Text(
+                            batch,
+                            style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF475569)),
+                          ),
+                        ),
+                        // CURRENT POSITION
+                        DataCell(
+                          Text(
+                            role,
+                            style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF475569)),
+                          ),
+                        ),
+                        // COMPANY
+                        DataCell(
+                          Text(
+                            company,
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                          ),
+                        ),
+                        // CAN MENTOR IN
+                        DataCell(
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                            decoration: BoxDecoration(
+                              color: topicBg,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              topic,
+                              style: GoogleFonts.poppins(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: topicColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                        // MATCH SCORE
+                        DataCell(
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 50,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(3),
+                                  child: LinearProgressIndicator(
+                                    value: score / 100.0,
+                                    minHeight: 4,
+                                    backgroundColor: const Color(0xFFE2E8F0),
+                                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF0F766E)),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                "$score%",
+                                style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700, color: const Color(0xFF0F766E)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // ACTION
+                        DataCell(
+                          OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF1E293B),
+                              side: const BorderSide(color: Color(0xFFCBD5E1)),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                            ),
+                            onPressed: () => _showRequestMentorshipDialog(m),
+                            child: Text(
+                              "Request",
+                              style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ),
+        ] else ...[
+          // ───────────────────────────────────────────────────────────────────
+          // My Mentorship Requests Tab (Matching Image 4)
+          // ───────────────────────────────────────────────────────────────────
+          SizedBox(
+            width: double.infinity,
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 6,
+              children: [
+                Text(
+                  "Mentorship Requests Pipeline (${_myRequests.length})",
+                  style: GoogleFonts.poppins(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+                Text(
+                  "Status updates automatically with mentor response",
+                  style: GoogleFonts.poppins(
+                    fontSize: 11.5,
+                    color: const Color(0xFF64748B),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            height: 38,
-            child: OutlinedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("Mentorship request sent to ${alumni.name}!"),
-                    backgroundColor: AppColors.primaryBlue,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.primaryBlue),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          const SizedBox(height: 14),
+
+          if (_myRequests.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
               ),
-              child: Text(
-                "Request 1:1 Mentorship Session",
-                style: GoogleFonts.poppins(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primaryBlue,
+              child: Center(
+                child: Column(
+                  children: [
+                    const Icon(Icons.inbox_outlined, size: 36, color: Color(0xFF94A3B8)),
+                    const SizedBox(height: 8),
+                    Text(
+                      "No active mentorship requests",
+                      style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF334155)),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Browse verified alumni mentors and send a 1:1 request.",
+                      style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF94A3B8)),
+                    ),
+                  ],
                 ),
               ),
+            )
+          else
+            ..._myRequests.map((req) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 14),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top Row: Name + Company, Status pill, Cancel Request button
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 4,
+                            children: [
+                              Text(
+                                req["mentorName"] as String,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF0F172A),
+                                ),
+                              ),
+                              Text(
+                                "(${req["mentorCompany"]})",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFEF3C7),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  req["status"] as String,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFFD97706),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF991B1B),
+                            side: const BorderSide(color: Color(0xFFFCA5A5)),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                          ),
+                          onPressed: () => _cancelRequest(req),
+                          child: Text(
+                            "Cancel Request",
+                            style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Topic · Mode · Requested date
+                    Text(
+                      "Topic: ${req["topic"]}   ·   Mode: ${req["mode"]}   ·   Requested: ${req["date"]}",
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Goals Quote Box (Matching Image 4)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFAFAFA),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFF1F5F9)),
+                      ),
+                      child: Text(
+                        "\"${req["goals"]}\"",
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                          color: const Color(0xFF475569),
+                          height: 1.45,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildKpiCard(String title, String value, String sub, IconData icon, Color iconBg, Color iconColor, {bool isTextValue = false}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF64748B),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(icon, size: 15, color: iconColor),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: isTextValue ? 15 : 26,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF0F172A),
+              letterSpacing: isTextValue ? 0 : -0.5,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            sub,
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              color: const Color(0xFF94A3B8),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
     );
   }
 
-  void _showRequestMentorshipModal() {
-    final topicController = TextEditingController();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD1D5DB),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+  Widget _buildTabPill(int index, String label, String badgeCount) {
+    final isSelected = _selectedTab == index;
+    return InkWell(
+      onTap: () => setState(() => _selectedTab = index),
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF141938) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? Colors.white : const Color(0xFF64748B),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.white24 : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                badgeCount,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected ? Colors.white : const Color(0xFF64748B),
                 ),
               ),
-              const SizedBox(height: 18),
-              Text(
-                "Request Alumni Mentorship",
-                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                "Connect with verified alumni for technical advice, career coaching, and interview prep.",
-                style: GoogleFonts.poppins(fontSize: 12.5, color: AppColors.ink2),
-              ),
-              const SizedBox(height: 16),
-              Text("Mentorship Topic / Goal", style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 6),
-              TextField(
-                controller: topicController,
-                decoration: InputDecoration(
-                  hintText: "e.g., Google interview prep or YC startup guidance",
-                  hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF9CA3AF)),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 44,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Mentorship inquiry broadcast to matched alumni mentors!"),
-                        backgroundColor: AppColors.primaryBlue,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  child: Text(
-                    "Submit Mentorship Request",
-                    style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -20,234 +20,6 @@ class _ClassNotesScreenState extends State<ClassNotesScreen> {
   Map<String, dynamic>? _selectedNote;
   bool _quickCheckRevealed = false;
 
-  void _showNoteDetailsDialog(Map<String, dynamic> note) {
-    final points = (note["points"] as List<dynamic>?) ?? [];
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.menu_book_rounded, color: Color(0xFF2563EB), size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(note["title"] as String, style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700)),
-                  Text("${note["department"]} · ${note["date"]}", style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF64748B))),
-                ],
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF64748B)),
-              onPressed: () => Navigator.pop(ctx),
-              splashRadius: 20,
-            ),
-          ],
-        ),
-        content: Container(
-          width: double.maxFinite,
-          constraints: const BoxConstraints(maxWidth: 460),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (note["author"] != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Text("Faculty: ${note["author"]}", style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF334155))),
-                  ),
-                Text("Key Lecture Takeaways:", style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w700, color: const Color(0xFF94A3B8))),
-                const SizedBox(height: 6),
-                for (final p in points)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(Icons.check_circle_rounded, size: 14, color: Color(0xFF059669)),
-                        const SizedBox(width: 6),
-                        Expanded(child: Text(p.toString(), style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF1E293B)))),
-                      ],
-                    ),
-                  ),
-                if (note["homework"] != null) ...[
-                  const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(color: const Color(0xFFFEF3C7), borderRadius: BorderRadius.circular(8)),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(Icons.edit_note_rounded, size: 16, color: Color(0xFFB45309)),
-                        const SizedBox(width: 6),
-                        Expanded(child: Text("Homework: ${note["homework"]}", style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF92400E)))),
-                      ],
-                    ),
-                  ),
-                ],
-                if (note["nextClass"] != null) ...[
-                  const SizedBox(height: 8),
-                  Text("Next Class: ${note["nextClass"]}", style: GoogleFonts.poppins(fontSize: 11.5, fontStyle: FontStyle.italic, color: const Color(0xFF64748B))),
-                ],
-              ],
-            ),
-          ),
-        ),
-        actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-        actions: [
-          Wrap(
-            alignment: WrapAlignment.end,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                ),
-                child: Text("Close", style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontWeight: FontWeight.w500, fontSize: 13)),
-              ),
-              OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _showEditNoteDialog(note);
-                },
-                icon: const Icon(Icons.edit_outlined, size: 14),
-                label: Text("Edit", style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF141938),
-                  side: const BorderSide(color: Color(0xFFCBD5E1)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                ),
-              ),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  setState(() {
-                    _selectedNote = note;
-                    _quickCheckRevealed = false;
-                  });
-                },
-                icon: const Icon(Icons.menu_book_rounded, size: 15),
-                label: Text("Open Full Notes", style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF141938),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showEditNoteDialog(Map<String, dynamic> note) {
-    final titleCtrl = TextEditingController(text: note["title"] as String);
-    final courseCtrl = TextEditingController(text: note["courseTitle"] as String? ?? "");
-    final homeworkCtrl = TextEditingController(text: note["homework"] as String? ?? "");
-    final nextClassCtrl = TextEditingController(text: note["nextClass"] as String? ?? "");
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text("Edit Note / Personal Annotations", style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16)),
-        content: Container(
-          width: double.maxFinite,
-          constraints: const BoxConstraints(maxWidth: 440),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: titleCtrl,
-                  decoration: const InputDecoration(labelText: "Note Title", border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: courseCtrl,
-                  decoration: const InputDecoration(labelText: "Course / Topic", border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: homeworkCtrl,
-                  maxLines: 2,
-                  decoration: const InputDecoration(labelText: "Homework / Action Items", border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: nextClassCtrl,
-                  decoration: const InputDecoration(labelText: "Next Class Prep", border: OutlineInputBorder()),
-                ),
-              ],
-            ),
-          ),
-        ),
-        actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-        actions: [
-          Wrap(
-            alignment: WrapAlignment.end,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                ),
-                child: Text("Cancel", style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontWeight: FontWeight.w500, fontSize: 13)),
-              ),
-              ElevatedButton.icon(
-                onPressed: () {
-                  setState(() {
-                    note["title"] = titleCtrl.text.trim();
-                    note["courseTitle"] = courseCtrl.text.trim();
-                    note["homework"] = homeworkCtrl.text.trim();
-                    note["nextClass"] = nextClassCtrl.text.trim();
-                  });
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Class note '${note["title"]}' updated successfully!"),
-                      backgroundColor: const Color(0xFF15803D),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.check_rounded, size: 15),
-                label: Text("Save Changes", style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF141938),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   final List<Map<String, dynamic>> _notesData = [
     {
       "id": "CN-01",
@@ -648,62 +420,35 @@ class _ClassNotesScreenState extends State<ClassNotesScreen> {
                     ),
                   const SizedBox(height: 14),
 
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _selectedNote = note;
-                            _quickCheckRevealed = false;
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryBlue,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          elevation: 0,
+                  // Open notes button
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedNote = note;
+                        _quickCheckRevealed = false;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          "Open notes",
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              "Open notes",
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(Icons.arrow_forward_rounded, size: 13, color: Colors.white),
-                          ],
-                        ),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () => _showNoteDetailsDialog(note),
-                        icon: const Icon(Icons.visibility_outlined, size: 13),
-                        label: const Text("View Details"),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          side: const BorderSide(color: Color(0xFFE2E8F0)),
-                          foregroundColor: const Color(0xFF0F766E),
-                          textStyle: GoogleFonts.poppins(fontSize: 11.5),
-                        ),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () => _showEditNoteDialog(note),
-                        icon: const Icon(Icons.edit_outlined, size: 13),
-                        label: const Text("Edit"),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          side: const BorderSide(color: Color(0xFFE2E8F0)),
-                          foregroundColor: const Color(0xFF4338CA),
-                          textStyle: GoogleFonts.poppins(fontSize: 11.5),
-                        ),
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        const Icon(Icons.arrow_forward_rounded, size: 13, color: Colors.white),
+                      ],
+                    ),
                   ),
                 ],
               ),

@@ -485,6 +485,627 @@ class _AcademicCalendarScreenState extends State<AcademicCalendarScreen> {
     return months[month - 1];
   }
 
+  void _showCreateEventDialog() {
+    final titleCtrl = TextEditingController();
+    final startDateCtrl = TextEditingController();
+    final endDateCtrl = TextEditingController();
+    final timeCtrl = TextEditingController();
+    final venueCtrl = TextEditingController();
+    final organizerCtrl = TextEditingController(text: "Department / Faculty");
+    final capacityCtrl = TextEditingController(text: "0");
+    final descCtrl = TextEditingController();
+
+    String selectedType = "Academic";
+    String selectedStatus = "Upcoming";
+
+    final typeOptions = const [
+      "Academic",
+      "Cultural",
+      "Sports",
+      "Workshop",
+      "Seminar",
+      "Technical",
+      "Other",
+    ];
+
+    final statusOptions = const [
+      "Upcoming",
+      "Active",
+      "Published",
+      "Draft",
+      "Completed",
+      "Cancelled",
+    ];
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          Future<void> pickDate(TextEditingController controller) async {
+            final now = DateTime.now();
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: now,
+              firstDate: DateTime(2025),
+              lastDate: DateTime(2030),
+              builder: (context, child) {
+                return Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: const ColorScheme.light(
+                      primary: Color(0xFF7E84EC),
+                      onPrimary: Colors.white,
+                      onSurface: Color(0xFF0F172A),
+                    ),
+                  ),
+                  child: child!,
+                );
+              },
+            );
+            if (picked != null) {
+              setDialogState(() {
+                controller.text =
+                    "${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}";
+              });
+            }
+          }
+
+          Future<void> pickTime(TextEditingController controller) async {
+            final picked = await showTimePicker(
+              context: context,
+              initialTime: TimeOfDay.now(),
+              builder: (context, child) {
+                return Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: const ColorScheme.light(
+                      primary: Color(0xFF7E84EC),
+                      onPrimary: Colors.white,
+                      onSurface: Color(0xFF0F172A),
+                    ),
+                  ),
+                  child: child!,
+                );
+              },
+            );
+            if (picked != null) {
+              final hour = picked.hourOfPeriod == 0 ? 12 : picked.hourOfPeriod;
+              final minute = picked.minute.toString().padLeft(2, '0');
+              final period = picked.period == DayPeriod.am ? "AM" : "PM";
+              setDialogState(() {
+                controller.text = "${hour.toString().padLeft(2, '0')}:$minute $period";
+              });
+            }
+          }
+
+          Widget buildLabel(String label) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1E293B),
+                ),
+              ),
+            );
+          }
+
+          Widget buildTextField({
+            required TextEditingController controller,
+            required String hintText,
+            IconData? suffixIcon,
+            VoidCallback? onSuffixTap,
+            int minLines = 1,
+            int maxLines = 1,
+            TextInputType? keyboardType,
+          }) {
+            return TextField(
+              controller: controller,
+              minLines: minLines,
+              maxLines: maxLines,
+              keyboardType: keyboardType,
+              style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+              decoration: InputDecoration(
+                hintText: hintText,
+                hintStyle: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF94A3B8)),
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                suffixIcon: suffixIcon != null
+                    ? InkWell(
+                        onTap: onSuffixTap,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Icon(suffixIcon, size: 18, color: const Color(0xFF64748B)),
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFF7E84EC), width: 1.5),
+                ),
+              ),
+            );
+          }
+
+          Widget buildDropdown({
+            required String value,
+            required List<String> items,
+            required ValueChanged<String?> onChanged,
+          }) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: items.contains(value) ? value : items.first,
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: Color(0xFF64748B)),
+                  style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF0F172A)),
+                  items: items.map((opt) {
+                    return DropdownMenuItem<String>(
+                      value: opt,
+                      child: Text(opt, overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: onChanged,
+                ),
+              ),
+            );
+          }
+
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 16,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 540, maxHeight: 720),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Dialog Header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Create Event",
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0F172A),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, size: 20, color: Color(0xFF64748B)),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+
+                  // Scrollable Form
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Event Title *
+                          buildLabel("Event Title *"),
+                          buildTextField(
+                            controller: titleCtrl,
+                            hintText: "Annual Tech Symposium",
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Type & Status Row
+                          LayoutBuilder(
+                            builder: (context, c) {
+                              if (c.maxWidth < 420) {
+                                return Column(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Type"),
+                                        buildDropdown(
+                                          value: selectedType,
+                                          items: typeOptions,
+                                          onChanged: (val) {
+                                            if (val != null) setDialogState(() => selectedType = val);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Status"),
+                                        buildDropdown(
+                                          value: selectedStatus,
+                                          items: statusOptions,
+                                          onChanged: (val) {
+                                            if (val != null) setDialogState(() => selectedStatus = val);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Type"),
+                                        buildDropdown(
+                                          value: selectedType,
+                                          items: typeOptions,
+                                          onChanged: (val) {
+                                            if (val != null) setDialogState(() => selectedType = val);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Status"),
+                                        buildDropdown(
+                                          value: selectedStatus,
+                                          items: statusOptions,
+                                          onChanged: (val) {
+                                            if (val != null) setDialogState(() => selectedStatus = val);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Start Date * & End Date Row
+                          LayoutBuilder(
+                            builder: (context, c) {
+                              if (c.maxWidth < 420) {
+                                return Column(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Start Date *"),
+                                        buildTextField(
+                                          controller: startDateCtrl,
+                                          hintText: "mm/dd/yyyy",
+                                          suffixIcon: Icons.calendar_today_outlined,
+                                          onSuffixTap: () => pickDate(startDateCtrl),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("End Date"),
+                                        buildTextField(
+                                          controller: endDateCtrl,
+                                          hintText: "mm/dd/yyyy",
+                                          suffixIcon: Icons.calendar_today_outlined,
+                                          onSuffixTap: () => pickDate(endDateCtrl),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Start Date *"),
+                                        buildTextField(
+                                          controller: startDateCtrl,
+                                          hintText: "mm/dd/yyyy",
+                                          suffixIcon: Icons.calendar_today_outlined,
+                                          onSuffixTap: () => pickDate(startDateCtrl),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("End Date"),
+                                        buildTextField(
+                                          controller: endDateCtrl,
+                                          hintText: "mm/dd/yyyy",
+                                          suffixIcon: Icons.calendar_today_outlined,
+                                          onSuffixTap: () => pickDate(endDateCtrl),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Time & Venue Row
+                          LayoutBuilder(
+                            builder: (context, c) {
+                              if (c.maxWidth < 420) {
+                                return Column(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Time"),
+                                        buildTextField(
+                                          controller: timeCtrl,
+                                          hintText: "--:-- --",
+                                          suffixIcon: Icons.access_time_rounded,
+                                          onSuffixTap: () => pickTime(timeCtrl),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Venue"),
+                                        buildTextField(
+                                          controller: venueCtrl,
+                                          hintText: "Auditorium, Hall A...",
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Time"),
+                                        buildTextField(
+                                          controller: timeCtrl,
+                                          hintText: "--:-- --",
+                                          suffixIcon: Icons.access_time_rounded,
+                                          onSuffixTap: () => pickTime(timeCtrl),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Venue"),
+                                        buildTextField(
+                                          controller: venueCtrl,
+                                          hintText: "Auditorium, Hall A...",
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Organizer & Capacity Row
+                          LayoutBuilder(
+                            builder: (context, c) {
+                              if (c.maxWidth < 420) {
+                                return Column(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Organizer"),
+                                        buildTextField(
+                                          controller: organizerCtrl,
+                                          hintText: "Department / Faculty",
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Capacity"),
+                                        buildTextField(
+                                          controller: capacityCtrl,
+                                          hintText: "0",
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Organizer"),
+                                        buildTextField(
+                                          controller: organizerCtrl,
+                                          hintText: "Department / Faculty",
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        buildLabel("Capacity"),
+                                        buildTextField(
+                                          controller: capacityCtrl,
+                                          hintText: "0",
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Description
+                          buildLabel("Description"),
+                          buildTextField(
+                            controller: descCtrl,
+                            hintText: "Brief event description...",
+                            minLines: 3,
+                            maxLines: 4,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Actions Footer
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFF334155),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          child: Text(
+                            "Cancel",
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF7E84EC),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () {
+                            final title = titleCtrl.text.trim();
+                            final startDate = startDateCtrl.text.trim();
+
+                            if (title.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Please enter the Event Title."),
+                                  backgroundColor: Color(0xFFEF4444),
+                                ),
+                              );
+                              return;
+                            }
+                            if (startDate.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Please specify a Start Date."),
+                                  backgroundColor: Color(0xFFEF4444),
+                                ),
+                              );
+                              return;
+                            }
+
+                            int day = 15;
+                            int month = _currentMonth.month;
+                            int year = _currentMonth.year;
+                            if (startDate.contains("/")) {
+                              final parts = startDate.split("/");
+                              if (parts.length == 3) {
+                                month = int.tryParse(parts[0]) ?? month;
+                                day = int.tryParse(parts[1]) ?? day;
+                                year = int.tryParse(parts[2]) ?? year;
+                              }
+                            }
+
+                            setState(() {
+                              _events.add(CalendarEventItem(
+                                id: "evt_${DateTime.now().millisecondsSinceEpoch}",
+                                title: title,
+                                type: selectedType == "Academic" ? "Class" : (selectedType == "Workshop" ? "Workshop" : "Event"),
+                                year: year,
+                                month: month,
+                                monthDays: [day],
+                                dateDisplay: "$day ${_getMonthName(month)} · ${venueCtrl.text.trim().isEmpty ? 'Auditorium' : venueCtrl.text.trim()}",
+                                desc: descCtrl.text.trim().isNotEmpty ? descCtrl.text.trim() : "Campus event: $title",
+                                timeAndVenue: "${timeCtrl.text.trim().isNotEmpty ? timeCtrl.text.trim() : '09:00 AM'} · ${venueCtrl.text.trim().isEmpty ? 'Auditorium' : venueCtrl.text.trim()}",
+                                color: const Color(0xFF8B5CF6),
+                                bgColor: const Color(0xFFF3E8FF),
+                                textColor: const Color(0xFF7E22CE),
+                              ));
+                            });
+
+                            Navigator.of(ctx).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Event '$title' created successfully!"),
+                                backgroundColor: const Color(0xFF10B981),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "Create Event",
+                            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PortalPageBody(
@@ -492,8 +1113,8 @@ class _AcademicCalendarScreenState extends State<AcademicCalendarScreen> {
       category: "Academics",
       onBack: widget.onBack ?? (Navigator.canPop(context) ? () => Navigator.pop(context) : null),
       children: [
-        // 1. Blueprint Hero Banner (Pixel-perfect match to Image 1)
-        const BlueprintHeroBanner(
+        // 1. Blueprint Hero Banner with Create Event action
+        BlueprintHeroBanner(
           breadcrumb: "Home  ›  Academics  ›  Academic Calendar",
           category: "ACADEMICS",
           phase: "MVP",
@@ -502,10 +1123,29 @@ class _AcademicCalendarScreenState extends State<AcademicCalendarScreen> {
           title: "Academic Calendar",
           subtitle: "Semester schedule, internal assessments, holidays and exam windows.",
           watermarkIcon: Icons.calendar_month_rounded,
+          action: ElevatedButton.icon(
+            onPressed: _showCreateEventDialog,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF1E1B4B),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            icon: const Icon(Icons.add, size: 16, color: Color(0xFF1E1B4B)),
+            label: Text(
+              "Create Event",
+              style: GoogleFonts.poppins(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF1E1B4B),
+              ),
+            ),
+          ),
         ),
         const SizedBox(height: 18),
 
-        // 2. Navigation Header Row (< October 2026 > Today)
+        // 2. Navigation Header Row (< October 2026 > Today + Create Event)
         Row(
           children: [
             InkWell(
@@ -547,6 +1187,22 @@ class _AcademicCalendarScreenState extends State<AcademicCalendarScreen> {
               child: Text(
                 "Today",
                 style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500, color: const Color(0xFF334155)),
+              ),
+            ),
+            const Spacer(),
+            ElevatedButton.icon(
+              onPressed: _showCreateEventDialog,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7E84EC),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              icon: const Icon(Icons.add, size: 16),
+              label: Text(
+                "Create Event",
+                style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600),
               ),
             ),
           ],
