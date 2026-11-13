@@ -1084,7 +1084,7 @@ class _PrincipalStudentSuccessEarlyWarningScreenState
                 horizontalMargin: 16,
                 headingRowHeight: 44,
                 dataRowMinHeight: 60,
-                dataRowMaxHeight: 68,
+                dataRowMaxHeight: 180,
                 headingTextStyle: GoogleFonts.poppins(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,

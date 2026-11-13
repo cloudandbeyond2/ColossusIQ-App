@@ -1,7 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Floating card / pill-shaped bottom navigation bar inspired by modern mobile UI
+/// Floating card / pill-shaped bottom navigation bar with frosted glass styling
 class PortalBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -26,62 +27,70 @@ class PortalBottomNav extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 18),
               height: 66,
               decoration: BoxDecoration(
-                color: Colors.white,
                 borderRadius: BorderRadius.circular(38),
-                border: Border.all(
-                  color: const Color(0xFFF1F5F9),
-                  width: 1.2,
-                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.10),
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.12),
                     blurRadius: 24,
                     offset: const Offset(0, 8),
                     spreadRadius: 0,
                   ),
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 8,
+                    color: const Color(0xFF2563EB).withValues(alpha: 0.05),
+                    blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(38),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildNavItem(
-                      index: 0,
-                      icon: Icons.home_rounded,
-                      unselectedIcon: Icons.home_outlined,
-                      label: "Home",
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.90),
+                      borderRadius: BorderRadius.circular(38),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.95),
+                        width: 1.4,
+                      ),
                     ),
-                    _buildNavItem(
-                      index: 1,
-                      icon: Icons.menu_book_rounded,
-                      unselectedIcon: Icons.menu_book_outlined,
-                      label: "Courses",
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildNavItem(
+                          index: 0,
+                          icon: Icons.home_rounded,
+                          unselectedIcon: Icons.home_outlined,
+                          label: "Home",
+                        ),
+                        _buildNavItem(
+                          index: 1,
+                          icon: Icons.menu_book_rounded,
+                          unselectedIcon: Icons.menu_book_outlined,
+                          label: "Courses",
+                        ),
+                        _buildNavItem(
+                          index: 2,
+                          icon: Icons.sticky_note_2_rounded,
+                          unselectedIcon: Icons.sticky_note_2_outlined,
+                          label: "Notes",
+                        ),
+                        _buildNavItem(
+                          index: 3,
+                          icon: Icons.assignment_rounded,
+                          unselectedIcon: Icons.assignment_outlined,
+                          label: "Assignments",
+                        ),
+                        _buildNavItem(
+                          index: 4,
+                          icon: Icons.person_rounded,
+                          unselectedIcon: Icons.person_outline_rounded,
+                          label: "Profile",
+                        ),
+                      ],
                     ),
-                    _buildNavItem(
-                      index: 2,
-                      icon: Icons.sticky_note_2_rounded,
-                      unselectedIcon: Icons.sticky_note_2_outlined,
-                      label: "Notes",
-                    ),
-                    _buildNavItem(
-                      index: 3,
-                      icon: Icons.assignment_rounded,
-                      unselectedIcon: Icons.assignment_outlined,
-                      label: "Assignments",
-                    ),
-                    _buildNavItem(
-                      index: 4,
-                      icon: Icons.person_rounded,
-                      unselectedIcon: Icons.person_outline_rounded,
-                      label: "Profile",
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

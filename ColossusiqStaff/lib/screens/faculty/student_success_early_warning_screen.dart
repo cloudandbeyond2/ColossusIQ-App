@@ -1259,7 +1259,7 @@ class _StudentSuccessEarlyWarningScreenState
               headingRowColor:
                   WidgetStateProperty.all(const Color(0xFFFAF9F6)),
               dataRowMinHeight: 62,
-              dataRowMaxHeight: 74,
+              dataRowMaxHeight: 180,
               horizontalMargin: 20,
               columnSpacing: 22,
               columns: [
@@ -1501,31 +1501,35 @@ class _StudentSuccessEarlyWarningScreenState
                     DataCell(
                       sigs.isEmpty
                           ? const SizedBox.shrink()
-                          : Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: sigs.map((sig) {
-                                return Container(
-                                  margin:
-                                      const EdgeInsets.symmetric(vertical: 2),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 2.5),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFFF7ED),
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(
-                                        color: const Color(0xFFFED7AA)),
-                                  ),
-                                  child: Text(
-                                    sig,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                      color: const Color(0xFF9A3412),
+                          : Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: sigs.map((sig) {
+                                  return Container(
+                                    margin:
+                                        const EdgeInsets.symmetric(vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 2.5),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFF7ED),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                          color: const Color(0xFFFED7AA)),
                                     ),
-                                  ),
-                                );
-                              }).toList(),
+                                    child: Text(
+                                      sig,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF9A3412),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
                             ),
                     ),
                     // Review Status Dropdown

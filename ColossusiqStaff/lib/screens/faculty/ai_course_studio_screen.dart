@@ -551,7 +551,7 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
   // ===========================================================================
   Widget _buildMainDashboard(bool isNarrow) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 90),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
       children: [
         _buildHeroBanner(),
         const SizedBox(height: 14),
@@ -1363,7 +1363,7 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
   // ===========================================================================
   Widget _buildStep1CourseDetails(bool isNarrow) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 90),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
       children: [
         _buildWizardTopBar(),
         const SizedBox(height: 14),
@@ -1923,7 +1923,7 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
   // ===========================================================================
   Widget _buildStep2LessonsEditor(bool isNarrow) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 90),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
       children: [
         _buildWizardTopBar(),
         const SizedBox(height: 14),
@@ -2696,7 +2696,7 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
   // ===========================================================================
   Widget _buildStep3FinalAssessment(bool isNarrow) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 90),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
       children: [
         _buildWizardTopBar(),
         const SizedBox(height: 14),
@@ -3535,7 +3535,7 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
     }
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 90),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
       children: [
         _buildWizardTopBar(),
         const SizedBox(height: 14),

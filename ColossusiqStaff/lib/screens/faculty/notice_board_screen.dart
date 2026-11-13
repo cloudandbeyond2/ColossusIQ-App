@@ -495,7 +495,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
           final isDesktop = constraints.maxWidth >= 940;
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 80),
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 140),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

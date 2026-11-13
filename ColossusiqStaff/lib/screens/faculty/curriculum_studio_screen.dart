@@ -906,7 +906,7 @@ class _CurriculumStudioScreenState extends State<CurriculumStudioScreen> {
   // ===========================================================================
   Widget _buildProgrammesOverview(BoxConstraints constraints) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 80),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 140),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1343,7 +1343,7 @@ class _CurriculumStudioScreenState extends State<CurriculumStudioScreen> {
     final totalSemCredits = hsCredits + bsCredits + esCredits + pcCredits;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 80),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 140),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1855,7 +1855,7 @@ class _CurriculumStudioScreenState extends State<CurriculumStudioScreen> {
   // ===========================================================================
   Widget _buildCourseRoadmapView(BoxConstraints constraints) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 80),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 140),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -2266,6 +2266,7 @@ class _CurriculumStudioScreenState extends State<CurriculumStudioScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 24),
         ],
       ),
     );

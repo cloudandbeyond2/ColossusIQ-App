@@ -1041,7 +1041,7 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
       body: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 80),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

@@ -2123,7 +2123,7 @@ class _MyClassesScreenState extends State<MyClassesScreen> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: SizedBox(
-                        width: 580,
+                        width: 630,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [

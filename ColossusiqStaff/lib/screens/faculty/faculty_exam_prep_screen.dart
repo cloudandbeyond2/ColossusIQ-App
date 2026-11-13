@@ -725,7 +725,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
           final isNarrow = constraints.maxWidth < 750;
 
           return ListView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 90),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
             children: [
               // 1. Hero Blueprint Banner
               _buildHeroBanner(),
@@ -764,6 +764,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   // ===========================================================================
   Widget _buildHeroBanner() {
     return Container(
+      margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         gradient: const LinearGradient(
@@ -1170,6 +1171,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   // ===========================================================================
   Widget _buildQuestionSetsCard(BoxConstraints constraints) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -1402,6 +1404,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
     final isDesktop = constraints.maxWidth >= 800;
 
     return Container(
+      margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
