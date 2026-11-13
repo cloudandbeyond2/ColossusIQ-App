@@ -2726,13 +2726,11 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 12,
-                runSpacing: 10,
-                children: [
-                  Column(
+              LayoutBuilder(
+                builder: (context, headerBox) {
+                  final isWide = headerBox.maxWidth >= 720;
+
+                  final titleCol = Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -2752,9 +2750,12 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
                         ),
                       ),
                     ],
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
+                  );
+
+                  final buttons = Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       OutlinedButton.icon(
                         onPressed: () {
@@ -2783,7 +2784,6 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
                       ElevatedButton.icon(
                         onPressed: _addAssessmentQuestionDialog,
                         icon: const Icon(Icons.add, size: 14),
@@ -2799,8 +2799,28 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
                         ),
                       ),
                     ],
-                  ),
-                ],
+                  );
+
+                  if (isWide) {
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: titleCol),
+                        const SizedBox(width: 16),
+                        buttons,
+                      ],
+                    );
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      titleCol,
+                      const SizedBox(height: 12),
+                      buttons,
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 18),
 
@@ -2813,58 +2833,74 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0xFFFDE68A)),
                   ),
-                  child: Wrap(
-                    alignment: WrapAlignment.spaceBetween,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 12,
-                    runSpacing: 10,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
+                  child: LayoutBuilder(
+                    builder: (context, bannerBox) {
+                      final isWide = bannerBox.maxWidth >= 720;
+
+                      final warningText = Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Icon(Icons.warning_amber_rounded,
                               size: 18, color: Color(0xFFD97706)),
                           const SizedBox(width: 8),
-                          Text(
-                            "${_activeCourse.toReviewCount} questions are marked review. Edit them, or confirm you have checked them, before publishing.",
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF92400E),
+                          Expanded(
+                            child: Text(
+                              "${_activeCourse.toReviewCount} questions are marked review. Edit them, or confirm you have checked them, before publishing.",
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF92400E),
+                                height: 1.4,
+                              ),
                             ),
                           ),
                         ],
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
+                      );
+
+                      final actions = Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 10,
+                        runSpacing: 8,
                         children: [
-                          Checkbox(
-                            value: _activeCourse.allQuestionsChecked,
-                            activeColor: const Color(0xFFD97706),
-                            onChanged: (val) {
-                              setState(() {
-                                _activeCourse.allQuestionsChecked = val ?? false;
-                                if (val == true) {
-                                  _markAllReviewed();
-                                }
-                              });
-                            },
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: Checkbox(
+                                  value: _activeCourse.allQuestionsChecked,
+                                  activeColor: const Color(0xFFD97706),
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _activeCourse.allQuestionsChecked =
+                                          val ?? false;
+                                      if (val == true) {
+                                        _markAllReviewed();
+                                      }
+                                    });
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                "I have checked every question",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11.5,
+                                  color: const Color(0xFF92400E),
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            "I have checked every question",
-                            style: GoogleFonts.poppins(
-                              fontSize: 11.5,
-                              color: const Color(0xFF92400E),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
                           ElevatedButton(
                             onPressed: _markAllReviewed,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFD97706),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
+                                  horizontal: 14, vertical: 8),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(6),
                               ),
@@ -2872,8 +2908,28 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
                             child: const Text("Mark all reviewed"),
                           ),
                         ],
-                      ),
-                    ],
+                      );
+
+                      if (isWide) {
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(child: warningText),
+                            const SizedBox(width: 16),
+                            actions,
+                          ],
+                        );
+                      }
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          warningText,
+                          const SizedBox(height: 12),
+                          actions,
+                        ],
+                      );
+                    },
                   ),
                 ),
               const SizedBox(height: 16),
@@ -2896,86 +2952,135 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
                     ),
                     child: Column(
                       children: [
-                        ListTile(
-                          dense: true,
-                          leading: CircleAvatar(
-                            radius: 13,
-                            backgroundColor: const Color(0xFFF1F5F9),
-                            child: Text(
-                              "${qIdx + 1}",
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF475569),
-                              ),
-                            ),
-                          ),
-                          title: Text(
-                            q.questionText,
-                            style: GoogleFonts.poppins(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF1E293B),
-                            ),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: q.isReview
-                                      ? const Color(0xFFFEF3C7)
-                                      : const Color(0xFFDCFCE7),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
+                          child: LayoutBuilder(
+                            builder: (context, qBox) {
+                              final isNarrow = qBox.maxWidth < 560;
+
+                              final numberBadge = CircleAvatar(
+                                radius: 13,
+                                backgroundColor: const Color(0xFFF1F5F9),
                                 child: Text(
-                                  q.isReview ? "Review" : "Reviewed",
+                                  "${qIdx + 1}",
                                   style: GoogleFonts.poppins(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: q.isReview
-                                        ? const Color(0xFFB45309)
-                                        : const Color(0xFF15803D),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF475569),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                icon: Icon(
-                                  isExpanded
-                                      ? Icons.keyboard_arrow_up
-                                      : Icons.keyboard_arrow_down,
-                                  size: 18,
-                                  color: const Color(0xFF64748B),
+                              );
+
+                              final questionTitle = Text(
+                                q.questionText,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF1E293B),
+                                  height: 1.45,
                                 ),
-                                onPressed: () {
-                                  setState(() {
-                                    if (isExpanded) {
-                                      _expandedQuestions.remove(q.id);
-                                    } else {
-                                      _expandedQuestions.add(q.id);
-                                    }
-                                  });
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline,
-                                    size: 16, color: Color(0xFF94A3B8)),
-                                onPressed: () {
-                                  setState(() {
-                                    _activeCourse.questions.removeAt(qIdx);
-                                    _activeCourse.questionsCount =
-                                        _activeCourse.questions.length;
-                                    _activeCourse.toReviewCount = _activeCourse
-                                        .questions
-                                        .where((item) => item.isReview)
-                                        .length;
-                                  });
-                                },
-                              ),
-                            ],
+                              );
+
+                              final actionPills = Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: q.isReview
+                                          ? const Color(0xFFFEF3C7)
+                                          : const Color(0xFFDCFCE7),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      q.isReview ? "Review" : "Reviewed",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: q.isReview
+                                            ? const Color(0xFFB45309)
+                                            : const Color(0xFF15803D),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  IconButton(
+                                    icon: Icon(
+                                      isExpanded
+                                          ? Icons.keyboard_arrow_up
+                                          : Icons.keyboard_arrow_down,
+                                      size: 18,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        if (isExpanded) {
+                                          _expandedQuestions.remove(q.id);
+                                        } else {
+                                          _expandedQuestions.add(q.id);
+                                        }
+                                      });
+                                    },
+                                    splashRadius: 18,
+                                    constraints: const BoxConstraints(),
+                                    padding: const EdgeInsets.all(4),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline,
+                                        size: 17, color: Color(0xFF94A3B8)),
+                                    onPressed: () {
+                                      setState(() {
+                                        _activeCourse.questions.removeAt(qIdx);
+                                        _activeCourse.questionsCount =
+                                            _activeCourse.questions.length;
+                                        _activeCourse.toReviewCount = _activeCourse
+                                            .questions
+                                            .where((item) => item.isReview)
+                                            .length;
+                                      });
+                                    },
+                                    splashRadius: 18,
+                                    constraints: const BoxConstraints(),
+                                    padding: const EdgeInsets.all(4),
+                                  ),
+                                ],
+                              );
+
+                              if (isNarrow) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        numberBadge,
+                                        const SizedBox(width: 10),
+                                        Expanded(child: questionTitle),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [actionPills],
+                                    ),
+                                  ],
+                                );
+                              }
+
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  numberBadge,
+                                  const SizedBox(width: 12),
+                                  Expanded(child: questionTitle),
+                                  const SizedBox(width: 12),
+                                  actionPills,
+                                ],
+                              );
+                            },
                           ),
                         ),
                         if (isExpanded) ...[

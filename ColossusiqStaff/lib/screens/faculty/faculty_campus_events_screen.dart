@@ -1519,60 +1519,78 @@ class _FacultyCampusEventsScreenState extends State<FacultyCampusEventsScreen> {
                 const SizedBox(height: 6),
 
                 // Meta Row (time, venue, organizer)
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    if (time.isNotEmpty)
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.access_time_rounded,
-                              size: 13, color: Color(0xFF64748B)),
-                          const SizedBox(width: 4),
-                          Text(
-                            time,
-                            style: GoogleFonts.poppins(
-                              fontSize: 11.5,
-                              color: const Color(0xFF64748B),
+                LayoutBuilder(
+                  builder: (context, metaBox) {
+                    final maxItemWidth =
+                        (metaBox.maxWidth - 20).clamp(120.0, 500.0);
+                    return Wrap(
+                      spacing: 12,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        if (time.isNotEmpty)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.access_time_rounded,
+                                  size: 13, color: Color(0xFF64748B)),
+                              const SizedBox(width: 4),
+                              Text(
+                                time,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11.5,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        if (venue.isNotEmpty)
+                          ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: maxItemWidth),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.location_on_outlined,
+                                    size: 13, color: Color(0xFF64748B)),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    venue,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11.5,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    if (venue.isNotEmpty)
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.location_on_outlined,
-                              size: 13, color: Color(0xFF64748B)),
-                          const SizedBox(width: 4),
-                          Text(
-                            venue,
-                            style: GoogleFonts.poppins(
-                              fontSize: 11.5,
-                              color: const Color(0xFF64748B),
+                        if (organizer.isNotEmpty)
+                          ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: maxItemWidth),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.apartment_rounded,
+                                    size: 13, color: Color(0xFF64748B)),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    organizer,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11.5,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    if (organizer.isNotEmpty)
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.apartment_rounded,
-                              size: 13, color: Color(0xFF64748B)),
-                          const SizedBox(width: 4),
-                          Text(
-                            organizer,
-                            style: GoogleFonts.poppins(
-                              fontSize: 11.5,
-                              color: const Color(0xFF64748B),
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
+                      ],
+                    );
+                  },
                 ),
 
                 // Capacity Progress Bar

@@ -22,8 +22,8 @@ class FacultySkillBoosterScreen extends StatefulWidget {
 }
 
 class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
-  int _points = 0;
-  final Set<int> _completedTasks = {};
+  int _points = 65;
+  final Set<int> _completedTasks = {1, 2, 6};
   final Set<int> _expandedTracks = {};
 
   final List<Map<String, dynamic>> _tasks = [
@@ -34,7 +34,7 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
       'pointsVal': 20,
       'subtitle':
           'Teaching Studio → Smart board: present a topic and annotate live.',
-      'current': 0,
+      'current': 1,
       'target': 1,
       'hasRecordButton': true,
     },
@@ -44,7 +44,7 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
       'points': '+10 pts',
       'pointsVal': 10,
       'subtitle': 'Plan a class with the timed lesson outline and save it.',
-      'current': 0,
+      'current': 1,
       'target': 1,
       'hasRecordButton': false,
     },
@@ -84,7 +84,7 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
       'points': '+15 pts',
       'pointsVal': 15,
       'subtitle': 'AI Quiz Builder: generate, review and publish.',
-      'current': 0,
+      'current': 1,
       'target': 1,
       'hasRecordButton': false,
     },
@@ -94,7 +94,7 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
     {
       'title': 'Smart board starter',
       'icon': Icons.co_present_outlined,
-      'unlocked': false,
+      'unlocked': true,
     },
     {
       'title': 'Class sharer',
@@ -114,7 +114,7 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
     {
       'title': 'Responsible AI user',
       'icon': Icons.verified_user_outlined,
-      'unlocked': false,
+      'unlocked': true,
     },
   ];
 
@@ -155,7 +155,7 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
     {
       'id': 4,
       'title': 'Using AI responsibly in teaching',
-      'desc': '0/4 steps · ~15 min',
+      'desc': '4/4 steps · ~15 min',
       'steps': [
         'Verifying generative AI output against university curriculum',
         'Disclosing AI syllabus assistance transparently',
@@ -437,6 +437,28 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
   // LEVEL PROGRESSION BANNER CARD (Screenshot 1)
   // ===========================================================================
   Widget _buildLevelCard() {
+    String levelName;
+    String nextLevelText;
+    double progressVal;
+
+    if (_points >= 220) {
+      levelName = 'Champion';
+      nextLevelText = 'Top tier achieved';
+      progressVal = 1.0;
+    } else if (_points >= 140) {
+      levelName = 'Mentor';
+      nextLevelText = '${220 - _points} points to Champion';
+      progressVal = ((_points - 140) / 80).clamp(0.05, 1.0);
+    } else if (_points >= 60) {
+      levelName = 'Practitioner';
+      nextLevelText = '${140 - _points} points to Mentor';
+      progressVal = ((_points - 60) / 80).clamp(0.05, 1.0);
+    } else {
+      levelName = 'Explorer';
+      nextLevelText = '${60 - _points} points to Practitioner';
+      progressVal = (_points / 60).clamp(0.05, 1.0);
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF2B3784),
@@ -450,10 +472,11 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Top Part (Title, Level name, points counter)
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 22, 24, 16),
+            padding: const EdgeInsets.fromLTRB(24, 22, 24, 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -472,7 +495,7 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Explorer',
+                      levelName,
                       style: GoogleFonts.poppins(
                         fontSize: 32,
                         fontWeight: FontWeight.w800,
@@ -482,7 +505,7 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${60 - _points > 0 ? 60 - _points : 0} points to Practitioner',
+                      nextLevelText,
                       style: GoogleFonts.poppins(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w400,
@@ -518,7 +541,23 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
             ),
           ),
 
-          // Milestone Path Bottom Bar (Screenshot 1)
+          // Amber progress line under points to Mentor (Screenshot 4)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: progressVal,
+                minHeight: 4.5,
+                backgroundColor: Colors.white.withValues(alpha: 0.15),
+                valueColor:
+                    const AlwaysStoppedAnimation<Color>(Color(0xFFFBBF24)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          // Milestone Path Bottom Bar (Screenshot 4)
           Container(
             decoration: const BoxDecoration(
               color: Colors.white,
@@ -699,7 +738,7 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDone ? const Color(0xFFF0FDF4).withValues(alpha: 0.3) : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDone ? const Color(0xFF86EFAC) : const Color(0xFFE2E8F0),
@@ -712,19 +751,19 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
+                  color: isDone ? const Color(0xFF0F766E) : const Color(0xFFF8FAFC),
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: isDone ? null : Border.all(color: const Color(0xFFE2E8F0)),
                 ),
                 child: Icon(
                   isDone
-                      ? Icons.check_circle_rounded
+                      ? Icons.check_rounded
                       : Icons.hourglass_top_rounded,
-                  size: 16,
+                  size: 15,
                   color: isDone
-                      ? const Color(0xFF10B981)
+                      ? Colors.white
                       : const Color(0xFF64748B),
                 ),
               ),
@@ -750,7 +789,7 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
+                            color: isDone ? const Color(0xFFCCFBF1) : const Color(0xFFF1F5F9),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
@@ -758,7 +797,7 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
                             style: GoogleFonts.poppins(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF475569),
+                              color: isDone ? const Color(0xFF0F766E) : const Color(0xFF475569),
                             ),
                           ),
                         ),
@@ -790,63 +829,50 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
                     backgroundColor: const Color(0xFFF1F5F9),
                     valueColor: AlwaysStoppedAnimation<Color>(
                       isDone
-                          ? const Color(0xFF10B981)
+                          ? const Color(0xFF0F766E)
                           : const Color(0xFFE2E8F0),
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 12),
-              Text(
-                '$current/$target',
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF64748B),
-                ),
-              ),
-              const SizedBox(width: 10),
-              InkWell(
-                onTap: () {
-                  _recordTask(id, t['pointsVal'] as int);
-                },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Text(
-                    isDone ? 'Completed' : 'Do it →',
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: isDone
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFF334155),
-                    ),
+              if (isDone) ...[
+                Text(
+                  '$current/$target ✓ Completed',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF0F766E),
                   ),
                 ),
-              ),
-              if (t['hasRecordButton'] == true && !isDone) ...[
-                const SizedBox(width: 8),
+              ] else ...[
+                Text(
+                  '$current/$target',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+                const SizedBox(width: 10),
                 InkWell(
-                  onTap: () => _recordTask(id, t['pointsVal'] as int),
+                  onTap: () {
+                    _recordTask(id, t['pointsVal'] as int);
+                  },
                   child: Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F766E),
+                      color: const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFFCBD5E1)),
                     ),
                     child: Text(
-                      '+ Record (POST)',
+                      'Do it →',
                       style: GoogleFonts.poppins(
                         fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1E2865),
                       ),
                     ),
                   ),
@@ -936,14 +962,14 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
   }
 
   Widget _buildBadgeTile(Map<String, dynamic> b) {
+    final isEarned = b['unlocked'] == true;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isEarned ? const Color(0xFFFEF3C7) : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFFE2E8F0),
-          style: BorderStyle.solid,
+          color: isEarned ? const Color(0xFFFDE68A) : const Color(0xFFE2E8F0),
         ),
       ),
       child: Column(
@@ -951,34 +977,35 @@ class _FacultySkillBoosterScreenState extends State<FacultySkillBoosterScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(5),
-            decoration: const BoxDecoration(
-              color: Color(0xFFF8FAFC),
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: isEarned ? const Color(0xFFD97706) : const Color(0xFFF8FAFC),
               shape: BoxShape.circle,
             ),
             child: Icon(
               b['icon'] as IconData,
               size: 16,
-              color: const Color(0xFF94A3B8),
+              color: isEarned ? Colors.white : const Color(0xFF94A3B8),
             ),
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 4),
           Text(
             b['title'] as String,
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF334155),
+              color: isEarned ? const Color(0xFF78350F) : const Color(0xFF334155),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           Text(
-            'Locked',
+            isEarned ? 'Earned' : 'Locked',
             style: GoogleFonts.poppins(
               fontSize: 9.5,
-              color: const Color(0xFF94A3B8),
+              fontWeight: isEarned ? FontWeight.w600 : FontWeight.w400,
+              color: isEarned ? const Color(0xFFB45309) : const Color(0xFF94A3B8),
             ),
           ),
         ],

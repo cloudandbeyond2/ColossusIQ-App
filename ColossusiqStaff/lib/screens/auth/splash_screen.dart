@@ -1,9 +1,15 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'login_screen.dart';
-import '../main_navigation_screen.dart';
-import '../../core/services/auth_session_service.dart';
+
+// =============================================================================
+// PROFESSIONAL CAMPUS PERSONNEL & FACULTY SPLASH SCREEN
+// - High-end enterprise design tailored for Campus Personnel & Faculty
+// - Clean executive layout: No cartoon imagery, no college name
+// - Interactive Personnel Command Suite preview with role indicators
+// - Zero auto-forwarding: Stays static until the user taps "Get Started"
+// - "Get Started" navigates directly to LoginScreen
+// =============================================================================
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -19,95 +25,88 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _floatController;
 
   late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _pulseAnimation;
   late Animation<double> _floatAnimation;
 
-  Timer? _sessionTimer;
+  bool _isNavigating = false;
 
   @override
   void initState() {
     super.initState();
 
+    // 1. Entrance animation
     _entranceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 900),
     );
 
     _fadeAnimation = CurvedAnimation(
       parent: _entranceController,
-      curve: const Interval(0.0, 0.8, curve: Curves.easeOutCubic),
+      curve: const Interval(0.0, 0.7, curve: Curves.easeOutCubic),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.94, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _entranceController,
+        curve: const Interval(0.05, 0.95, curve: Curves.easeOutBack),
+      ),
     );
 
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 0.08),
+      begin: const Offset(0.0, 0.05),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(
         parent: _entranceController,
-        curve: const Interval(0.1, 0.9, curve: Curves.easeOutCubic),
+        curve: const Interval(0.05, 0.9, curve: Curves.easeOutCubic),
       ),
     );
 
+    // 2. Pulse animation for branding
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4),
+      duration: const Duration(milliseconds: 2600),
     )..repeat(reverse: true);
 
     _pulseAnimation = Tween<double>(begin: 0.96, end: 1.04).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
     );
 
+    // 3. Gentle float animation for center card
     _floatController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(milliseconds: 3400),
     )..repeat(reverse: true);
 
-    _floatAnimation = Tween<double>(begin: -6.0, end: 6.0).animate(
+    _floatAnimation = Tween<double>(begin: -4.0, end: 4.0).animate(
       CurvedAnimation(parent: _floatController, curve: Curves.easeInOutSine),
     );
 
     _entranceController.forward();
-    _checkExistingSession();
-  }
-
-  Future<void> _checkExistingSession() async {
-    final bool loggedIn = await AuthSessionService.isLoggedIn();
-    if (loggedIn && mounted) {
-      _sessionTimer = Timer(const Duration(milliseconds: 2200), () {
-        if (!mounted) return;
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const MainNavigationScreen(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 400),
-          ),
-        );
-      });
-    }
   }
 
   void _navigateToLogin() {
-    _sessionTimer?.cancel();
-    if (!mounted) return;
+    if (_isNavigating) return;
+    _isNavigating = true;
+
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const LoginScreen(),
+        pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
+          return FadeTransition(
+            opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+            child: child,
+          );
         },
-        transitionDuration: const Duration(milliseconds: 350),
+        transitionDuration: const Duration(milliseconds: 380),
       ),
     );
   }
 
   @override
   void dispose() {
-    _sessionTimer?.cancel();
     _entranceController.dispose();
     _pulseController.dispose();
     _floatController.dispose();
@@ -120,39 +119,40 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: const Color(0xFFF8FAFC),
       body: Stack(
         children: [
-          // Ambient Background Light Mesh & Subtle Grid Dots
+          // Ambient background lighting mesh & grid dots
           _buildAmbientBackground(),
 
-          // Full-Screen Layout
+          // Main Screen Content
           Positioned.fill(
             child: SafeArea(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  if (constraints.maxHeight < 80 || constraints.maxWidth < 80) {
-                    return const SizedBox.shrink();
-                  }
-                  final isDesktop = constraints.maxWidth >= 960;
+                  final isDesktop = constraints.maxWidth >= 900;
+                  final availableHeight = constraints.maxHeight;
 
                   return Column(
                     children: [
                       // 1. Top Modern Navigation Bar
                       _buildTopNavBar(isDesktop),
 
-                      // 2. Full-Screen Main Hero Body
+                      // 2. Animated Center Personnel Hero Body
                       Expanded(
-                        child: SingleChildScrollView(
-                          physics: const BouncingScrollPhysics(),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isDesktop ? 48 : 24,
-                            vertical: isDesktop ? 20 : 16,
-                          ),
-                          child: FadeTransition(
-                            opacity: _fadeAnimation,
-                            child: SlideTransition(
-                              position: _slideAnimation,
-                              child: isDesktop
-                                  ? _buildDesktopHero(constraints)
-                                  : _buildMobileHero(),
+                        child: Center(
+                          child: SingleChildScrollView(
+                            physics: const BouncingScrollPhysics(),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isDesktop ? 48 : 20,
+                              vertical: 16,
+                            ),
+                            child: FadeTransition(
+                              opacity: _fadeAnimation,
+                              child: SlideTransition(
+                                position: _slideAnimation,
+                                child: ScaleTransition(
+                                  scale: _scaleAnimation,
+                                  child: _buildPersonnelHero(isDesktop, availableHeight),
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -172,31 +172,34 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   // ===========================================================================
-  // 1. TOP MODERN NAVIGATION BAR
+  // 1. TOP NAVIGATION BAR
   // ===========================================================================
   Widget _buildTopNavBar(bool isDesktop) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isNarrow = constraints.maxWidth < 620;
-
-        return Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: isNarrow ? 16 : 28, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.90),
-            border: const Border(
-              bottom: BorderSide(color: Color(0xFFE2E8F0)),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: isDesktop ? 36 : 20,
+        vertical: 14,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.92),
+        border: const Border(
+          bottom: BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Logo & Personnel Portal Badge
+          Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Logo & Institution Brand
-              Flexible(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
+              AnimatedBuilder(
+                animation: _pulseAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _pulseAnimation.value,
+                    child: Container(
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
@@ -206,8 +209,8 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF2563EB).withValues(alpha: 0.25),
-                            blurRadius: 8,
+                            color: const Color(0xFF2563EB).withValues(alpha: 0.30),
+                            blurRadius: 10,
                             offset: const Offset(0, 3),
                           ),
                         ],
@@ -218,480 +221,88 @@ class _SplashScreenState extends State<SplashScreen>
                         size: 20,
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "Colossus",
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: const Color(0xFF0F172A),
-                              letterSpacing: -0.4,
-                            ),
-                          ),
-                          TextSpan(
-                            text: "IQ",
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              color: const Color(0xFF2563EB),
-                              letterSpacing: -0.4,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (!isNarrow) ...[
-                      const SizedBox(width: 12),
-                      Flexible(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: Text(
-                            "Anna Institute of Technology",
-                            style: GoogleFonts.poppins(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF475569),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+                  );
+                },
               ),
-              const SizedBox(width: 8),
-
-              // Academic Year Live Badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFBFDBFE)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 7,
-                      height: 7,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF10B981),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Color(0x6610B981),
-                            blurRadius: 4,
-                            spreadRadius: 1,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      isNarrow ? "AY 2026-27 · Live" : "Academic Year 2026-27 · Live",
-                      style: GoogleFonts.poppins(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1D4ED8),
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // ===========================================================================
-  // 2. DESKTOP FULL-SCREEN HERO (2-COLUMN SPLIT SHOWCASE)
-  // ===========================================================================
-  Widget _buildDesktopHero(BoxConstraints constraints) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Left Column: Headline, Description & CTAs
-        Expanded(
-          flex: 11,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Live Status Chip
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFBFDBFE)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF10B981),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Academic Session 2026-2027 Live · Ver 2.6",
-                      style: GoogleFonts.poppins(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1D4ED8),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 22),
-
-              // Giant Hero Headline
+              const SizedBox(width: 10),
               RichText(
                 text: TextSpan(
-                  style: GoogleFonts.poppins(
-                    fontSize: 44,
-                    fontWeight: FontWeight.w900,
-                    color: const Color(0xFF0F172A),
-                    height: 1.15,
-                    letterSpacing: -1.0,
-                  ),
-                  children: const [
-                    TextSpan(text: "The Intelligent\nOperating System for\n"),
-                    TextSpan(
-                      text: "Higher Education.",
-                      style: TextStyle(
-                        color: Color(0xFF2563EB),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-
-              // Description
-              Text(
-                "Unifying student academic journeys, faculty evaluations, departmental intelligence, and institutional leadership with zero-trust security and generative AI.",
-                style: GoogleFonts.poppins(
-                  fontSize: 15.5,
-                  color: const Color(0xFF475569),
-                  height: 1.55,
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Action Buttons Row
-              Row(
-                children: [
-                  Container(
-                    height: 52,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF2563EB).withValues(alpha: 0.35),
-                          blurRadius: 18,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: ElevatedButton.icon(
-                      onPressed: _navigateToLogin,
-                      icon: const Icon(Icons.arrow_forward_rounded, size: 18, color: Colors.white),
-                      label: Text(
-                        "Get Started",
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        padding: const EdgeInsets.symmetric(horizontal: 26),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  OutlinedButton.icon(
-                    onPressed: _navigateToLogin,
-                    icon: const Icon(Icons.login_rounded, size: 18, color: Color(0xFF1D4ED8)),
-                    label: Text(
-                      "Login",
-                      style: GoogleFonts.poppins(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1D4ED8),
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFBFDBFE), width: 1.5),
-                      backgroundColor: const Color(0xFFEFF6FF),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 15),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 38),
-
-              // Live Campus Stats Ticker
-              Row(
-                children: [
-                  _buildMetricItem("12,450+", "Active Students"),
-                  _buildVerticalDivider(),
-                  _buildMetricItem("99.98%", "Platform Uptime"),
-                  _buildVerticalDivider(),
-                  _buildMetricItem("100%", "Tamper-proof Certs"),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(width: 48),
-
-        // Right Column: Floating Interactive Mockup Cards
-        Expanded(
-          flex: 10,
-          child: AnimatedBuilder(
-            animation: _floatAnimation,
-            builder: (context, child) {
-              return Transform.translate(
-                offset: Offset(0, _floatAnimation.value),
-                child: _buildShowcaseMockup(),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ===========================================================================
-  // 3. RIGHT SHOWCASE MOCKUP (INTERACTIVE DASHBOARD PREVIEWS)
-  // ===========================================================================
-  Widget _buildShowcaseMockup() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.08),
-            blurRadius: 36,
-            offset: const Offset(0, 16),
-          ),
-          BoxShadow(
-            color: const Color(0xFF2563EB).withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Mock Window Header
-          Row(
-            children: [
-              Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFFEF4444), shape: BoxShape.circle)),
-              const SizedBox(width: 6),
-              Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFFF59E0B), shape: BoxShape.circle)),
-              const SizedBox(width: 6),
-              Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle)),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Row(
                   children: [
-                    const Icon(Icons.lock_rounded, size: 11, color: Color(0xFF64748B)),
-                    const SizedBox(width: 4),
-                    Text(
-                      "secure.colossusiq.ait.edu",
-                      style: GoogleFonts.poppins(fontSize: 10.5, color: const Color(0xFF64748B)),
+                    TextSpan(
+                      text: "Colossus",
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0F172A),
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                    TextSpan(
+                      text: "IQ",
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFF2563EB),
+                        letterSpacing: -0.4,
+                      ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEEF2FF),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFFC7D2FE)),
+                ),
+                child: Text(
+                  "PERSONNEL",
+                  style: GoogleFonts.poppins(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF4338CA),
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 20),
 
-          // Card 1: Live Institutional Pulse
+          // Live Session Indicator Pill
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              color: const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFBFDBFE)),
             ),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDCFCE7),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.analytics_rounded, color: Color(0xFF15803D), size: 22),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Institutional Pulse · 94.2% Attendance",
-                        style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
-                      ),
-                      Text(
-                        "CSE, ECE, Mech & Civil data synced in real-time.",
-                        style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF64748B)),
+                  width: 7,
+                  height: 7,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF10B981),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x6610B981),
+                        blurRadius: 4,
+                        spreadRadius: 1,
                       ),
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD1FAE5),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    "Optimal",
-                    style: GoogleFonts.poppins(fontSize: 10.5, fontWeight: FontWeight.w700, color: const Color(0xFF047857)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // Card 2: AI Curriculum & Exam Engine
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF2563EB), size: 22),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "AI Exam & Question Vault",
-                        style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
-                      ),
-                      Text(
-                        "Bloom's taxonomy balanced with AICTE compliance.",
-                        style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF64748B)),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDBEAFE),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    "Verified",
-                    style: GoogleFonts.poppins(fontSize: 10.5, fontWeight: FontWeight.w700, color: const Color(0xFF1D4ED8)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // Card 3: Cryptographic Credentials
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF3C7),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.verified_rounded, color: Color(0xFFB45309), size: 22),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Tamper-proof Certificate Authority",
-                        style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
-                      ),
-                      Text(
-                        "HSM signed QR seals with instant public verification.",
-                        style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF64748B)),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF3C7),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    "Signed",
-                    style: GoogleFonts.poppins(fontSize: 10.5, fontWeight: FontWeight.w700, color: const Color(0xFFB45309)),
+                const SizedBox(width: 6),
+                Text(
+                  "AY 2026–27 · Live",
+                  style: GoogleFonts.poppins(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1D4ED8),
                   ),
                 ),
               ],
@@ -703,35 +314,51 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   // ===========================================================================
-  // 4. MOBILE HERO LAYOUT
+  // 2. CENTER HERO: PROFESSIONAL PERSONNEL COMMAND HUB
   // ===========================================================================
-  Widget _buildMobileHero() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const SizedBox(height: 12),
-        // Logo & Emblem
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: const LinearGradient(
-              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF2563EB).withValues(alpha: 0.35),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: const Icon(Icons.school_rounded, color: Colors.white, size: 38),
-        ),
-        const SizedBox(height: 20),
+  Widget _buildPersonnelHero(bool isDesktop, double availableHeight) {
+    final maxCardWidth = isDesktop ? 540.0 : 440.0;
 
-        // Brand
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Emblem & Brand Header
+        AnimatedBuilder(
+          animation: _pulseAnimation,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _pulseAnimation.value,
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF2563EB).withValues(alpha: 0.35),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.badge_rounded,
+                  color: Colors.white,
+                  size: 38,
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 16),
+
+        // Brand Title
         RichText(
           textAlign: TextAlign.center,
           text: TextSpan(
@@ -739,33 +366,36 @@ class _SplashScreenState extends State<SplashScreen>
               TextSpan(
                 text: "Colossus",
                 style: GoogleFonts.poppins(
-                  fontSize: 32,
+                  fontSize: 30,
                   fontWeight: FontWeight.w800,
                   color: const Color(0xFF0F172A),
+                  letterSpacing: -0.5,
                 ),
               ),
               TextSpan(
                 text: "IQ",
                 style: GoogleFonts.poppins(
-                  fontSize: 32,
+                  fontSize: 30,
                   fontWeight: FontWeight.w900,
                   color: const Color(0xFF2563EB),
+                  letterSpacing: -0.5,
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 6),
 
+        // Professional Tagline
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
             color: const Color(0xFFEFF6FF),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: const Color(0xFFBFDBFE)),
           ),
           child: Text(
-            "ACADEMIC OPERATING SYSTEM",
+            "CAMPUS PERSONNEL & ACADEMIC WORKSPACE",
             style: GoogleFonts.poppins(
               fontSize: 10.5,
               fontWeight: FontWeight.w700,
@@ -774,77 +404,302 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
         ),
-        const SizedBox(height: 16),
-
-        Text(
-          "Unified intelligence and workflow automation for students, faculty, and administration.",
-          textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: const Color(0xFF475569),
-            height: 1.45,
+        const SizedBox(height: 8),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Text(
+            "Unified digital infrastructure for leadership, faculty, and administrative governance.",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 12.5,
+              color: const Color(0xFF64748B),
+              height: 1.45,
+            ),
           ),
         ),
-        const SizedBox(height: 22),
+        const SizedBox(height: 20),
 
-        // Live preview card for mobile
-        _buildShowcaseMockup(),
-        const SizedBox(height: 16),
+        // ---------------------------------------------------------------------
+        // PERSONNEL COMMAND PREVIEW CARD (PROFESSIONAL GLASSMORPHISM)
+        // ---------------------------------------------------------------------
+        AnimatedBuilder(
+          animation: _floatAnimation,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, _floatAnimation.value),
+              child: child,
+            );
+          },
+          child: Container(
+            width: double.infinity,
+            constraints: BoxConstraints(maxWidth: maxCardWidth),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.08),
+                  blurRadius: 30,
+                  offset: const Offset(0, 14),
+                ),
+                BoxShadow(
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.05),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Card Header Browser Bar
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF8FAFC),
+                      border: Border(
+                        bottom: BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Row(
+                          children: [
+                            Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFEF4444), shape: BoxShape.circle)),
+                            const SizedBox(width: 5),
+                            Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFF59E0B), shape: BoxShape.circle)),
+                            const SizedBox(width: 5),
+                            Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle)),
+                          ],
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.lock_rounded, size: 11, color: Color(0xFF10B981)),
+                                const SizedBox(width: 6),
+                                Text(
+                                  "personnel.campus.workspace",
+                                  style: GoogleFonts.jetBrainsMono(
+                                    fontSize: 10.5,
+                                    color: const Color(0xFF64748B),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Feature Cards Inside Command Center
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        _buildFeatureRow(
+                          icon: Icons.account_tree_rounded,
+                          iconBg: const Color(0xFFEFF6FF),
+                          iconColor: const Color(0xFF2563EB),
+                          title: "Faculty & Curriculum Studio",
+                          subtitle: "AI course studio, question bank & syllabus mapping",
+                          statusTag: "Active",
+                          tagColor: const Color(0xFF10B981),
+                          tagBg: const Color(0xFFECFDF5),
+                        ),
+                        const SizedBox(height: 10),
+                        _buildFeatureRow(
+                          icon: Icons.domain_verification_rounded,
+                          iconBg: const Color(0xFFFAF5FF),
+                          iconColor: const Color(0xFF9333EA),
+                          title: "Department & HOD Governance",
+                          subtitle: "Staff roster, workload balancing & student early warning",
+                          statusTag: "Verified",
+                          tagColor: const Color(0xFF8B5CF6),
+                          tagBg: const Color(0xFFF5F3FF),
+                        ),
+                        const SizedBox(height: 10),
+                        _buildFeatureRow(
+                          icon: Icons.security_rounded,
+                          iconBg: const Color(0xFFFFFBEB),
+                          iconColor: const Color(0xFFD97706),
+                          title: "Institutional Compliance & Audits",
+                          subtitle: "NAAC / NBA automated reports & tamper-proof credentials",
+                          statusTag: "Secured",
+                          tagColor: const Color(0xFFD97706),
+                          tagBg: const Color(0xFFFEF3C7),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Bottom Role Badges Row
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF8FAFC),
+                      border: Border(
+                        top: BorderSide(color: Color(0xFFF1F5F9)),
+                      ),
+                    ),
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: [
+                        _buildRolePill("👨‍🏫 Faculty"),
+                        _buildRolePill("🏛️ HOD"),
+                        _buildRolePill("🎓 Principal"),
+                        _buildRolePill("📋 Admin Staff"),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  // ===========================================================================
-  // 5. METRIC WIDGET HELPER
-  // ===========================================================================
-  Widget _buildMetricItem(String val, String label) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          val,
-          style: GoogleFonts.poppins(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: const Color(0xFF0F172A),
-          ),
-        ),
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            color: const Color(0xFF64748B),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildVerticalDivider() {
+  Widget _buildRolePill(String label) {
     return Container(
-      height: 36,
-      width: 1,
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      color: const Color(0xFFE2E8F0),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.poppins(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF475569),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureRow({
+    required IconData icon,
+    required Color iconBg,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required String statusTag,
+    required Color tagColor,
+    required Color tagBg,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFAFAFA),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.poppins(
+                    fontSize: 10.5,
+                    color: const Color(0xFF64748B),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: tagBg,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              statusTag,
+              style: GoogleFonts.poppins(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: tagColor,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   // ===========================================================================
-  // 6. BOTTOM ACTION BAR (GET STARTED BUTTON ONLY)
+  // 3. BOTTOM SECTION WITH GET STARTED BUTTON
   // ===========================================================================
   Widget _buildBottomSection(bool isDesktop) {
-    if (isDesktop) {
-      return const SizedBox.shrink();
-    }
-
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
+      padding: EdgeInsets.fromLTRB(
+        isDesktop ? 48 : 20,
+        12,
+        isDesktop ? 48 : 20,
+        isDesktop ? 26 : 18,
+      ),
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 420),
           width: double.infinity,
           height: 52,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2563EB).withValues(alpha: 0.35),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
           child: ElevatedButton.icon(
             onPressed: _navigateToLogin,
             icon: const Icon(Icons.arrow_forward_rounded, size: 18, color: Colors.white),
@@ -858,10 +713,11 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2563EB),
-              elevation: 2,
-              shadowColor: const Color(0xFF2563EB).withValues(alpha: 0.35),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
           ),
         ),
@@ -870,7 +726,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   // ===========================================================================
-  // 7. AMBIENT BACKGROUND
+  // 4. AMBIENT BACKGROUND PAINTER & LIGHT MESH
   // ===========================================================================
   Widget _buildAmbientBackground() {
     return Positioned.fill(
@@ -922,9 +778,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-// =============================================================================
-// SUBTLE LIGHT BACKGROUND DOTS PAINTER
-// =============================================================================
+// Background dots painter
 class _LightDotsPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

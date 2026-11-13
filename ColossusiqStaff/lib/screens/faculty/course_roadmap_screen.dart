@@ -102,10 +102,10 @@ class _CourseRoadmapScreenState extends State<CourseRoadmapScreen> {
 
   // New Roadmap Form State
   int _sourceMode = 0; // 0 = University curriculum, 1 = My own units
-  String _selectedCurriculum = 'B.E. Computer Science & Engineering (R2026)';
-  String _selectedCourse = 'Sem 1 · BS101 Physics and Chemistry Laboratory';
+  String _selectedCurriculum = 'B.Tech. Artificial Intelligence and Data Science (R2026)';
+  String _selectedCourse = 'Sem 1 · AI101 Foundations of Artificial Intelligence & Machine Learning';
   final TextEditingController _sectionCtrl = TextEditingController(text: 'III CSE A');
-  final TextEditingController _firstClassCtrl = TextEditingController(text: '11/10/2026');
+  final TextEditingController _firstClassCtrl = TextEditingController(text: '11/13/2026');
   final Set<String> _selectedDays = {'Mon', 'Wed', 'Fri'};
   bool _addInternalAssessments = true;
 
@@ -114,13 +114,16 @@ class _CourseRoadmapScreenState extends State<CourseRoadmapScreen> {
   final List<CustomUnitItem> _customUnits = [];
 
   final List<String> _curriculumOptions = [
+    'B.Tech. Artificial Intelligence and Data Science (R2026)',
     'B.E. Computer Science & Engineering (R2026)',
-    'B.E. Electronics & Communication (R2026)',
-    'B.Tech. Artificial Intelligence & Data Science (R2026)',
+    'B.E. ECE (R2026)',
   ];
 
   final List<String> _courseOptions = [
+    'Sem 1 · AI101 Foundations of Artificial Intelligence & Machine Learning',
     'Sem 1 · BS101 Physics and Chemistry Laboratory',
+    'Sem 1 · CS101 Data Structures and Algorithms',
+    'Sem 1 · CS102 Problem Solving & Python Programming',
     'Sem 3 · CS301 Advanced Java Programming',
     'Sem 1 · CS201 Object-Oriented Programming with Java',
     'Sem 6 · CS3492 Cloud Computing & Virtualization',
@@ -880,12 +883,20 @@ class _CourseRoadmapScreenState extends State<CourseRoadmapScreen> {
           const SizedBox(height: 16),
 
           // Tabs: University curriculum / My own units
-          Row(
-            children: [
-              _buildTabPill(title: 'University curriculum', index: 0),
-              const SizedBox(width: 8),
-              _buildTabPill(title: 'My own units', index: 1),
-            ],
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildTabPill(title: 'University curriculum', index: 0),
+                const SizedBox(width: 4),
+                _buildTabPill(title: 'My own units', index: 1),
+              ],
+            ),
           ),
           const SizedBox(height: 20),
 
@@ -1078,7 +1089,7 @@ class _CourseRoadmapScreenState extends State<CourseRoadmapScreen> {
           // Row 2: Class/section, First class on, Teaching days (Responsive)
           LayoutBuilder(
             builder: (context, constraints) {
-              final isNarrow = constraints.maxWidth < 740;
+              final isNarrow = constraints.maxWidth < 880;
 
               final sectionWidget = Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1113,16 +1124,18 @@ class _CourseRoadmapScreenState extends State<CourseRoadmapScreen> {
                 children: [
                   _buildFieldLabel('Teaching days'),
                   const SizedBox(height: 6),
-                  Row(
-                    children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) {
-                      final isSelected = _selectedDays.contains(day);
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: InkWell(
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Wrap(
+                      spacing: 5,
+                      runSpacing: 6,
+                      children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) {
+                        final isSelected = _selectedDays.contains(day);
+                        return InkWell(
                           onTap: () {
                             setState(() {
                               if (isSelected) {
-                                _selectedDays.remove(day);
+                                if (_selectedDays.length > 1) _selectedDays.remove(day);
                               } else {
                                 _selectedDays.add(day);
                               }
@@ -1147,9 +1160,9 @@ class _CourseRoadmapScreenState extends State<CourseRoadmapScreen> {
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    }).toList(),
+                        );
+                      }).toList(),
+                    ),
                   ),
                 ],
               );
@@ -1198,12 +1211,14 @@ class _CourseRoadmapScreenState extends State<CourseRoadmapScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'Add internal assessments after units 2 and 4',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    color: const Color(0xFF374151),
-                    fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Text(
+                    'Add internal assessments after units 2 and 4',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      color: const Color(0xFF374151),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -1294,7 +1309,7 @@ class _CourseRoadmapScreenState extends State<CourseRoadmapScreen> {
                   ),
                 );
               },
-              icon: const Icon(Icons.explore_outlined, size: 18, color: Colors.white),
+              icon: const Icon(Icons.alt_route_rounded, size: 17, color: Colors.white),
               label: Text(
                 'Build roadmap',
                 style: GoogleFonts.plusJakartaSans(
@@ -1319,24 +1334,37 @@ class _CourseRoadmapScreenState extends State<CourseRoadmapScreen> {
 
   Widget _buildTabPill({required String title, required int index}) {
     final isSelected = _sourceMode == index;
+    final isCustomAmber = index == 1 && isSelected;
     return InkWell(
       onTap: () => setState(() => _sourceMode = index),
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
           color: isSelected ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? const Color(0xFFD1D5DB) : Colors.transparent,
-          ),
+          border: isSelected
+              ? Border.all(
+                  color: isCustomAmber ? const Color(0xFFD97706) : const Color(0xFFCBD5E1),
+                  width: isCustomAmber ? 1.5 : 1.0,
+                )
+              : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
         ),
         child: Text(
           title,
           style: GoogleFonts.plusJakartaSans(
-            fontSize: 13,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected ? const Color(0xFF1E2865) : const Color(0xFF6B7280),
+            fontSize: 12.5,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF64748B),
           ),
         ),
       ),

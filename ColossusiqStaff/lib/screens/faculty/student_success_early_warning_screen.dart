@@ -2328,247 +2328,254 @@ class _StudentSuccessEarlyWarningScreenState
 
     showDialog(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560, maxHeight: 680),
-          child: Padding(
-            padding: const EdgeInsets.all(22),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Header: Student Name + Roll/Dept/Batch + Close Button
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            s['name'] as String,
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF0F172A),
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            "${s['roll']} • ${s['dept']} • ${s['batch'] ?? '2023–2027 (Final Year)'}",
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: const Color(0xFF64748B),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      icon: const Icon(Icons.close_rounded,
-                          size: 20, color: Color(0xFF64748B)),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      splashRadius: 18,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // Metrics Strip in warm cream background
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFAF7F0),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFEFE9DB)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+      builder: (ctx) {
+        final screenHeight = MediaQuery.of(ctx).size.height;
+        final maxH = (screenHeight * 0.85).clamp(380.0, 660.0);
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 560, maxHeight: maxH),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Header: Student Name + Roll/Dept/Batch + Close Button
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildDeficitMetricCol('Quiz Avg', s['quiz'] as String,
-                          const Color(0xFFDC2626)),
-                      _buildDeficitMetricCol(
-                          'Certs', s['certs'] as String, const Color(0xFFD97706)),
-                      _buildDeficitMetricCol('Interview', s['interview'] as String,
-                          const Color(0xFFD97706)),
-                      _buildDeficitMetricCol('Resume ATS', s['resume'] as String,
-                          const Color(0xFFD97706)),
-                      _buildDeficitMetricCol('Readiness', "${s['overall']}/100",
-                          const Color(0xFF1E2865)),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              s['name'] as String,
+                              style: GoogleFonts.poppins(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              "${s['roll']} • ${s['dept']} • ${s['batch'] ?? '2023–2027 (Final Year)'}",
+                              style: GoogleFonts.poppins(
+                                fontSize: 11.5,
+                                color: const Color(0xFF64748B),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(Icons.close_rounded,
+                            size: 20, color: Color(0xFF64748B)),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        splashRadius: 18,
+                      ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 18),
+                  const SizedBox(height: 14),
 
-                // Section Title: OBSERVED DEFICIT SIGNALS
-                Text(
-                  "OBSERVED DEFICIT SIGNALS (${signals.length})",
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.6,
-                    color: const Color(0xFF475569),
+                  // Metrics Strip in warm cream background
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFAF7F0),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFEFE9DB)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildDeficitMetricCol('Quiz Avg', s['quiz'] as String,
+                            const Color(0xFFDC2626)),
+                        _buildDeficitMetricCol(
+                            'Certs', s['certs'] as String, const Color(0xFFD97706)),
+                        _buildDeficitMetricCol('Interview', s['interview'] as String,
+                            const Color(0xFFD97706)),
+                        _buildDeficitMetricCol('Resume ATS', s['resume'] as String,
+                            const Color(0xFFD97706)),
+                        _buildDeficitMetricCol('Readiness', "${s['overall']}/100",
+                            const Color(0xFF1E2865)),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
+                  const SizedBox(height: 14),
 
-                // Deficit Cards Scrollable List
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: signals.length,
-                    separatorBuilder: (_, index) => const SizedBox(height: 8),
-                    itemBuilder: (context, i) {
-                      final sig = signals[i];
-                      final isCritical = sig.toLowerCase().contains('zero') ||
-                          sig.toLowerCase().contains('no verified') ||
-                          sig.toLowerCase().contains('readiness alert');
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isCritical
-                                    ? const Color(0xFFDC2626)
-                                    : const Color(0xFFD97706),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                sig,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w500,
-                                  color: const Color(0xFF1E293B),
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 2.5),
-                              decoration: BoxDecoration(
-                                color: isCritical
-                                    ? const Color(0xFFFEE2E2)
-                                    : const Color(0xFFFEF3C7),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                isCritical ? 'critical' : 'moderate',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w700,
+                  // Section Title: OBSERVED DEFICIT SIGNALS
+                  Text(
+                    "OBSERVED DEFICIT SIGNALS (${signals.length})",
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.6,
+                      color: const Color(0xFF475569),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Deficit Cards Scrollable List
+                  Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: signals.length,
+                      separatorBuilder: (_, index) => const SizedBox(height: 6),
+                      itemBuilder: (context, i) {
+                        final sig = signals[i];
+                        final isCritical = sig.toLowerCase().contains('zero') ||
+                            sig.toLowerCase().contains('no verified') ||
+                            sig.toLowerCase().contains('readiness alert');
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
                                   color: isCritical
                                       ? const Color(0xFFDC2626)
                                       : const Color(0xFFD97706),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Algorithmic Recommendation Box
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.psychology_outlined,
-                          size: 18, color: Color(0xFF2E2A72)),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: RichText(
-                          text: TextSpan(
-                            style: GoogleFonts.poppins(
-                                fontSize: 12, color: const Color(0xFF1E293B)),
-                            children: [
-                              TextSpan(
-                                text: 'Algorithmic Recommendation: ',
-                                style: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFF2E2A72)),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  sig,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
                               ),
-                              TextSpan(text: recommendation),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: isCritical
+                                      ? const Color(0xFFFEE2E2)
+                                      : const Color(0xFFFEF3C7),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  isCritical ? 'critical' : 'moderate',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: isCritical
+                                        ? const Color(0xFFDC2626)
+                                        : const Color(0xFFD97706),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Algorithmic Recommendation Box
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.psychology_outlined,
+                            size: 18, color: Color(0xFF2E2A72)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: RichText(
+                            text: TextSpan(
+                              style: GoogleFonts.poppins(
+                                  fontSize: 11.5, color: const Color(0xFF1E293B)),
+                              children: [
+                                TextSpan(
+                                  text: 'Algorithmic Recommendation: ',
+                                  style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF2E2A72)),
+                                ),
+                                TextSpan(text: recommendation),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Footer Actions
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.end,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF475569),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 9),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text('Close',
+                            style: GoogleFonts.poppins(
+                                fontSize: 12, fontWeight: FontWeight.w600)),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _showSupportPlanForStudentDialog(s);
+                        },
+                        icon: const Icon(Icons.add_rounded, size: 15),
+                        label: Text('+ Schedule Support Plan',
+                            style: GoogleFonts.poppins(
+                                fontSize: 12, fontWeight: FontWeight.w600)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2E2A72),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 9),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
                         ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 16),
-
-                // Footer Actions
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  alignment: WrapAlignment.end,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    OutlinedButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF475569),
-                        side: const BorderSide(color: Color(0xFFCBD5E1)),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 11),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: Text('Close',
-                          style: GoogleFonts.poppins(
-                              fontSize: 12.5, fontWeight: FontWeight.w600)),
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        _showSupportPlanForStudentDialog(s);
-                      },
-                      icon: const Icon(Icons.add_rounded, size: 16),
-                      label: Text('+ Schedule Support Plan',
-                          style: GoogleFonts.poppins(
-                              fontSize: 12.5, fontWeight: FontWeight.w600)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2E2A72),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 11),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -2954,17 +2961,32 @@ class _StudentSuccessEarlyWarningScreenState
                           DropdownButtonFormField<String>(
                             initialValue: selectedStudentKey,
                             isDense: true,
+                            isExpanded: true,
                             decoration: _supportInputDec(),
                             style: GoogleFonts.poppins(
                                 fontSize: 12.5,
                                 color: const Color(0xFF0F172A)),
+                            selectedItemBuilder: (context) {
+                              return _rosterStudents.map((st) {
+                                final label =
+                                    "${st['name']} (${st['roll']} • ${st['dept']}) - ${st['tier']}";
+                                return Text(
+                                  label,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                );
+                              }).toList();
+                            },
                             items: _rosterStudents.map((st) {
                               final label =
                                   "${st['name']} (${st['roll']} • ${st['dept']}) - ${st['tier']}";
                               return DropdownMenuItem<String>(
                                 value: st['name'] as String,
-                                child: Text(label,
-                                    overflow: TextOverflow.ellipsis),
+                                child: Text(
+                                  label,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
                               );
                             }).toList(),
                             onChanged: (val) {

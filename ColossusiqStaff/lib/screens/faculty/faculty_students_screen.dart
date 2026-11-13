@@ -1933,7 +1933,7 @@ class _AddOrImportStudentModalState extends State<_AddOrImportStudentModal> {
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        "Excel, CSV & PDF / CV",
+                        "Excel / CSV File Upload",
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
                           fontSize: 11.5,

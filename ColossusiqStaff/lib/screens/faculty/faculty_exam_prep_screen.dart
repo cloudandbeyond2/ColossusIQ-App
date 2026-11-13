@@ -49,6 +49,13 @@ class StudyNoteItem {
   int keyPointsCount;
   String? author;
   String description;
+  String keyPoints;
+  String formulasRules;
+  String workedProblem;
+  String workedSolution;
+  String commonMistakes;
+  String examTips;
+  bool publishToStudents;
 
   StudyNoteItem({
     required this.id,
@@ -59,6 +66,13 @@ class StudyNoteItem {
     required this.keyPointsCount,
     this.author,
     required this.description,
+    this.keyPoints = '',
+    this.formulasRules = '',
+    this.workedProblem = '',
+    this.workedSolution = '',
+    this.commonMistakes = '',
+    this.examTips = '',
+    this.publishToStudents = true,
   });
 }
 
@@ -84,6 +98,17 @@ class FacultyExamPrepScreen extends StatefulWidget {
 class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   int _activeTab = 0; // 0 = Question sets, 1 = Study notes
   bool _isCreatingQuestionSet = false;
+
+  // Study Notes Editor Form State (Matching Screenshot 2 exactly)
+  StudyNoteItem? _editingStudyNote;
+  final TextEditingController _noteOverviewCtrl = TextEditingController();
+  final TextEditingController _noteKeyPointsCtrl = TextEditingController();
+  final TextEditingController _noteFormulasCtrl = TextEditingController();
+  final TextEditingController _noteWorkedProblemCtrl = TextEditingController();
+  final TextEditingController _noteWorkedSolutionCtrl = TextEditingController();
+  final TextEditingController _noteMistakesCtrl = TextEditingController();
+  final TextEditingController _noteTipsCtrl = TextEditingController();
+  bool _notePublishToStudents = true;
 
   // New Question Set Form State
   String? _selectedTopic;
@@ -228,6 +253,13 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
       keyPointsCount: 15,
       author: "Dr. Lakshmi Sundaram",
       description: "Your faculty added Data Structures & Asymptotic Analysis to the syllabus. These key facts come from their questions.",
+      keyPoints: "Which of the following data structures is typically used to implement a Last-In, First-Out (LIFO) behavior: Stack.\nWhat is the primary advantage of using a hash table over a sorted array for searching: Average O(1) search time.",
+      formulasRules: "",
+      workedProblem: "",
+      workedSolution: "",
+      commonMistakes: "",
+      examTips: "Revise these facts again the day after you study them, and once more a week later.",
+      publishToStudents: true,
     ),
     StudyNoteItem(
       id: "sn_2",
@@ -274,6 +306,9 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   void initState() {
     super.initState();
     _resetNewQuestionSetForm();
+    _noteOverviewCtrl.addListener(() {
+      if (mounted) setState(() {});
+    });
   }
 
   void _resetNewQuestionSetForm() {
@@ -292,6 +327,13 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   void dispose() {
     _setTitleController.dispose();
     _draftCountController.dispose();
+    _noteOverviewCtrl.dispose();
+    _noteKeyPointsCtrl.dispose();
+    _noteFormulasCtrl.dispose();
+    _noteWorkedProblemCtrl.dispose();
+    _noteWorkedSolutionCtrl.dispose();
+    _noteMistakesCtrl.dispose();
+    _noteTipsCtrl.dispose();
     super.dispose();
   }
 
@@ -538,9 +580,12 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
           children: [
             const Icon(Icons.rate_review_outlined, color: Color(0xFF1E2865), size: 20),
             const SizedBox(width: 8),
-            Text(
-              "Review AI Note: ${item.title}",
-              style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
+            Expanded(
+              child: Text(
+                "Review AI Note: ${item.title}",
+                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
@@ -571,6 +616,17 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
           ),
         ),
         actions: [
+          OutlinedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _openStudyNotesEditor(item);
+            },
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFFCBD5E1)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text("Edit notes", style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF1E2865), fontWeight: FontWeight.w600)),
+          ),
           OutlinedButton(
             onPressed: () => Navigator.pop(ctx),
             style: OutlinedButton.styleFrom(
@@ -606,6 +662,53 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _openStudyNotesEditor(StudyNoteItem note) {
+    setState(() {
+      _editingStudyNote = note;
+      _noteOverviewCtrl.text = note.description;
+      _noteKeyPointsCtrl.text = note.keyPoints;
+      _noteFormulasCtrl.text = note.formulasRules;
+      _noteWorkedProblemCtrl.text = note.workedProblem;
+      _noteWorkedSolutionCtrl.text = note.workedSolution;
+      _noteMistakesCtrl.text = note.commonMistakes;
+      _noteTipsCtrl.text = note.examTips;
+      _notePublishToStudents = note.publishToStudents;
+    });
+  }
+
+  void _saveAndPublishStudyNotes() {
+    if (_editingStudyNote == null) return;
+
+    setState(() {
+      _editingStudyNote!.description = _noteOverviewCtrl.text.trim();
+      _editingStudyNote!.keyPoints = _noteKeyPointsCtrl.text.trim();
+      _editingStudyNote!.formulasRules = _noteFormulasCtrl.text.trim();
+      _editingStudyNote!.workedProblem = _noteWorkedProblemCtrl.text.trim();
+      _editingStudyNote!.workedSolution = _noteWorkedSolutionCtrl.text.trim();
+      _editingStudyNote!.commonMistakes = _noteMistakesCtrl.text.trim();
+      _editingStudyNote!.examTips = _noteTipsCtrl.text.trim();
+      _editingStudyNote!.publishToStudents = _notePublishToStudents;
+      _editingStudyNote!.isReviewed = true;
+      _editingStudyNote!.status = _notePublishToStudents ? "Published" : "Draft";
+
+      final lines = _editingStudyNote!.keyPoints
+          .split('\n')
+          .where((l) => l.trim().isNotEmpty)
+          .length;
+      _editingStudyNote!.keyPointsCount = lines > 0 ? lines : 15;
+
+      _editingStudyNote = null;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Study notes published successfully!"),
+        backgroundColor: Color(0xFF0D9488),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -1929,6 +2032,10 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   // 7. TAB 1: STUDY NOTES VIEW (Matching Screenshot 3)
   // ===========================================================================
   Widget _buildStudyNotesTab(BoxConstraints constraints) {
+    if (_editingStudyNote != null) {
+      return _buildStudyNotesEditorCard(_editingStudyNote!, constraints);
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1980,10 +2087,19 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
                         icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Color(0xFF64748B)),
                         style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF0F172A)),
                         onChanged: (val) => setState(() => _selectedStudyNoteTopic = val),
+                        selectedItemBuilder: (context) {
+                          return _topicsList.map((top) {
+                            return Text(
+                              top,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            );
+                          }).toList();
+                        },
                         items: _topicsList.map((top) {
                           return DropdownMenuItem<String>(
                             value: top,
-                            child: Text(top),
+                            child: Text(top, overflow: TextOverflow.ellipsis, maxLines: 1),
                           );
                         }).toList(),
                       ),
@@ -2091,12 +2207,15 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                note.title,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF0F172A),
+                              InkWell(
+                                onTap: () => _openStudyNotesEditor(note),
+                                child: Text(
+                                  note.title,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF0F172A),
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 6),
@@ -2234,7 +2353,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
                             children: [
                               IconButton(
                                 icon: const Icon(Icons.edit_outlined, size: 17, color: Color(0xFF64748B)),
-                                onPressed: () => _showReviewNoteDialog(note),
+                                onPressed: () => _openStudyNotesEditor(note),
                                 splashRadius: 18,
                                 tooltip: "Edit note",
                               ),
@@ -2260,8 +2379,298 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   }
 
   // ===========================================================================
-  // HELPERS
+  // STUDY NOTES FULL EDITOR CARD (Matches Image 2 exactly)
   // ===========================================================================
+  Widget _buildStudyNotesEditorCard(StudyNoteItem note, BoxConstraints constraints) {
+    final isWide = constraints.maxWidth >= 780;
+
+    final leftColumnWidgets = [
+      _buildEditorField(
+        label: "Key points",
+        sublabel: "One per line, up to 15",
+        controller: _noteKeyPointsCtrl,
+        maxLines: 7,
+        hint: "Enter key facts, one per line...",
+      ),
+      const SizedBox(height: 18),
+      _buildEditorField(
+        label: "Formulas & rules",
+        sublabel: "One per line (leave empty for fact topics)",
+        controller: _noteFormulasCtrl,
+        maxLines: 4,
+        hint: "e.g. Master Theorem: T(n) = aT(n/b) + f(n)",
+      ),
+      const SizedBox(height: 18),
+      _buildEditorField(
+        label: "Worked example: problem",
+        controller: _noteWorkedProblemCtrl,
+        maxLines: 4,
+        hint: "Describe a concrete example problem...",
+      ),
+    ];
+
+    final rightColumnWidgets = [
+      _buildEditorField(
+        label: "Worked example: solution",
+        controller: _noteWorkedSolutionCtrl,
+        maxLines: 7,
+        hint: "Step-by-step model solution...",
+      ),
+      const SizedBox(height: 18),
+      _buildEditorField(
+        label: "Common mistakes",
+        sublabel: "One per line",
+        controller: _noteMistakesCtrl,
+        maxLines: 4,
+        hint: "Mistakes students commonly make...",
+      ),
+      const SizedBox(height: 18),
+      _buildEditorField(
+        label: "Exam tips",
+        sublabel: "One per line",
+        controller: _noteTipsCtrl,
+        maxLines: 4,
+        hint: "e.g. Revise these facts again the day after...",
+      ),
+    ];
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(26),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header: Study notes: <Topic>
+          Text(
+            "Study notes: ${note.title}",
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+              letterSpacing: -0.3,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "Plain text. One item per line in the lists. Saving replaces any earlier notes for this topic.",
+            style: GoogleFonts.poppins(
+              fontSize: 12.5,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 22),
+
+          // Overview Field with Dynamic Character Counter (e.g. Overview (116/1200))
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Overview (${_noteOverviewCtrl.text.length}/1200)",
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1E293B),
+                ),
+              ),
+              const SizedBox(height: 6),
+              TextField(
+                controller: _noteOverviewCtrl,
+                maxLines: 3,
+                maxLength: 1200,
+                buildCounter: (_, {required currentLength, required isFocused, maxLength}) => null,
+                style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF0F172A), height: 1.45),
+                decoration: _studyNoteInputDecoration(
+                  hint: "Brief summary of the topic and why it matters in the syllabus...",
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // 2-Column Responsive Form Layout (Matches Screenshot 2)
+          if (isWide)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: leftColumnWidgets,
+                  ),
+                ),
+                const SizedBox(width: 22),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: rightColumnWidgets,
+                  ),
+                ),
+              ],
+            )
+          else
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ...leftColumnWidgets,
+                const SizedBox(height: 18),
+                ...rightColumnWidgets,
+              ],
+            ),
+
+          const SizedBox(height: 26),
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          const SizedBox(height: 18),
+
+          // Bottom Actions: [x] Publish to students | Cancel | Publish notes
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Checkbox(
+                    value: _notePublishToStudents,
+                    activeColor: const Color(0xFF1E2865),
+                    onChanged: (val) => setState(() => _notePublishToStudents = val ?? true),
+                  ),
+                  Text(
+                    "Publish to students",
+                    style: GoogleFonts.poppins(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF1E293B),
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  OutlinedButton(
+                    onPressed: () => setState(() => _editingStudyNote = null),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFCBD5E1)),
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: Text(
+                      "Cancel",
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF475569),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: _saveAndPublishStudyNotes,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E2865),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 11),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: Text(
+                      "Publish notes",
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditorField({
+    required String label,
+    String? sublabel,
+    required TextEditingController controller,
+    required int maxLines,
+    required String hint,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF1E293B),
+              ),
+            ),
+            if (sublabel != null) ...[
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  sublabel,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          maxLines: maxLines,
+          style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF0F172A), height: 1.45),
+          decoration: _studyNoteInputDecoration(hint: hint),
+        ),
+      ],
+    );
+  }
+
+  InputDecoration _studyNoteInputDecoration({required String hint}) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF94A3B8)),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFF1E2865), width: 1.5),
+      ),
+    );
+  }
   Widget _buildPillBadge(
     String text, {
     required Color backgroundColor,

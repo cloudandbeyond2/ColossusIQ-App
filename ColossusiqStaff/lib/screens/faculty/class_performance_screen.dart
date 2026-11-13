@@ -580,15 +580,16 @@ class _ClassPerformanceScreenState extends State<ClassPerformanceScreen> {
       text: topic ??
           (studentName != null
               ? 'Remedial Mentoring: None identified'
-              : 'Unit 1: AI Ethics, Bias, and Governance Fundamentals & Principles'),
+              : 'Unit 3: Advanced Analysis & Core Theorems'),
     );
-    String selectedStrategy = strategy ??
-        (studentName != null ? '1-on-1 Mentoring' : 'Remedial Lecture');
+    String selectedStrategy = strategy ?? '1-on-1 Mentoring';
     DateTime selectedDate = DateTime(2026, 11, 14);
     final timeCtrl = TextEditingController(text: '16:00 - 17:00');
     final venueCtrl = TextEditingController(text: 'LH-204 / Seminar Hall');
     final cohortCtrl = TextEditingController(text: studentName ?? '');
-    final notesCtrl = TextEditingController();
+    final notesCtrl = TextEditingController(
+      text: 'Organize a 45-minute interactive booster clinic focusing on Advanced Analysis & Core Theorems. Pair students with high-performing peers.',
+    );
 
     showDialog(
       context: context,

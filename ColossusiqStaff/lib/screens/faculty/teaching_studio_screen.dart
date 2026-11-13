@@ -21,19 +21,36 @@ class TeachingStudioScreen extends StatefulWidget {
 class _TeachingStudioScreenState extends State<TeachingStudioScreen> {
   int _teachingMode = 0; // 0: From a course chapter, 1: Any topic
 
-  String _selectedCourse = "CSE101 · Database Management Systems";
+  final TextEditingController _anyTopicCtrl = TextEditingController();
+
+  String _selectedCourse = "AID101 · Machine Learning";
   final List<String> _courses = [
+    "AID101 · Machine Learning",
     "CSE101 · Database Management Systems",
     "CSE102 · Object Oriented Analysis & Design",
     "AI201 · Machine Learning & Neural Networks",
+    "BS101 · Physics and Chemistry Laboratory",
   ];
 
-  String _selectedChapter = "1. Introduction to database systems";
+  String _selectedChapter = "1. Introduction to Machine Learning";
   final List<String> _chapters = [
+    "1. Introduction to Machine Learning",
+    "2. Supervised Learning & Linear Regression",
+    "3. Classification & Decision Trees",
+    "4. Neural Networks & Deep Learning",
     "1. Introduction to database systems",
     "2. Relational Data Models & Constraints",
     "3. SQL Queries, Triggers & Views",
     "4. Normalization (1NF, 2NF, 3NF, BCNF)",
+  ];
+
+  String _selectedDepartment = "Computer Science & Engineering";
+  final List<String> _departments = [
+    "Computer Science & Engineering",
+    "Artificial Intelligence & Data Science",
+    "Electronics & Communication Engineering",
+    "Mechanical Engineering",
+    "Management Studies",
   ];
 
   String _selectedLength = "50 minutes";
@@ -46,38 +63,52 @@ class _TeachingStudioScreenState extends State<TeachingStudioScreen> {
   bool _isGenerating = false;
   Map<String, dynamic>? _generatedPack;
 
+  @override
+  void dispose() {
+    _anyTopicCtrl.dispose();
+    super.dispose();
+  }
+
   void _buildTeachingPack() {
     setState(() => _isGenerating = true);
     Future.delayed(const Duration(milliseconds: 650), () {
       if (!mounted) return;
+      final isAny = _teachingMode == 1;
+      final title = isAny
+          ? (_anyTopicCtrl.text.trim().isNotEmpty
+              ? _anyTopicCtrl.text.trim()
+              : "Deadlocks & Resource Allocation")
+          : _selectedChapter;
+      final courseOrDept = isAny ? _selectedDepartment : _selectedCourse;
+
       setState(() {
         _isGenerating = false;
         _generatedPack = {
-          "course": _selectedCourse,
-          "chapter": _selectedChapter,
+          "course": courseOrDept,
+          "chapter": title,
           "length": _selectedLength,
           "overview":
-              "Database systems provide an abstraction layer between physical storage and application queries, ensuring ACID properties, concurrent access, and data durability.",
+              "This teaching pack provides structured, syllabus-aligned concepts and interactive pedagogies for $title ($courseOrDept), ensuring conceptual clarity, hands-on examples, and formative checks.",
           "timedOutline": [
             {
               "time": "00-10m",
-              "title": "Hook: Why File Systems Failed at Scale",
-              "desc": "Show concurrent CSV overwrite bug with bank accounts."
+              "title": "Hook & Context: Real-world Motivations",
+              "desc": "Introduce real-world case studies and foundational problems for $title."
             },
             {
               "time": "10-25m",
-              "title": "3-Schema Architecture & Data Independence",
-              "desc": "Physical, Logical, and View schema layers with chalkboard diagram."
+              "title": "Core Principles & Architectural Breakdown",
+              "desc": "Primary definitions, governing equations, and system flow with board diagrams."
             },
             {
               "time": "25-40m",
-              "title": "DBMS vs File Systems Comparison Matrix",
-              "desc": "Security, Crash Recovery, Concurrency, and Integrity checks."
+              "title": "Comparative Analysis & Diagnostic Exercise",
+              "desc": "Interactive problem solving, trade-offs, and edge case explorations."
             },
             {
               "time": "40-50m",
-              "title": "Interactive MCQ Poll & Handout Distribution",
-              "desc": "Check comprehension via smart-board prompt and send PDF pack to students."
+              "title": "Formative Polling & Student Summary Takeaway",
+              "desc": "Administer 3-question diagnostic quiz and distribute review notes to students."
             },
           ],
         };
@@ -605,6 +636,168 @@ class _TeachingStudioScreenState extends State<TeachingStudioScreen> {
                 ),
               );
 
+              // -----------------------------------------------------------------
+              // MODE 1: ANY TOPIC (Matches Screenshot 3)
+              // -----------------------------------------------------------------
+              if (_teachingMode == 1) {
+                final topicField = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Topic',
+                        style: GoogleFonts.poppins(
+                            fontSize: 12, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 6),
+                    Container(
+                      height: 44,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFCBD5E1)),
+                      ),
+                      child: Center(
+                        child: TextField(
+                          controller: _anyTopicCtrl,
+                          style: GoogleFonts.poppins(
+                              fontSize: 12.5, color: const Color(0xFF334155)),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'e.g. Deadlocks, Acute inflammation, Depreciation',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: const Color(0xFF94A3B8),
+                      ),
+                    ),
+                  ],
+                );
+
+                final deptField = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Department',
+                        style: GoogleFonts.poppins(
+                            fontSize: 12, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 6),
+                    Container(
+                      height: 44,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFCBD5E1)),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: _selectedDepartment,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12.5,
+                            color: const Color(0xFF334155),
+                          ),
+                          items: _departments
+                              .map((d) => DropdownMenuItem(
+                                    value: d,
+                                    child: Text(d,
+                                        overflow: TextOverflow.ellipsis),
+                                  ))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() => _selectedDepartment = val);
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                  ],
+                );
+
+                final lengthFieldAny = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Class length',
+                        style: GoogleFonts.poppins(
+                            fontSize: 12, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 6),
+                    Container(
+                      height: 44,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFCBD5E1)),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: _selectedLength,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12.5,
+                            color: const Color(0xFF334155),
+                          ),
+                          items: _lengths
+                              .map((l) => DropdownMenuItem(
+                                    value: l,
+                                    child: Text(l,
+                                        overflow: TextOverflow.ellipsis),
+                                  ))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() => _selectedLength = val);
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                  ],
+                );
+
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      topicField,
+                      const SizedBox(height: 12),
+                      deptField,
+                      const SizedBox(height: 12),
+                      lengthFieldAny,
+                      const SizedBox(height: 16),
+                      buildButton,
+                    ],
+                  );
+                } else {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 4, child: topicField),
+                      const SizedBox(width: 12),
+                      Expanded(flex: 3, child: deptField),
+                      const SizedBox(width: 12),
+                      Expanded(flex: 2, child: lengthFieldAny),
+                      const SizedBox(width: 14),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24),
+                        child: buildButton,
+                      ),
+                    ],
+                  );
+                }
+              }
+
+              // -----------------------------------------------------------------
+              // MODE 0: FROM A COURSE CHAPTER (Matches Screenshot 2)
+              // -----------------------------------------------------------------
               if (isNarrow) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
