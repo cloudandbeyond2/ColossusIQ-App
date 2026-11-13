@@ -35,20 +35,37 @@ class _MyClassesScreenState extends State<MyClassesScreen> {
 
   final List<Map<String, dynamic>> _classes = [
     {
-      'code': 'CS3492',
-      'section': 'CSE-A · Sem 5',
+      'code': 'CS301',
+      'section': 'CSE-A · Term 1',
       'hours': '4 hrs/wk',
-      'title': 'Database Management Systems',
+      'title': 'Advanced Java',
       'venue': 'LH-204',
       'next': 'Next: Today 09:00',
-      'students': '64',
-      'attendance': '88%',
-      'avgScore': '68%',
+      'students': '6',
+      'attendance': '83%',
+      'avgScore': '77%',
       'units': '5 Units',
       'colors': [
         const Color(0xFF06B6D4),
         const Color(0xFFF43F5E),
         const Color(0xFFF59E0B),
+        const Color(0xFF10B981),
+      ],
+    },
+    {
+      'code': 'AID102',
+      'section': 'AI&DS-A · Term 1',
+      'hours': '4 hrs/wk',
+      'title': 'AI Ethics, Bias, and Governance',
+      'venue': 'LH-206',
+      'next': 'Next: Today 11:15',
+      'students': '6',
+      'attendance': '83%',
+      'avgScore': '75%',
+      'units': '4 Units',
+      'colors': [
+        const Color(0xFF8B5CF6),
+        const Color(0xFF06B6D4),
         const Color(0xFF10B981),
       ],
     },
@@ -88,32 +105,39 @@ class _MyClassesScreenState extends State<MyClassesScreen> {
     },
   ];
 
-  // Section rosters database
+  // Section rosters database with authentic enrolled students
   final Map<String, List<Map<String, dynamic>>> _sectionRosters = {
-    'CSE-A · Sem 5': [
-      {'roll': '22CS101', 'name': 'Aarav Sharma', 'attendance': '94%', 'cgpa': '8.9', 'status': 'Present'},
-      {'roll': '22CS102', 'name': 'Aditi Rao', 'attendance': '91%', 'cgpa': '9.2', 'status': 'Present'},
-      {'roll': '22CS103', 'name': 'Bhavin Patel', 'attendance': '78%', 'cgpa': '7.4', 'status': 'Absent'},
-      {'roll': '22CS104', 'name': 'Deepika Verma', 'attendance': '86%', 'cgpa': '8.5', 'status': 'Present'},
-      {'roll': '22CS105', 'name': 'Farhan Khan', 'attendance': '82%', 'cgpa': '8.0', 'status': 'Late'},
-      {'roll': '22CS106', 'name': 'Ishita Gupta', 'attendance': '96%', 'cgpa': '9.5', 'status': 'Present'},
-      {'roll': '22CS107', 'name': 'Karthik Raja', 'attendance': '72%', 'cgpa': '6.9', 'status': 'Absent'},
-      {'roll': '22CS108', 'name': 'Meera Nambiar', 'attendance': '98%', 'cgpa': '9.8', 'status': 'Present'},
+    'CSE-A · Term 1': [
+      {'roll': '110124001', 'name': 'Anand Kumar', 'attendance': '92%', 'avgScore': '68%', 'signal': 'Regular', 'status': 'Present'},
+      {'roll': '110124002', 'name': 'Divya Ramesh', 'attendance': '83%', 'avgScore': '75%', 'signal': 'Regular', 'status': 'Present'},
+      {'roll': '110124003', 'name': 'Karthik Raja', 'attendance': '74%', 'avgScore': '82%', 'signal': 'Att. Warning', 'status': 'Absent'},
+      {'roll': '21CS4788', 'name': 'Kirshna', 'attendance': '68%', 'avgScore': '88%', 'signal': 'Att. Warning', 'status': 'Present'},
+      {'roll': '27549861', 'name': 'bala', 'attendance': '84%', 'avgScore': '71%', 'signal': 'Regular', 'status': 'Present'},
+      {'roll': '52CS1478', 'name': 'Suganya', 'attendance': '75%', 'avgScore': '78%', 'signal': 'Regular', 'status': 'Present'},
+    ],
+    'AI&DS-A · Term 1': [
+      {'roll': '110124001', 'name': 'Anand Kumar', 'attendance': '92%', 'avgScore': '68%', 'signal': 'Regular', 'status': 'Present'},
+      {'roll': '110124002', 'name': 'Divya Ramesh', 'attendance': '83%', 'avgScore': '75%', 'signal': 'Regular', 'status': 'Present'},
+      {'roll': '110124003', 'name': 'Karthik Raja', 'attendance': '74%', 'avgScore': '82%', 'signal': 'Att. Warning', 'status': 'Absent'},
+      {'roll': '21CS4788', 'name': 'Kirshna', 'attendance': '68%', 'avgScore': '88%', 'signal': 'Att. Warning', 'status': 'Present'},
+      {'roll': '27549861', 'name': 'bala', 'attendance': '84%', 'avgScore': '71%', 'signal': 'Regular', 'status': 'Present'},
+      {'roll': '52CS1478', 'name': 'Suganya', 'attendance': '75%', 'avgScore': '78%', 'signal': 'Regular', 'status': 'Present'},
     ],
     'CSE-B · Sem 5': [
-      {'roll': '22CS151', 'name': 'Nikhil Reddy', 'attendance': '88%', 'cgpa': '8.2', 'status': 'Present'},
-      {'roll': '22CS152', 'name': 'Pooja Hegde', 'attendance': '92%', 'cgpa': '8.8', 'status': 'Present'},
-      {'roll': '22CS153', 'name': 'Rahul Nair', 'attendance': '75%', 'cgpa': '7.1', 'status': 'Late'},
-      {'roll': '22CS154', 'name': 'Sneha Kulkarni', 'attendance': '95%', 'cgpa': '9.4', 'status': 'Present'},
-      {'roll': '22CS155', 'name': 'Vikramaditya S.', 'attendance': '70%', 'cgpa': '6.8', 'status': 'Absent'},
-      {'roll': '22CS156', 'name': 'Zoya Akhtar', 'attendance': '89%', 'cgpa': '8.4', 'status': 'Present'},
+      {'roll': '110124001', 'name': 'Anand Kumar', 'attendance': '92%', 'avgScore': '68%', 'signal': 'Regular', 'status': 'Present'},
+      {'roll': '110124002', 'name': 'Divya Ramesh', 'attendance': '83%', 'avgScore': '75%', 'signal': 'Regular', 'status': 'Present'},
+      {'roll': '110124003', 'name': 'Karthik Raja', 'attendance': '74%', 'avgScore': '82%', 'signal': 'Att. Warning', 'status': 'Absent'},
+      {'roll': '21CS4788', 'name': 'Kirshna', 'attendance': '68%', 'avgScore': '88%', 'signal': 'Att. Warning', 'status': 'Present'},
+      {'roll': '27549861', 'name': 'bala', 'attendance': '84%', 'avgScore': '71%', 'signal': 'Regular', 'status': 'Present'},
+      {'roll': '52CS1478', 'name': 'Suganya', 'attendance': '75%', 'avgScore': '78%', 'signal': 'Regular', 'status': 'Present'},
     ],
     'AI&DS · Sem 5': [
-      {'roll': '22AD001', 'name': 'Ananya Deshmukh', 'attendance': '96%', 'cgpa': '9.4', 'status': 'Present'},
-      {'roll': '22AD002', 'name': 'Chirag Jain', 'attendance': '88%', 'cgpa': '8.1', 'status': 'Present'},
-      {'roll': '22AD003', 'name': 'Divya Pillai', 'attendance': '93%', 'cgpa': '8.9', 'status': 'Present'},
-      {'roll': '22AD004', 'name': 'Gautam Menon', 'attendance': '68%', 'cgpa': '6.5', 'status': 'Absent'},
-      {'roll': '22AD005', 'name': 'Harini Sundar', 'attendance': '99%', 'cgpa': '9.7', 'status': 'Present'},
+      {'roll': '110124001', 'name': 'Anand Kumar', 'attendance': '92%', 'avgScore': '68%', 'signal': 'Regular', 'status': 'Present'},
+      {'roll': '110124002', 'name': 'Divya Ramesh', 'attendance': '83%', 'avgScore': '75%', 'signal': 'Regular', 'status': 'Present'},
+      {'roll': '110124003', 'name': 'Karthik Raja', 'attendance': '74%', 'avgScore': '82%', 'signal': 'Att. Warning', 'status': 'Absent'},
+      {'roll': '21CS4788', 'name': 'Kirshna', 'attendance': '68%', 'avgScore': '88%', 'signal': 'Att. Warning', 'status': 'Present'},
+      {'roll': '27549861', 'name': 'bala', 'attendance': '84%', 'avgScore': '71%', 'signal': 'Regular', 'status': 'Present'},
+      {'roll': '52CS1478', 'name': 'Suganya', 'attendance': '75%', 'avgScore': '78%', 'signal': 'Regular', 'status': 'Present'},
     ],
   };
 
@@ -1353,17 +1377,18 @@ class _MyClassesScreenState extends State<MyClassesScreen> {
   }
 
   // ===========================================================================
-  // INTERACTIVE ACTION DIALOGS
+  // INTERACTIVE ACTION DIALOGS (Matching uploaded screenshots 1 & 2)
   // ===========================================================================
 
   void _showTakeAttendanceDialog(Map<String, dynamic> c) {
     final sectionKey = c['section'] as String;
     final rosterSource = _sectionRosters[sectionKey] ?? [
-      {'roll': '22CS201', 'name': 'Aditya Verma', 'attendance': '90%', 'cgpa': '8.5', 'status': 'Present'},
-      {'roll': '22CS202', 'name': 'Divya Sundaram', 'attendance': '95%', 'cgpa': '9.1', 'status': 'Present'},
-      {'roll': '22CS203', 'name': 'Kavya Raman', 'attendance': '78%', 'cgpa': '7.2', 'status': 'Absent'},
-      {'roll': '22CS204', 'name': 'Manish Paul', 'attendance': '84%', 'cgpa': '8.0', 'status': 'Present'},
-      {'roll': '22CS205', 'name': 'Rohan Das', 'attendance': '88%', 'cgpa': '8.3', 'status': 'Late'},
+      {'roll': '110124001', 'name': 'Anand Kumar', 'attendance': '92%', 'avgScore': '68%', 'signal': 'Regular', 'status': 'Present'},
+      {'roll': '110124002', 'name': 'Divya Ramesh', 'attendance': '83%', 'avgScore': '75%', 'signal': 'Regular', 'status': 'Present'},
+      {'roll': '110124003', 'name': 'Karthik Raja', 'attendance': '74%', 'avgScore': '82%', 'signal': 'Att. Warning', 'status': 'Absent'},
+      {'roll': '21CS4788', 'name': 'Kirshna', 'attendance': '68%', 'avgScore': '88%', 'signal': 'Att. Warning', 'status': 'Present'},
+      {'roll': '27549861', 'name': 'bala', 'attendance': '84%', 'avgScore': '71%', 'signal': 'Regular', 'status': 'Present'},
+      {'roll': '52CS1478', 'name': 'Suganya', 'attendance': '75%', 'avgScore': '78%', 'signal': 'Regular', 'status': 'Present'},
     ];
 
     // Work on mutable copy
@@ -1371,76 +1396,76 @@ class _MyClassesScreenState extends State<MyClassesScreen> {
         .map((s) => Map<String, dynamic>.from(s))
         .toList();
 
+    String selectedPeriod = "Period 1 (09:00 - 10:00)";
+    final topicCtrl = TextEditingController();
+    final dateCtrl = TextEditingController(text: "11/12/2026");
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setModalState) {
-            final presentCount = students.where((s) => s['status'] == 'Present').length;
-            final absentCount = students.where((s) => s['status'] == 'Absent').length;
-            final lateCount = students.where((s) => s['status'] == 'Late').length;
+            final presentCount =
+                students.where((s) => s['status'] == 'Present').length;
+            final absentCount =
+                students.where((s) => s['status'] == 'Absent').length;
+            final lateCount =
+                students.where((s) => s['status'] == 'Late').length;
+            final total = students.length;
+            final turnout =
+                total > 0 ? ((presentCount / total) * 100).round() : 0;
 
             return Dialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              insetPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 680, maxHeight: 720),
+                constraints:
+                    const BoxConstraints(maxWidth: 720, maxHeight: 780),
                 child: Padding(
                   padding: const EdgeInsets.all(22),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Header
+                      // Header Row: Avatar icon + Title + Subtitle + Close '✕'
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(10),
+                            width: 38,
+                            height: 38,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEFF6FF),
+                              color: const Color(0xFFF5F3FF),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(Icons.how_to_reg_rounded, color: Color(0xFF38439E), size: 24),
+                            child: const Center(
+                              child: Icon(
+                                Icons.person_outline_rounded,
+                                color: Color(0xFF4338CA),
+                                size: 20,
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Wrap(
-                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                  spacing: 8,
-                                  runSpacing: 4,
-                                  children: [
-                                    Text(
-                                      'Take Attendance Register',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: const Color(0xFF0F172A),
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFEEF2FF),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Text(
-                                        c['code'] as String,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.w700,
-                                          color: const Color(0xFF4338CA),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 3),
                                 Text(
-                                  '${c['title']} · Section ${c['section']} · Room ${c['venue']}',
+                                  'Take Attendance — ${c['section']}',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${c['code']} · ${c['title']}',
                                   style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     color: const Color(0xFF64748B),
@@ -1451,186 +1476,496 @@ class _MyClassesScreenState extends State<MyClassesScreen> {
                           ),
                           IconButton(
                             onPressed: () => Navigator.pop(ctx),
-                            icon: const Icon(Icons.close, size: 20, color: Color(0xFF94A3B8)),
+                            icon: const Icon(Icons.close_rounded,
+                                size: 20, color: Color(0xFF64748B)),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            splashRadius: 18,
                           ),
                         ],
                       ),
+                      const SizedBox(height: 18),
+
+                      // Form controls row: Date, Period, Topic / Chapter
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isNarrow = constraints.maxWidth < 620;
+
+                          final dateField = Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Date",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              TextField(
+                                controller: dateCtrl,
+                                style: GoogleFonts.poppins(fontSize: 13),
+                                readOnly: true,
+                                onTap: () async {
+                                  final now = DateTime.now();
+                                  final picked = await showDatePicker(
+                                    context: context,
+                                    initialDate: now,
+                                    firstDate: DateTime(2025),
+                                    lastDate: DateTime(2028),
+                                  );
+                                  if (picked != null) {
+                                    setModalState(() {
+                                      dateCtrl.text =
+                                          "${picked.month}/${picked.day}/${picked.year}";
+                                    });
+                                  }
+                                },
+                                decoration: InputDecoration(
+                                  suffixIcon: const Icon(
+                                    Icons.calendar_today_outlined,
+                                    size: 15,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 10),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: const BorderSide(
+                                        color: Color(0xFFE2E8F0)),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: const BorderSide(
+                                        color: Color(0xFFE2E8F0)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+
+                          final periodField = Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Period",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 1),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                      color: const Color(0xFFE2E8F0)),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    value: selectedPeriod,
+                                    isExpanded: true,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12.5,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                    items: const [
+                                      DropdownMenuItem(
+                                          value: "Period 1 (09:00 - 10:00)",
+                                          child: Text(
+                                              "Period 1 (09:00 - 10:00)")),
+                                      DropdownMenuItem(
+                                          value: "Period 2 (10:00 - 11:00)",
+                                          child: Text(
+                                              "Period 2 (10:00 - 11:00)")),
+                                      DropdownMenuItem(
+                                          value: "Period 3 (11:15 - 12:15)",
+                                          child: Text(
+                                              "Period 3 (11:15 - 12:15)")),
+                                      DropdownMenuItem(
+                                          value: "Period 4 (12:15 - 13:15)",
+                                          child: Text(
+                                              "Period 4 (12:15 - 13:15)")),
+                                      DropdownMenuItem(
+                                          value: "Period 5 (14:00 - 15:00)",
+                                          child: Text(
+                                              "Period 5 (14:00 - 15:00)")),
+                                    ],
+                                    onChanged: (val) {
+                                      if (val != null) {
+                                        setModalState(() {
+                                          selectedPeriod = val;
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+
+                          final topicField = Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Topic / Chapter",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              TextField(
+                                controller: topicCtrl,
+                                style: GoogleFonts.poppins(fontSize: 13),
+                                decoration: InputDecoration(
+                                  hintText: "Topic covered in class...",
+                                  hintStyle: GoogleFonts.poppins(
+                                    fontSize: 12.5,
+                                    color: const Color(0xFF94A3B8),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 10),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: const BorderSide(
+                                        color: Color(0xFFE2E8F0)),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: const BorderSide(
+                                        color: Color(0xFFE2E8F0)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+
+                          if (isNarrow) {
+                            return Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(child: dateField),
+                                    const SizedBox(width: 10),
+                                    Expanded(child: periodField),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                topicField,
+                              ],
+                            );
+                          }
+
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(width: 140, child: dateField),
+                              const SizedBox(width: 12),
+                              Expanded(flex: 7, child: periodField),
+                              const SizedBox(width: 12),
+                              Expanded(flex: 9, child: topicField),
+                            ],
+                          );
+                        },
+                      ),
                       const SizedBox(height: 16),
 
-                      // Stat counts & quick actions
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: Wrap(
-                          alignment: WrapAlignment.spaceBetween,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 6,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFDCFCE7),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    'Present: $presentCount',
-                                    style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w700, color: const Color(0xFF15803D)),
-                                  ),
+                      // Status summary & bulk actions row (Matching Image 2)
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [
+                          // Left counts
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: "Present: ",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF10B981),
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: "$presentCount",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: const Color(0xFF10B981),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFEE2E2),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    'Absent: $absentCount',
-                                    style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w700, color: const Color(0xFFB91C1C)),
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFEF3C7),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    'Late: $lateCount',
-                                    style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w700, color: const Color(0xFFB45309)),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            TextButton.icon(
-                              onPressed: () {
-                                setModalState(() {
-                                  for (var s in students) {
-                                    s['status'] = 'Present';
-                                  }
-                                });
-                              },
-                              style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
-                              icon: const Icon(Icons.done_all_rounded, size: 15, color: Color(0xFF38439E)),
-                              label: Text('All Present', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFF38439E))),
-                            ),
-                          ],
-                        ),
+                              RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: "Absent: ",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFFEF4444),
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: "$absentCount",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: const Color(0xFFEF4444),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: "Late: ",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFFF59E0B),
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: "$lateCount",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: const Color(0xFFF59E0B),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEDE9FE),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  "Turnout: $turnout%",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF4338CA),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          // Right Bulk Actions: All Present / All Absent
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              OutlinedButton(
+                                onPressed: () {
+                                  setModalState(() {
+                                    for (var s in students) {
+                                      s['status'] = 'Present';
+                                    }
+                                  });
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFF1E293B),
+                                  side: const BorderSide(
+                                      color: Color(0xFFCBD5E1)),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 7),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                child: Text(
+                                  "All Present",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              OutlinedButton(
+                                onPressed: () {
+                                  setModalState(() {
+                                    for (var s in students) {
+                                      s['status'] = 'Absent';
+                                    }
+                                  });
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFFB91C1C),
+                                  side: const BorderSide(
+                                      color: Color(0xFFFECACA)),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 7),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                child: Text(
+                                  "All Absent",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
+                      const Divider(height: 1, color: Color(0xFFF1F5F9)),
 
-                      // Student list
+                      // Student List with P / A / L Segmented Controls (Matching Image 2)
                       Expanded(
-                        child: ListView.separated(
-                          itemCount: students.length,
-                          separatorBuilder: (_, index) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                          itemBuilder: (context, i) {
-                            final student = students[i];
-                            final status = student['status'] as String;
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: SizedBox(
+                            width: 480,
+                            child: ListView.separated(
+                              itemCount: students.length,
+                              separatorBuilder: (_, index) =>
+                                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                              itemBuilder: (context, i) {
+                                final s = students[i];
+                                final status = s['status'] as String;
 
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 17,
-                                    backgroundColor: const Color(0xFFEEF2FF),
-                                    child: Text(
-                                      student['name'].toString().substring(0, 1),
-                                      style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700, color: const Color(0xFF4338CA)),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          student['name'] as String,
-                                          style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
-                                        ),
-                                        Text(
-                                          '${student['roll']} · Historic: ${student['attendance']}',
-                                          style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF64748B)),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  // 3 Toggle buttons (P / A / L)
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 4, vertical: 10),
+                                  child: Row(
                                     children: [
-                                      _buildStatusChoiceChip(
-                                        label: 'P',
-                                        isSelected: status == 'Present',
-                                        activeColor: const Color(0xFF10B981),
-                                        onTap: () => setModalState(() => student['status'] = 'Present'),
+                                      // Roll Number
+                                      SizedBox(
+                                        width: 110,
+                                        child: Text(
+                                          s['roll'] as String,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w800,
+                                            color: const Color(0xFF0F172A),
+                                          ),
+                                        ),
                                       ),
-                                      const SizedBox(width: 6),
-                                      _buildStatusChoiceChip(
-                                        label: 'A',
-                                        isSelected: status == 'Absent',
-                                        activeColor: const Color(0xFFEF4444),
-                                        onTap: () => setModalState(() => student['status'] = 'Absent'),
+                                      const SizedBox(width: 10),
+
+                                      // Student Name (fixed minimum width prevents vertical letter wrapping)
+                                      SizedBox(
+                                        width: 180,
+                                        child: Text(
+                                          s['name'] as String,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                            color: const Color(0xFF0F172A),
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
-                                      const SizedBox(width: 6),
-                                      _buildStatusChoiceChip(
-                                        label: 'L',
-                                        isSelected: status == 'Late',
-                                        activeColor: const Color(0xFFF59E0B),
-                                        onTap: () => setModalState(() => student['status'] = 'Late'),
+                                      const Spacer(),
+
+                                      // Toggle Buttons: [ P ] [ A ] [ L ]
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          // P
+                                          _buildPALToggle(
+                                            letter: 'P',
+                                            isSelected: status == 'Present',
+                                            activeBg: const Color(0xFF059669), // Green
+                                            onTap: () {
+                                              setModalState(() {
+                                                s['status'] = 'Present';
+                                              });
+                                            },
+                                          ),
+                                          const SizedBox(width: 8),
+                                          // A
+                                          _buildPALToggle(
+                                            letter: 'A',
+                                            isSelected: status == 'Absent',
+                                            activeBg: const Color(0xFFDC2626), // Red
+                                            onTap: () {
+                                              setModalState(() {
+                                                s['status'] = 'Absent';
+                                              });
+                                            },
+                                          ),
+                                          const SizedBox(width: 8),
+                                          // L
+                                          _buildPALToggle(
+                                            letter: 'L',
+                                            isSelected: status == 'Late',
+                                            activeBg: const Color(0xFFD97706), // Amber
+                                            onTap: () {
+                                              setModalState(() {
+                                                s['status'] = 'Late';
+                                              });
+                                            },
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
-                            );
-                          },
+                                );
+                              },
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
 
-                      // Footer Actions
+                      // Footer Actions: Cancel and Save Attendance Record (Matching Image 2)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          OutlinedButton(
+                          TextButton(
                             onPressed: () => Navigator.pop(ctx),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF475569),
-                              side: const BorderSide(color: Color(0xFFCBD5E1)),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            child: Text(
+                              'Cancel',
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF475569),
+                              ),
                             ),
-                            child: Text('Cancel', style: GoogleFonts.poppins(fontSize: 12.5)),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 12),
                           ElevatedButton.icon(
                             onPressed: () {
-                              final total = students.length;
-                              final pct = ((presentCount / total) * 100).round();
-
+                              final pct = turnout;
                               setState(() {
-                                // Update cached roster
                                 _sectionRosters[sectionKey] = students;
-                                // Update class attendance display
                                 c['attendance'] = '$pct%';
 
-                                // Insert history log
                                 _attendanceHistory.insert(0, {
-                                  'date': 'Today ${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+                                  'date':
+                                      'Today ${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
                                   'code': c['code'],
                                   'subject': c['title'],
                                   'section': c['section'],
@@ -1645,7 +1980,7 @@ class _MyClassesScreenState extends State<MyClassesScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'Attendance recorded for ${c['section']}: $presentCount Present, $absentCount Absent, $lateCount Late ($pct%)',
+                                    'Attendance saved for ${c['section']}: $presentCount Present, $absentCount Absent, $lateCount Late ($pct% turnout)',
                                     style: GoogleFonts.poppins(),
                                   ),
                                   backgroundColor: const Color(0xFF10B981),
@@ -1653,13 +1988,16 @@ class _MyClassesScreenState extends State<MyClassesScreen> {
                                 ),
                               );
                             },
-                            icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
-                            label: Text('Save & Submit Register', style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600)),
+                            icon: const Icon(Icons.check_rounded, size: 16),
+                            label: const Text('Save Attendance Record'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF38439E),
+                              backgroundColor: const Color(0xFF2E2A72), // Solid purple/navy
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                               elevation: 0,
                             ),
                           ),
@@ -1676,10 +2014,11 @@ class _MyClassesScreenState extends State<MyClassesScreen> {
     );
   }
 
-  Widget _buildStatusChoiceChip({
-    required String label,
+  // Toggle button for P, A, L
+  Widget _buildPALToggle({
+    required String letter,
     required bool isSelected,
-    required Color activeColor,
+    required Color activeBg,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -1687,79 +2026,80 @@ class _MyClassesScreenState extends State<MyClassesScreen> {
       borderRadius: BorderRadius.circular(6),
       child: Container(
         width: 32,
-        height: 32,
+        height: 30,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isSelected ? activeColor : const Color(0xFFF1F5F9),
+          color: isSelected ? activeBg : const Color(0xFFF8F7F4),
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: isSelected ? activeColor : const Color(0xFFE2E8F0),
+            color: isSelected ? activeBg : const Color(0xFFE2E8F0),
             width: 1,
           ),
         ),
         child: Text(
-          label,
+          letter,
           style: GoogleFonts.poppins(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: isSelected ? Colors.white : const Color(0xFF64748B),
+            color: isSelected ? Colors.white : const Color(0xFF475569),
           ),
         ),
       ),
     );
   }
 
+  // ===========================================================================
+  // VIEW ROSTER DIALOG (Matching uploaded screenshot 1)
+  // ===========================================================================
   void _showViewRosterDialog(Map<String, dynamic> c) {
     final sectionKey = c['section'] as String;
     final roster = _sectionRosters[sectionKey] ?? [
-      {'roll': '22CS101', 'name': 'Aarav Sharma', 'attendance': '94%', 'cgpa': '8.9', 'status': 'Present'},
-      {'roll': '22CS102', 'name': 'Aditi Rao', 'attendance': '91%', 'cgpa': '9.2', 'status': 'Present'},
-      {'roll': '22CS103', 'name': 'Bhavin Patel', 'attendance': '78%', 'cgpa': '7.4', 'status': 'Absent'},
-      {'roll': '22CS104', 'name': 'Deepika Verma', 'attendance': '86%', 'cgpa': '8.5', 'status': 'Present'},
+      {'roll': '110124001', 'name': 'Anand Kumar', 'attendance': '92%', 'avgScore': '68%', 'signal': 'Regular'},
+      {'roll': '110124002', 'name': 'Divya Ramesh', 'attendance': '83%', 'avgScore': '75%', 'signal': 'Regular'},
+      {'roll': '110124003', 'name': 'Karthik Raja', 'attendance': '74%', 'avgScore': '82%', 'signal': 'Att. Warning'},
+      {'roll': '21CS4788', 'name': 'Kirshna', 'attendance': '68%', 'avgScore': '88%', 'signal': 'Att. Warning'},
+      {'roll': '27549861', 'name': 'bala', 'attendance': '84%', 'avgScore': '71%', 'signal': 'Regular'},
+      {'roll': '52CS1478', 'name': 'Suganya', 'attendance': '75%', 'avgScore': '78%', 'signal': 'Regular'},
     ];
 
     showDialog(
       context: context,
       builder: (ctx) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720, maxHeight: 680),
+            constraints: const BoxConstraints(maxWidth: 750, maxHeight: 680),
             child: Padding(
               padding: const EdgeInsets.all(22),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // Header Row: Title & Subtitle + Close '✕' (Image 1)
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF0FDF4),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.people_outline_rounded, color: Color(0xFF15803D), size: 24),
-                      ),
-                      const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Enrolled Student Roster',
+                              '${c['section']} — Enrolled Student Roster',
                               style: GoogleFonts.poppins(
                                 fontSize: 17,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w800,
                                 color: const Color(0xFF0F172A),
                               ),
                             ),
                             const SizedBox(height: 3),
                             Text(
-                              '${c['title']} (${c['code']}) · Section ${c['section']} · ${c['students']} Students',
+                              '${c['title']} (${c['code']}) · ${roster.length} Students',
                               style: GoogleFonts.poppins(
-                                fontSize: 12,
+                                fontSize: 12.5,
                                 color: const Color(0xFF64748B),
                               ),
                             ),
@@ -1768,132 +2108,250 @@ class _MyClassesScreenState extends State<MyClassesScreen> {
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(ctx),
-                        icon: const Icon(Icons.close, size: 20, color: Color(0xFF94A3B8)),
+                        icon: const Icon(Icons.close_rounded,
+                            size: 20, color: Color(0xFF64748B)),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        splashRadius: 18,
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
 
-                  // Table Header
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                    ),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 80,
-                          child: Text('ROLL NO', style: GoogleFonts.poppins(fontSize: 10.5, fontWeight: FontWeight.w700, color: const Color(0xFF64748B))),
-                        ),
-                        Expanded(
-                          child: Text('STUDENT NAME', style: GoogleFonts.poppins(fontSize: 10.5, fontWeight: FontWeight.w700, color: const Color(0xFF64748B))),
-                        ),
-                        SizedBox(
-                          width: 90,
-                          child: Text('ATTENDANCE', style: GoogleFonts.poppins(fontSize: 10.5, fontWeight: FontWeight.w700, color: const Color(0xFF64748B))),
-                        ),
-                        SizedBox(
-                          width: 60,
-                          child: Text('CGPA', style: GoogleFonts.poppins(fontSize: 10.5, fontWeight: FontWeight.w700, color: const Color(0xFF64748B))),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-
-                  // Table Body
+                  // Table Container with horizontal scrolling for narrow screens
                   Expanded(
-                    child: ListView.separated(
-                      itemCount: roster.length,
-                      separatorBuilder: (_, index) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                      itemBuilder: (context, i) {
-                        final student = roster[i];
-                        final attVal = int.tryParse(student['attendance'].toString().replaceAll('%', '')) ?? 80;
-                        final attColor = attVal >= 85 ? const Color(0xFF10B981) : (attVal >= 75 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SizedBox(
+                        width: 580,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Table Header Row with Warm Cream Background (Image 1)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFBF8F1), // Warm cream
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 110,
+                                    child: Text(
+                                      'ROLL NO',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF64748B),
+                                        letterSpacing: 0.6,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 150,
+                                    child: Text(
+                                      'STUDENT NAME',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF64748B),
+                                        letterSpacing: 0.6,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 110,
+                                    child: Text(
+                                      'ATTENDANCE',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF64748B),
+                                        letterSpacing: 0.6,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 100,
+                                    child: Text(
+                                      'AVG SCORE',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF64748B),
+                                        letterSpacing: 0.6,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 100,
+                                    child: Text(
+                                      'SIGNAL',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF64748B),
+                                        letterSpacing: 0.6,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
 
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 80,
-                                child: Text(
-                                  student['roll'] as String,
-                                  style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF38439E)),
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  student['name'] as String,
-                                  style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
-                                ),
-                              ),
-                              SizedBox(
-                                width: 90,
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 8,
-                                      height: 8,
-                                      decoration: BoxDecoration(color: attColor, shape: BoxShape.circle),
+                            // Table Body Rows (Image 1)
+                            Expanded(
+                              child: ListView.separated(
+                                padding: const EdgeInsets.symmetric(vertical: 6),
+                                itemCount: roster.length,
+                                separatorBuilder: (_, index) =>
+                                    const Divider(height: 1, color: Color(0xFFF8FAFC)),
+                                itemBuilder: (context, i) {
+                                  final s = roster[i];
+                                  final attStr = s['attendance'] as String;
+                                  final attNum =
+                                      int.tryParse(attStr.replaceAll('%', '')) ?? 80;
+                                  final isWarning = attNum < 75;
+                                  final signal = s['signal'] as String? ??
+                                      (isWarning ? 'Att. Warning' : 'Regular');
+
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 12),
+                                    child: Row(
+                                      children: [
+                                        // Roll number in bold
+                                        SizedBox(
+                                          width: 110,
+                                          child: Text(
+                                            s['roll'] as String,
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w800,
+                                              color: const Color(0xFF0F172A),
+                                            ),
+                                          ),
+                                        ),
+
+                                        // Student name (fixed width 150 prevents vertical squishing)
+                                        SizedBox(
+                                          width: 150,
+                                          child: Text(
+                                            s['name'] as String,
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: const Color(0xFF0F172A),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+
+                                        // Attendance (Green if >= 75%, Red if < 75%)
+                                        SizedBox(
+                                          width: 110,
+                                          child: Text(
+                                            attStr,
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w700,
+                                              color: isWarning
+                                                  ? const Color(0xFFDC2626) // Red
+                                                  : const Color(0xFF059669), // Green
+                                            ),
+                                          ),
+                                        ),
+
+                                        // Avg score (Teal font)
+                                        SizedBox(
+                                          width: 100,
+                                          child: Text(
+                                            s['avgScore'] as String? ?? "75%",
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF0D9488), // Teal
+                                            ),
+                                          ),
+                                        ),
+
+                                        // Signal: Regular or Att. Warning Pill
+                                        SizedBox(
+                                          width: 100,
+                                          child: signal == 'Att. Warning'
+                                              ? Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                      horizontal: 8, vertical: 3),
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(0xFFFEE2E2),
+                                                    borderRadius:
+                                                        BorderRadius.circular(12),
+                                                  ),
+                                                  child: Text(
+                                                    'Att. Warning',
+                                                    style: GoogleFonts.poppins(
+                                                      fontSize: 10,
+                                                      fontWeight: FontWeight.w700,
+                                                      color: const Color(0xFFDC2626),
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                )
+                                              : Text(
+                                                  signal,
+                                                  style: GoogleFonts.poppins(
+                                                    fontSize: 12,
+                                                    color: const Color(0xFF64748B),
+                                                  ),
+                                                ),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      student['attendance'] as String,
-                                      style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: attColor),
-                                    ),
-                                  ],
-                                ),
+                                  );
+                                },
                               ),
-                              SizedBox(
-                                width: 60,
-                                child: Text(
-                                  student['cgpa'] as String,
-                                  style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
-                  // Actions
+                  // Footer: Total records counter & Done Button (Image 1)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Exported roster CSV for ${c['section']}', style: GoogleFonts.poppins()),
-                              backgroundColor: const Color(0xFF38439E),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.download_rounded, size: 15),
-                        label: Text('Export Roster CSV', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600)),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF38439E),
-                          side: const BorderSide(color: Color(0xFF38439E)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      Text(
+                        'Total ${roster.length} verified records',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: const Color(0xFF64748B),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       ElevatedButton(
                         onPressed: () => Navigator.pop(ctx),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF38439E),
+                          backgroundColor: const Color(0xFF2E2A72), // Solid dark purple
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 0,
                         ),
-                        child: Text('Close', style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600)),
+                        child: Text(
+                          'Done',
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ],
                   ),

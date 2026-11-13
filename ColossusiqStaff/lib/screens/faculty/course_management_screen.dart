@@ -2,7 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // =============================================================================
-// ACADEMICS: COURSE MANAGEMENT (FACULTY PORTAL)
+// COURSE MODEL
+// =============================================================================
+class CourseItem {
+  final String id;
+  String code;
+  String name;
+  String type; // Theory, Lab, Theory + Lab, Elective, Project, etc.
+  String semester; // Semester 1 - Semester 8
+  int credits;
+  int hours;
+  String faculty;
+  int enrolled;
+  String status; // Active, Archived, Draft
+  String description;
+
+  CourseItem({
+    required this.id,
+    required this.code,
+    required this.name,
+    required this.type,
+    required this.semester,
+    required this.credits,
+    required this.hours,
+    required this.faculty,
+    required this.enrolled,
+    required this.status,
+    this.description = "",
+  });
+}
+
+// =============================================================================
+// COURSE MANAGEMENT SCREEN (FACULTY PORTAL - MATCHING EXACT DESIGN)
 // =============================================================================
 class CourseManagementScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -13,468 +44,223 @@ class CourseManagementScreen extends StatefulWidget {
 }
 
 class _CourseManagementScreenState extends State<CourseManagementScreen> {
-  String _selectedFilter = "All";
   final TextEditingController _searchController = TextEditingController();
+  String _selectedType = "All Types";
+  String _selectedSemester = "All Semesters";
 
-  final List<Map<String, dynamic>> _courses = [
-    {
-      "id": "CRS-1006",
-      "code": "ME3491",
-      "title": "Theory of Machines",
-      "dept": "Mechanical Engineering",
-      "sem": "4",
-      "credits": "4",
-      "faculty": "Prof. N. Kumar",
-      "assignedBy": "—",
-      "status": "Archived",
-      "updated": "19 Sept 2026",
-    },
-    {
-      "id": "CRS-1005",
-      "code": "EC3351",
-      "title": "Control Systems",
-      "dept": "Electronics & Communication",
-      "sem": "3",
-      "credits": "4",
-      "faculty": "Dr. S. Priya",
-      "assignedBy": "—",
-      "status": "Active",
-      "updated": "18 Sept 2026",
-    },
-    {
-      "id": "CRS-1004",
-      "code": "AL3451",
-      "title": "Machine Learning",
-      "dept": "Artificial Intelligence & Data Science",
-      "sem": "4",
-      "credits": "3",
-      "faculty": "Dr. V. Srinivasan",
-      "assignedBy": "—",
-      "status": "Active",
-      "updated": "17 Sept 2026",
-    },
-    {
-      "id": "CRS-1003",
-      "code": "CS3591",
-      "title": "Computer Networks",
-      "dept": "Computer Science & Engineering",
-      "sem": "5",
-      "credits": "4",
-      "faculty": "Dr. K. Anitha",
-      "assignedBy": "—",
-      "status": "Active",
-      "updated": "16 Sept 2026",
-    },
-    {
-      "id": "CRS-1002",
-      "code": "CS3451",
-      "title": "Operating Systems",
-      "dept": "Computer Science & Engineering",
-      "sem": "4",
-      "credits": "3",
-      "faculty": "Prof. R. Balaji",
-      "assignedBy": "—",
-      "status": "Active",
-      "updated": "15 Sept 2026",
-    },
-    {
-      "id": "CRS-1001",
-      "code": "CS3492",
-      "title": "Database Management Systems",
-      "dept": "Computer Science & Engineering",
-      "sem": "4",
-      "credits": "4",
-      "faculty": "Dr. Meena Raghavan",
-      "assignedBy": "—",
-      "status": "Active",
-      "updated": "14 Sept 2026",
-    },
+  final List<String> _typeOptions = [
+    "All Types",
+    "Theory",
+    "Lab",
+    "Theory + Lab",
+    "Elective",
+    "Project",
+    "Clinical posting",
+    "Practical / skills lab",
   ];
 
-  int _currentPage = 1;
-  final int _pageSize = 5;
+  final List<String> _semesterOptions = [
+    "All Semesters",
+    "Semester 1",
+    "Semester 2",
+    "Semester 3",
+    "Semester 4",
+    "Semester 5",
+    "Semester 6",
+    "Semester 7",
+    "Semester 8",
+  ];
 
-  void _showAddCourseDialog() {
-    final codeCtrl = TextEditingController();
-    final titleCtrl = TextEditingController();
-    final deptCtrl = TextEditingController(text: "Computer Science & Engineering");
-    final semCtrl = TextEditingController(text: "5");
-    final creditsCtrl = TextEditingController(text: "4");
-    final facultyCtrl = TextEditingController(text: "Dr. Meena Raghavan");
-    String status = "Active";
+  late List<CourseItem> _courses;
 
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setDlgState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEEF2FF),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(Icons.add_circle_outline_rounded, color: Color(0xFF4338CA), size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Text("Add New Course", style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16)),
-                ],
-              ),
-              content: SingleChildScrollView(
-                child: Container(
-                  width: double.maxFinite,
-                  constraints: const BoxConstraints(maxWidth: 460),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: TextField(
-                              controller: codeCtrl,
-                              decoration: const InputDecoration(labelText: "Course Code", hintText: "e.g. CS3501"),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            flex: 1,
-                            child: TextField(
-                              controller: creditsCtrl,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(labelText: "Credits", hintText: "3/4"),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: titleCtrl,
-                        decoration: const InputDecoration(labelText: "Course Title", hintText: "e.g. Cloud Computing & DevOps"),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: deptCtrl,
-                        decoration: const InputDecoration(labelText: "Department"),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: semCtrl,
-                              decoration: const InputDecoration(labelText: "Semester", hintText: "5"),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: DropdownButtonFormField<String>(
-                              initialValue: status,
-                              decoration: const InputDecoration(labelText: "Status"),
-                              items: ["Active", "Archived"]
-                                  .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                                  .toList(),
-                              onChanged: (val) {
-                                if (val != null) setDlgState(() => status = val);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: facultyCtrl,
-                        decoration: const InputDecoration(labelText: "Assigned Faculty", hintText: "e.g. Dr. K. Anitha"),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: Text("Cancel", style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (titleCtrl.text.trim().isEmpty || codeCtrl.text.trim().isEmpty) return;
-                    final newCourse = {
-                      "id": "CRS-${1007 + _courses.length}",
-                      "code": codeCtrl.text.trim().toUpperCase(),
-                      "title": titleCtrl.text.trim(),
-                      "dept": deptCtrl.text.trim(),
-                      "sem": semCtrl.text.trim(),
-                      "credits": creditsCtrl.text.trim(),
-                      "faculty": facultyCtrl.text.trim(),
-                      "assignedBy": "Self",
-                      "status": status,
-                      "updated": "Just now",
-                    };
-                    setState(() {
-                      _courses.insert(0, newCourse);
-                    });
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("Course '${newCourse["code"]}' added successfully!", style: GoogleFonts.poppins()),
-                        backgroundColor: const Color(0xFF0F766E),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E2865),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: Text("Create Course", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
+  @override
+  void initState() {
+    super.initState();
+    _initCourses();
   }
 
-  void _showViewCourseDialog(Map<String, dynamic> c) {
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.menu_book_rounded, color: Color(0xFF2563EB), size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(c["code"] as String, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700)),
-                    Text(c["title"] as String, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF64748B))),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          content: Container(
-            width: double.maxFinite,
-            constraints: const BoxConstraints(maxWidth: 440),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildCourseInfoRow("Course ID", c["id"] as String),
-                _buildCourseInfoRow("Department", c["dept"] as String),
-                _buildCourseInfoRow("Semester", "Semester ${c["sem"]}"),
-                _buildCourseInfoRow("Credits", "${c["credits"]} Credits"),
-                _buildCourseInfoRow("Faculty In-Charge", c["faculty"] as String),
-                _buildCourseInfoRow("Assigned By", c["assignedBy"] as String),
-                _buildCourseInfoRow("Status", c["status"] as String),
-                _buildCourseInfoRow("Last Updated", c["updated"] as String),
-              ],
-            ),
-          ),
-          actions: [
-            OutlinedButton.icon(
-              onPressed: () {
-                Navigator.pop(ctx);
-                _showEditCourseDialog(c);
-              },
-              icon: const Icon(Icons.edit_outlined, size: 15),
-              label: Text("Edit", style: GoogleFonts.poppins()),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFFCBD5E1)),
-                foregroundColor: const Color(0xFF334155),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E2865),
-                foregroundColor: Colors.white,
-              ),
-              child: Text("Close", style: GoogleFonts.poppins()),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildCourseInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF64748B))),
-          const SizedBox(width: 12),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
-            ),
-          ),
-        ],
+  void _initCourses() {
+    _courses = [
+      // 1. Advanced Java
+      CourseItem(
+        id: "crs_1",
+        code: "CS301",
+        name: "Advanced Java",
+        type: "Theory + Lab",
+        semester: "Semester 1",
+        credits: 5,
+        hours: 100,
+        faculty: "Dr. R. Meenakshi",
+        enrolled: 54,
+        status: "Active",
+        description: "Advanced Java Enterprise edition, Spring Boot, microservices architecture and reactive streams.",
       ),
-    );
-  }
 
-  void _showEditCourseDialog(Map<String, dynamic> c) {
-    final titleCtrl = TextEditingController(text: c["title"] as String);
-    final facultyCtrl = TextEditingController(text: c["faculty"] as String);
-    final creditsCtrl = TextEditingController(text: c["credits"] as String);
-    String status = c["status"] as String;
+      // 2. OOP with Java
+      CourseItem(
+        id: "crs_2",
+        code: "CS201",
+        name: "Object-Oriented Programming with Java",
+        type: "Theory",
+        semester: "Semester 1",
+        credits: 3,
+        hours: 45,
+        faculty: "Dr. R. Rajesh",
+        enrolled: 54,
+        status: "Active",
+        description: "Object-oriented software principles, collections framework, exception handling and GUI design.",
+      ),
 
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setDlgState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: Text("Edit Course: ${c["code"]}", style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16)),
-              content: Container(
-                width: double.maxFinite,
-                constraints: const BoxConstraints(maxWidth: 440),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: titleCtrl,
-                      decoration: const InputDecoration(labelText: "Course Title"),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: facultyCtrl,
-                      decoration: const InputDecoration(labelText: "Assigned Faculty"),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: creditsCtrl,
-                            decoration: const InputDecoration(labelText: "Credits"),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: status,
-                            decoration: const InputDecoration(labelText: "Status"),
-                            items: ["Active", "Archived"]
-                                .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                                .toList(),
-                            onChanged: (val) {
-                              if (val != null) setDlgState(() => status = val);
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: Text("Cancel", style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      c["title"] = titleCtrl.text.trim();
-                      c["faculty"] = facultyCtrl.text.trim();
-                      c["credits"] = creditsCtrl.text.trim();
-                      c["status"] = status;
-                      c["updated"] = "Updated just now";
-                    });
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("Course '${c["code"]}' updated successfully!", style: GoogleFonts.poppins()),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E2865),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text("Save Changes", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
+      // 3. Cloud Computing & Virtualization
+      CourseItem(
+        id: "crs_3",
+        code: "CS3492",
+        name: "Cloud Computing & Virtualization",
+        type: "Theory",
+        semester: "Semester 6",
+        credits: 3,
+        hours: 45,
+        faculty: "Dr. Meena Raghavan",
+        enrolled: 54,
+        status: "Active",
+        description: "Cloud deployment models, hypervisors, containers, Kubernetes cluster management and AWS/GCP cloud services.",
+      ),
 
-  void _showDeleteCourseDialog(Map<String, dynamic> c) {
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text("Delete Course?", style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16)),
-          content: Text(
-            "Are you sure you want to remove '${c["title"]}' (${c["code"]})? This action cannot be undone.",
-            style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF475569)),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text("Cancel", style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final removedCourse = Map<String, dynamic>.from(c);
-                final removedIndex = _courses.indexOf(c);
-                setState(() {
-                  _courses.remove(c);
-                });
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("Removed ${removedCourse["code"]}", style: GoogleFonts.poppins()),
-                    behavior: SnackBarBehavior.floating,
-                    action: SnackBarAction(
-                      label: "Undo",
-                      textColor: const Color(0xFFFBBF24),
-                      onPressed: () {
-                        setState(() {
-                          _courses.insert(removedIndex >= 0 ? removedIndex : 0, removedCourse);
-                        });
-                      },
-                    ),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFDC2626),
-                foregroundColor: Colors.white,
-              ),
-              child: Text("Delete", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-            ),
-          ],
-        );
-      },
-    );
+      // 4. Emerging Technologies
+      CourseItem(
+        id: "crs_4",
+        code: "CSE107",
+        name: "Emerging Technologies",
+        type: "Theory",
+        semester: "Semester 5",
+        credits: 3,
+        hours: 45,
+        faculty: "Dr. Meena Raghavan",
+        enrolled: 54,
+        status: "Active",
+        description: "Exploration of Web3, Edge Computing, IoT ecosystems and generative intelligence in enterprise stacks.",
+      ),
+
+      // 5. python
+      CourseItem(
+        id: "crs_5",
+        code: "CS2354",
+        name: "python",
+        type: "Theory",
+        semester: "Semester 1",
+        credits: 4,
+        hours: 60,
+        faculty: "far",
+        enrolled: 54,
+        status: "Active",
+        description: "Python syntax, scientific computation with NumPy, dataframes in Pandas, and backend APIs with FastAPI.",
+      ),
+
+      // 6. Database Management Systems
+      CourseItem(
+        id: "crs_6",
+        code: "CS3402",
+        name: "Database Management Systems",
+        type: "Theory + Lab",
+        semester: "Semester 3",
+        credits: 4,
+        hours: 60,
+        faculty: "Dr. Meena Raghavan",
+        enrolled: 54,
+        status: "Active",
+        description: "Relational database modeling, SQL DDL/DML, normalization, indexing, transaction processing and ACID.",
+      ),
+
+      // 7. Data Structures & Algorithms
+      CourseItem(
+        id: "crs_7",
+        code: "CS3301",
+        name: "Data Structures & Algorithms",
+        type: "Theory + Lab",
+        semester: "Semester 3",
+        credits: 4,
+        hours: 60,
+        faculty: "Dr. S. Venkatesh",
+        enrolled: 54,
+        status: "Active",
+        description: "Linear and non-linear data structures, trees, heaps, graphs, sorting and asymptotic analysis.",
+      ),
+
+      // 8. Artificial Intelligence
+      CourseItem(
+        id: "crs_8",
+        code: "AI3401",
+        name: "Artificial Intelligence Foundations",
+        type: "Theory",
+        semester: "Semester 4",
+        credits: 3,
+        hours: 45,
+        faculty: "Dr. V. Srinivasan",
+        enrolled: 54,
+        status: "Active",
+        description: "State space search, game playing, constraint satisfaction, propositional logic and inference engines.",
+      ),
+
+      // 9. Web Development Frameworks
+      CourseItem(
+        id: "crs_9",
+        code: "IT3501",
+        name: "Full Stack Web Development",
+        type: "Lab",
+        semester: "Semester 5",
+        credits: 3,
+        hours: 45,
+        faculty: "Prof. N. Kumar",
+        enrolled: 54,
+        status: "Active",
+        description: "HTML5, CSS3, modern JavaScript, React frontend development and Node.js REST API engineering.",
+      ),
+
+      // 10. Computer Networks
+      CourseItem(
+        id: "crs_10",
+        code: "CS3591",
+        name: "Computer Networks & Security",
+        type: "Theory",
+        semester: "Semester 5",
+        credits: 4,
+        hours: 60,
+        faculty: "Dr. K. Anitha",
+        enrolled: 54,
+        status: "Active",
+        description: "OSI and TCP/IP stack, routing protocols, flow control, transport layer protocols and public key crypto.",
+      ),
+
+      // 11. Mobile App Development
+      CourseItem(
+        id: "crs_11",
+        code: "CS3602",
+        name: "Mobile App Development with Flutter",
+        type: "Elective",
+        semester: "Semester 6",
+        credits: 3,
+        hours: 45,
+        faculty: "Dr. R. Rajesh",
+        enrolled: 0,
+        status: "Archived",
+        description: "Cross-platform mobile application development using Flutter, Dart and Firebase cloud integration.",
+      ),
+
+      // 12. Capstone Project
+      CourseItem(
+        id: "crs_12",
+        code: "CS3811",
+        name: "Major Capstone Project",
+        type: "Project",
+        semester: "Semester 8",
+        credits: 2,
+        hours: 30,
+        faculty: "Dr. Meena Raghavan",
+        enrolled: 0,
+        status: "Archived",
+        description: "Multi-disciplinary team research project, system design, implementation, testing and viva voce.",
+      ),
+    ];
   }
 
   @override
@@ -483,47 +269,816 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
     super.dispose();
   }
 
+  // ===========================================================================
+  // ADD COURSE MODAL (MATCHES IMAGE 2)
+  // ===========================================================================
+  void _showAddCourseDialog() {
+    final codeCtrl = TextEditingController();
+    final nameCtrl = TextEditingController();
+    final creditsCtrl = TextEditingController(text: "3");
+    final hoursCtrl = TextEditingController(text: "45");
+    final facultyCtrl = TextEditingController();
+    final descCtrl = TextEditingController();
+    String selectedType = "Theory";
+    String selectedStatus = "Active";
+    String selectedSem = "Semester 1";
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDlgState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 540),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header with Close X
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Add Course",
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF64748B)),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+
+                        // Row 1: Course Code * & Course Name *
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: _buildFormField(
+                                label: "Course Code *",
+                                hint: "e.g. CS201",
+                                controller: codeCtrl,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              flex: 1,
+                              child: _buildFormField(
+                                label: "Course Name *",
+                                hint: "e.g. Database Management Syst",
+                                controller: nameCtrl,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Row 2: Type & Status
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildDropdownField(
+                                label: "Type",
+                                value: selectedType,
+                                items: _typeOptions.where((t) => t != "All Types").toList(),
+                                onChanged: (v) => setDlgState(() => selectedType = v!),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: _buildDropdownField(
+                                label: "Status",
+                                value: selectedStatus,
+                                items: const ["Active", "Archived", "Draft"],
+                                onChanged: (v) => setDlgState(() => selectedStatus = v!),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Row 3: Credits (1 - 6) & Hours / Semester
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildFormField(
+                                label: "Credits (1 - 6)",
+                                hint: "3",
+                                controller: creditsCtrl,
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: _buildFormField(
+                                label: "Hours / Semester",
+                                hint: "45",
+                                controller: hoursCtrl,
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Row 4: Semester & Faculty Assigned
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildDropdownField(
+                                label: "Semester",
+                                value: selectedSem,
+                                items: _semesterOptions.where((s) => s != "All Semesters").toList(),
+                                onChanged: (v) => setDlgState(() => selectedSem = v!),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: _buildFormField(
+                                label: "Faculty Assigned",
+                                hint: "e.g. Dr. R. Rajesh",
+                                controller: facultyCtrl,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Row 5: Description
+                        Text(
+                          "Description",
+                          style: GoogleFonts.poppins(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF334155),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: descCtrl,
+                          maxLines: 3,
+                          style: GoogleFonts.poppins(fontSize: 13),
+                          decoration: InputDecoration(
+                            hintText: "Brief course description...",
+                            hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            contentPadding: const EdgeInsets.all(12),
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+
+                        // Buttons Row: Cancel and Add Course
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: Text(
+                                "Cancel",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF475569),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            ElevatedButton(
+                              onPressed: () {
+                                if (codeCtrl.text.trim().isEmpty || nameCtrl.text.trim().isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text("Please fill course code and name")),
+                                  );
+                                  return;
+                                }
+
+                                final newCourse = CourseItem(
+                                  id: "crs_${DateTime.now().millisecondsSinceEpoch}",
+                                  code: codeCtrl.text.trim().toUpperCase(),
+                                  name: nameCtrl.text.trim(),
+                                  type: selectedType,
+                                  semester: selectedSem,
+                                  credits: int.tryParse(creditsCtrl.text.trim()) ?? 3,
+                                  hours: int.tryParse(hoursCtrl.text.trim()) ?? 45,
+                                  faculty: facultyCtrl.text.trim().isEmpty ? "Dr. Meena Raghavan" : facultyCtrl.text.trim(),
+                                  enrolled: 54,
+                                  status: selectedStatus,
+                                  description: descCtrl.text.trim(),
+                                );
+
+                                setState(() {
+                                  _courses.insert(0, newCourse);
+                                });
+
+                                Navigator.pop(ctx);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Course '${newCourse.code}' added successfully!"),
+                                    backgroundColor: const Color(0xFF0F766E),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF818CF8),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              child: Text(
+                                "Add Course",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ===========================================================================
+  // EDIT COURSE MODAL (MATCHES IMAGE 3)
+  // ===========================================================================
+  void _showEditCourseDialog(CourseItem course) {
+    final codeCtrl = TextEditingController(text: course.code);
+    final nameCtrl = TextEditingController(text: course.name);
+    final creditsCtrl = TextEditingController(text: "${course.credits}");
+    final hoursCtrl = TextEditingController(text: "${course.hours}");
+    final facultyCtrl = TextEditingController(text: course.faculty);
+    final descCtrl = TextEditingController(text: course.description);
+    String selectedType = course.type;
+    String selectedStatus = course.status;
+    String selectedSem = course.semester;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDlgState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 540),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header with Close X
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Edit Course",
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF64748B)),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+
+                        // Row 1: Course Code * & Course Name *
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: _buildFormField(
+                                label: "Course Code *",
+                                hint: "CS301",
+                                controller: codeCtrl,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              flex: 1,
+                              child: _buildFormField(
+                                label: "Course Name *",
+                                hint: "Advanced Java",
+                                controller: nameCtrl,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Row 2: Type & Status
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildDropdownField(
+                                label: "Type",
+                                value: selectedType,
+                                items: _typeOptions.where((t) => t != "All Types").toList(),
+                                onChanged: (v) => setDlgState(() => selectedType = v!),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: _buildDropdownField(
+                                label: "Status",
+                                value: selectedStatus,
+                                items: const ["Active", "Archived", "Draft"],
+                                onChanged: (v) => setDlgState(() => selectedStatus = v!),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Row 3: Credits (1 - 6) & Hours / Semester
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildFormField(
+                                label: "Credits (1 - 6)",
+                                hint: "5",
+                                controller: creditsCtrl,
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: _buildFormField(
+                                label: "Hours / Semester",
+                                hint: "100",
+                                controller: hoursCtrl,
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Row 4: Semester & Faculty Assigned
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildDropdownField(
+                                label: "Semester",
+                                value: selectedSem,
+                                items: _semesterOptions.where((s) => s != "All Semesters").toList(),
+                                onChanged: (v) => setDlgState(() => selectedSem = v!),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: _buildFormField(
+                                label: "Faculty Assigned",
+                                hint: "Dr. R. Meenakshi",
+                                controller: facultyCtrl,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Row 5: Description
+                        Text(
+                          "Description",
+                          style: GoogleFonts.poppins(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF334155),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: descCtrl,
+                          maxLines: 3,
+                          style: GoogleFonts.poppins(fontSize: 13),
+                          decoration: InputDecoration(
+                            hintText: "Brief course description...",
+                            hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            contentPadding: const EdgeInsets.all(12),
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+
+                        // Buttons Row: Cancel and Save Changes
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: Text(
+                                "Cancel",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF475569),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  course.code = codeCtrl.text.trim().toUpperCase();
+                                  course.name = nameCtrl.text.trim();
+                                  course.type = selectedType;
+                                  course.status = selectedStatus;
+                                  course.credits = int.tryParse(creditsCtrl.text.trim()) ?? course.credits;
+                                  course.hours = int.tryParse(hoursCtrl.text.trim()) ?? course.hours;
+                                  course.semester = selectedSem;
+                                  course.faculty = facultyCtrl.text.trim();
+                                  course.description = descCtrl.text.trim();
+                                });
+
+                                Navigator.pop(ctx);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Course '${course.code}' updated successfully!"),
+                                    backgroundColor: const Color(0xFF1E2865),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF283685),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              child: Text(
+                                "Save Changes",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ===========================================================================
+  // DELETE COURSE MODAL (MATCHES IMAGE 4)
+  // ===========================================================================
+  void _showDeleteCourseDialog(CourseItem course) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top Row: Red trash icon + close X
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEE2E2),
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.delete_outline_rounded,
+                            color: Color(0xFFDC2626),
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF64748B)),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Title & Subtitle
+                  Text(
+                    "Delete Course",
+                    style: GoogleFonts.poppins(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    "This action cannot be undone.",
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Prompt question
+                  Text(
+                    "Are you sure you want to remove ${course.name} (${course.code})?",
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: const Color(0xFF334155),
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+
+                  // Action Buttons: Cancel and Delete Course
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFE2E8F0)),
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text(
+                          "Cancel",
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1E293B),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          final idx = _courses.indexOf(course);
+                          setState(() {
+                            _courses.remove(course);
+                          });
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Removed ${course.name} (${course.code})"),
+                              behavior: SnackBarBehavior.floating,
+                              action: SnackBarAction(
+                                label: "Undo",
+                                textColor: const Color(0xFFFBBF24),
+                                onPressed: () {
+                                  setState(() {
+                                    _courses.insert(idx >= 0 ? idx : 0, course);
+                                  });
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFB91C1C),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text(
+                          "Delete Course",
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ===========================================================================
+  // FORM FIELD HELPERS
+  // ===========================================================================
+  Widget _buildFormField({
+    required String label,
+    required String hint,
+    required TextEditingController controller,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF334155),
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          style: GoogleFonts.poppins(fontSize: 13),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField({
+    required String label,
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF334155),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: items.contains(value) ? value : items.first,
+              isExpanded: true,
+              style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF1E293B)),
+              items: items.map((item) {
+                return DropdownMenuItem(value: item, child: Text(item));
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final query = _searchController.text.trim().toLowerCase();
+
     final filtered = _courses.where((c) {
-      if (_selectedFilter != "All" && c["status"] != _selectedFilter) {
+      if (_selectedType != "All Types" && c.type != _selectedType) {
+        return false;
+      }
+      if (_selectedSemester != "All Semesters" && c.semester != _selectedSemester) {
         return false;
       }
       if (query.isNotEmpty) {
-        final id = (c["id"] as String).toLowerCase();
-        final code = (c["code"] as String).toLowerCase();
-        final title = (c["title"] as String).toLowerCase();
-        final dept = (c["dept"] as String).toLowerCase();
-        if (!id.contains(query) && !code.contains(query) && !title.contains(query) && !dept.contains(query)) {
+        final code = c.code.toLowerCase();
+        final name = c.name.toLowerCase();
+        final faculty = c.faculty.toLowerCase();
+        if (!code.contains(query) && !name.contains(query) && !faculty.contains(query)) {
           return false;
         }
       }
       return true;
     }).toList();
 
+    // Metric Calculations
+    final totalCourses = _courses.length;
+    final activeCourses = _courses.where((c) => c.status == "Active").length;
+    final totalCredits = _courses.fold<int>(0, (sum, c) => sum + c.credits);
+    final totalEnrolled = _courses.fold<int>(0, (sum, c) => sum + c.enrolled);
+
     return Scaffold(
       backgroundColor: const Color(0xFFFBFBFD),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
-        children: [
-          // 1. Top Hero Banner
-          _buildHeroBanner(),
-          const SizedBox(height: 18),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 80),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 1. TOP BLUEPRINT HERO BANNER
+                _buildHeroBanner(),
+                const SizedBox(height: 18),
 
-          // 2. Filter Pills Row
-          _buildFilterPills(),
-          const SizedBox(height: 16),
+                // 2. 4 METRIC KPI CARDS ROW (MATCHING IMAGE 1)
+                _buildKpiMetricsGrid(
+                  constraints: constraints,
+                  totalCourses: totalCourses,
+                  activeCourses: activeCourses,
+                  totalCredits: totalCredits,
+                  totalEnrolled: totalEnrolled,
+                ),
+                const SizedBox(height: 18),
 
-          // 3. Table Card
-          _buildTableCard(filtered),
-        ],
+                // 3. SEARCH & FILTERS SECTION
+                _buildFilterControls(),
+                const SizedBox(height: 16),
+
+                // 4. ADD COURSE ACTION BUTTON
+                _buildAddCourseButton(),
+                const SizedBox(height: 18),
+
+                // 5. COURSE MANAGEMENT TABLE (MATCHING IMAGE 1)
+                _buildCourseTableCard(filtered),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
   // ===========================================================================
-  // 1. TOP HERO BANNER
+  // 1. BLUEPRINT HERO BANNER
   // ===========================================================================
   Widget _buildHeroBanner() {
     return Container(
@@ -582,77 +1137,44 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Breadcrumb row
-                  Wrap(
-                    alignment: WrapAlignment.spaceBetween,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            InkWell(
-                              onTap: widget.onBack,
-                              borderRadius: BorderRadius.circular(4),
-                              child: Text(
-                                "Home",
-                                style: GoogleFonts.poppins(
-                                  fontSize: 11.5,
-                                  color: const Color(0xFFC7D2FE),
-                                ),
-                              ),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        InkWell(
+                          onTap: widget.onBack,
+                          borderRadius: BorderRadius.circular(4),
+                          child: Text(
+                            "Home",
+                            style: GoogleFonts.poppins(
+                              fontSize: 11.5,
+                              color: const Color(0xFFC7D2FE),
                             ),
-                            const SizedBox(width: 6),
-                            const Icon(Icons.chevron_right_rounded, size: 14, color: Color(0xFF818CF8)),
-                            const SizedBox(width: 6),
-                            Text(
-                              "Academics",
-                              style: GoogleFonts.poppins(
-                                fontSize: 11.5,
-                                color: const Color(0xFFC7D2FE),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            const Icon(Icons.chevron_right_rounded, size: 14, color: Color(0xFF818CF8)),
-                            const SizedBox(width: 6),
-                            Text(
-                              "Course Management",
-                              style: GoogleFonts.poppins(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                      // View Only Badge Button
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.chevron_right_rounded, size: 14, color: Color(0xFF818CF8)),
+                        const SizedBox(width: 6),
+                        Text(
+                          "Academics",
+                          style: GoogleFonts.poppins(
+                            fontSize: 11.5,
+                            color: const Color(0xFFC7D2FE),
+                          ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.lock_outline_rounded, size: 13, color: Colors.white),
-                            const SizedBox(width: 5),
-                            Text(
-                              "View only",
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
+                        const SizedBox(width: 6),
+                        const Icon(Icons.chevron_right_rounded, size: 14, color: Color(0xFF818CF8)),
+                        const SizedBox(width: 6),
+                        Text(
+                          "Course Management",
+                          style: GoogleFonts.poppins(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 14),
 
@@ -660,7 +1182,7 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Book icon rounded box
+                      // Book/crest icon rounded box
                       Container(
                         width: 44,
                         height: 44,
@@ -674,7 +1196,7 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
                         ),
                         child: const Center(
                           child: Icon(
-                            Icons.menu_book_rounded,
+                            Icons.school_rounded,
                             color: Color(0xFFFBBF24),
                             size: 24,
                           ),
@@ -687,7 +1209,7 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Badges
+                            // Badges: ACADEMICS, MVP
                             Row(
                               children: [
                                 Container(
@@ -764,92 +1286,275 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
   }
 
   // ===========================================================================
-  // 2. FILTER PILLS
+  // 2. 4 METRIC KPI CARDS ROW (IMAGE 1)
   // ===========================================================================
-  Widget _buildFilterPills() {
-    final allCount = _courses.length;
-    final draftCount = _courses.where((c) => c["status"] == "Draft").length;
-    final activeCount = _courses.where((c) => c["status"] == "Active").length;
-    final archivedCount = _courses.where((c) => c["status"] == "Archived").length;
+  Widget _buildKpiMetricsGrid({
+    required BoxConstraints constraints,
+    required int totalCourses,
+    required int activeCourses,
+    required int totalCredits,
+    required int totalEnrolled,
+  }) {
+    final width = constraints.maxWidth;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
+    final cards = [
+      _buildMetricCard(
+        label: "Total Courses",
+        value: "$totalCourses",
+        icon: Icons.menu_book_outlined,
+        iconColor: const Color(0xFF2563EB),
+      ),
+      _buildMetricCard(
+        label: "Active",
+        value: "$activeCourses",
+        icon: Icons.check_circle_outline_rounded,
+        iconColor: const Color(0xFF0D9488),
+      ),
+      _buildMetricCard(
+        label: "Total Credits",
+        value: "$totalCredits",
+        icon: Icons.layers_outlined,
+        iconColor: const Color(0xFF8B5CF6),
+      ),
+      _buildMetricCard(
+        label: "Total Enrolled",
+        value: "$totalEnrolled",
+        icon: Icons.group_outlined,
+        iconColor: const Color(0xFFF59E0B),
+      ),
+    ];
+
+    if (width >= 980) {
+      return Row(
+        children: cards
+            .map((c) => Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: c,
+                  ),
+                ))
+            .toList(),
+      );
+    } else if (width >= 560) {
+      return Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: cards.map((c) {
+          return SizedBox(
+            width: (width - 52) / 2,
+            child: c,
+          );
+        }).toList(),
+      );
+    } else {
+      return Column(
+        children: cards
+            .map((c) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: c,
+                ))
+            .toList(),
+      );
+    }
+  }
+
+  Widget _buildMetricCard({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _buildPillItem("All", "All", allCount),
-          const SizedBox(width: 8),
-          _buildPillItem("Draft", "Draft", draftCount),
-          const SizedBox(width: 8),
-          _buildPillItem("Active", "Active", activeCount),
-          const SizedBox(width: 8),
-          _buildPillItem("Archived", "Archived", archivedCount),
+          Icon(icon, size: 22, color: iconColor),
+          const SizedBox(width: 14),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 11.5,
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPillItem(String label, String filterKey, int count) {
-    final isSelected = _selectedFilter == filterKey;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => setState(() => _selectedFilter = filterKey),
-        borderRadius: BorderRadius.circular(8),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6.5),
+  // ===========================================================================
+  // 3. SEARCH & FILTERS SECTION (IMAGE 1 & 5)
+  // ===========================================================================
+  Widget _buildFilterControls() {
+    return Column(
+      children: [
+        // Search Input Bar
+        Container(
+          height: 42,
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF141938) : Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: isSelected ? const Color(0xFF141938) : const Color(0xFFE2E8F0),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: TextField(
+            controller: _searchController,
+            onChanged: (_) => setState(() {}),
+            style: GoogleFonts.poppins(fontSize: 13),
+            decoration: InputDecoration(
+              hintText: "Search course name or code...",
+              hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
+              prefixIcon: const Icon(Icons.search_rounded, size: 18, color: Color(0xFF94A3B8)),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 10),
             ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? Colors.white : const Color(0xFF334155),
-                ),
-              ),
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                decoration: BoxDecoration(
-                  color: isSelected ? Colors.white.withValues(alpha: 0.2) : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  "$count",
-                  style: GoogleFonts.poppins(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
-                    color: isSelected ? Colors.white : const Color(0xFF64748B),
-                  ),
-                ),
-              ),
-            ],
+        ),
+        const SizedBox(height: 12),
+
+        // Dropdown 1: All Types (With 8 exact options from Image 5)
+        Container(
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedType,
+              isExpanded: true,
+              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF64748B)),
+              style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF1E293B)),
+              items: _typeOptions.map((type) {
+                return DropdownMenuItem(
+                  value: type,
+                  child: Text(type),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) setState(() => _selectedType = val);
+              },
+            ),
           ),
         ),
+        const SizedBox(height: 12),
+
+        // Dropdown 2: All Semesters
+        Container(
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedSemester,
+              isExpanded: true,
+              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF64748B)),
+              style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF1E293B)),
+              items: _semesterOptions.map((sem) {
+                return DropdownMenuItem(
+                  value: sem,
+                  child: Text(sem),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) setState(() => _selectedSemester = val);
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ===========================================================================
+  // 4. ADD COURSE ACTION BUTTON
+  // ===========================================================================
+  Widget _buildAddCourseButton() {
+    return ElevatedButton.icon(
+      onPressed: _showAddCourseDialog,
+      icon: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+      label: Text(
+        "Add Course",
+        style: GoogleFonts.poppins(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF283685),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }
 
   // ===========================================================================
-  // 3. TABLE CARD
+  // 5. COURSE MANAGEMENT TABLE (MATCHES IMAGE 1)
   // ===========================================================================
-  Widget _buildTableCard(List<Map<String, dynamic>> list) {
-    final totalPages = list.isEmpty ? 1 : ((list.length - 1) ~/ _pageSize) + 1;
-    if (_currentPage > totalPages) {
-      _currentPage = totalPages;
+  Widget _buildCourseTableCard(List<CourseItem> list) {
+    if (list.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        child: Center(
+          child: Column(
+            children: [
+              const Icon(Icons.search_off_rounded, size: 44, color: Color(0xFF94A3B8)),
+              const SizedBox(height: 12),
+              Text(
+                "No courses match your filter criteria",
+                style: GoogleFonts.poppins(fontSize: 14.5, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "Try clearing search queries or switching type/semester filters.",
+                style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF64748B)),
+              ),
+            ],
+          ),
+        ),
+      );
     }
-    final startIndex = (_currentPage - 1) * _pageSize;
-    final pageItems = list.skip(startIndex).take(_pageSize).toList();
 
     return Container(
       decoration: BoxDecoration(
@@ -864,147 +1569,232 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Search & Add Course toolbar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-            child: Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 12,
-              runSpacing: 10,
-              children: [
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 360, minWidth: 200),
-                  child: Container(
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (_) => setState(() {
-                        _currentPage = 1;
-                      }),
-                      style: GoogleFonts.poppins(fontSize: 12.5),
-                      decoration: InputDecoration(
-                        hintText: "Search by name, ID or course...",
-                        hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
-                        prefixIcon: const Icon(Icons.search_rounded, size: 17, color: Color(0xFF94A3B8)),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                        border: InputBorder.none,
-                      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 920),
+            child: DataTable(
+              headingRowColor: WidgetStateProperty.all(const Color(0xFFF9F9FB)),
+              headingRowHeight: 46,
+              dataRowMinHeight: 58,
+              dataRowMaxHeight: 64,
+              horizontalMargin: 20,
+              columnSpacing: 24,
+              columns: [
+                DataColumn(
+                  label: Text(
+                    "COURSE",
+                    style: GoogleFonts.poppins(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF475569),
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "${list.length} records",
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF64748B),
-                      ),
+                DataColumn(
+                  label: Text(
+                    "TYPE",
+                    style: GoogleFonts.poppins(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF475569),
+                      letterSpacing: 0.5,
                     ),
-                    const SizedBox(width: 12),
-                    ElevatedButton.icon(
-                      onPressed: _showAddCourseDialog,
-                      icon: const Icon(Icons.add_rounded, size: 15),
-                      label: Text("Add Course", style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1E2865),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    "SEMESTER",
+                    style: GoogleFonts.poppins(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF475569),
+                      letterSpacing: 0.5,
                     ),
-                  ],
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    "CREDITS",
+                    style: GoogleFonts.poppins(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF475569),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    "FACULTY",
+                    style: GoogleFonts.poppins(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF475569),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    "ENROLLED",
+                    style: GoogleFonts.poppins(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF475569),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    "STATUS",
+                    style: GoogleFonts.poppins(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF475569),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                const DataColumn(
+                  label: SizedBox(width: 48),
                 ),
               ],
-            ),
-          ),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
-
-          // Horizontal scrollable Data Table
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              headingRowColor: WidgetStateProperty.all(const Color(0xFFF8FAFC)),
-              dataRowMinHeight: 48,
-              dataRowMaxHeight: 52,
-              horizontalMargin: 16,
-              columnSpacing: 22,
-              columns: [
-                _buildColumn("ID"),
-                _buildColumn("COURSE CODE"),
-                _buildColumn("COURSE TITLE"),
-                _buildColumn("DEPARTMENT"),
-                _buildColumn("SEMESTER / PHASE"),
-                _buildColumn("CREDITS"),
-                _buildColumn("COURSE FACULTY"),
-                _buildColumn("CREATED / ASSIGNED BY"),
-                _buildColumn("STATUS"),
-                _buildColumn("UPDATED"),
-                _buildColumn("ACTIONS"),
-              ],
-              rows: pageItems.map((c) {
-                final isArchived = c["status"] == "Archived";
+              rows: list.map((course) {
                 return DataRow(
                   cells: [
-                    DataCell(Text(c["id"] as String, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF64748B)))),
-                    DataCell(Text(c["code"] as String, style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)))),
-                    DataCell(Text(c["title"] as String, style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)))),
-                    DataCell(Text(c["dept"] as String, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF334155)))),
-                    DataCell(Center(child: Text(c["sem"] as String, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF334155))))),
-                    DataCell(Center(child: Text(c["credits"] as String, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF334155))))),
-                    DataCell(Text(c["faculty"] as String, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF334155)))),
-                    DataCell(Center(child: Text(c["assignedBy"] as String, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF94A3B8))))),
+                    // Course Title & Code
                     DataCell(
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
-                        decoration: BoxDecoration(
-                          color: isArchived ? const Color(0xFFFEF3C7) : const Color(0xFFCCFBF1),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          c["status"] as String,
-                          style: GoogleFonts.poppins(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w700,
-                            color: isArchived ? const Color(0xFF92400E) : const Color(0xFF0F766E),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            course.name,
+                            style: GoogleFonts.poppins(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF0F172A),
+                            ),
                           ),
+                          Text(
+                            course.code,
+                            style: GoogleFonts.poppins(
+                              fontSize: 11.5,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Type Badge
+                    DataCell(_buildTypeChip(course.type)),
+
+                    // Semester
+                    DataCell(
+                      Text(
+                        course.semester,
+                        style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF334155)),
+                      ),
+                    ),
+
+                    // Credits / Hours
+                    DataCell(
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "${course.credits} ",
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            TextSpan(
+                              text: "/ ${course.hours}h",
+                              style: GoogleFonts.poppins(
+                                fontSize: 11.5,
+                                color: const Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    DataCell(Text(c["updated"] as String, style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF64748B)))),
+
+                    // Faculty
+                    DataCell(
+                      Text(
+                        course.faculty,
+                        style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF334155)),
+                      ),
+                    ),
+
+                    // Enrolled Count
+                    DataCell(
+                      Text(
+                        "${course.enrolled}",
+                        style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF334155)),
+                      ),
+                    ),
+
+                    // Status: Green dot + Active / Grey Archived
+                    DataCell(
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: course.status == "Active"
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFF94A3B8),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            course.status,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w500,
+                              color: course.status == "Active"
+                                  ? const Color(0xFF0F172A)
+                                  : const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Actions: Edit pencil & Delete trash
                     DataCell(
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            onPressed: () => _showViewCourseDialog(c),
-                            icon: const Icon(Icons.visibility_outlined, size: 16, color: Color(0xFF64748B)),
-                            tooltip: "View Course Details",
-                            splashRadius: 16,
-                          ),
-                          IconButton(
-                            onPressed: () => _showEditCourseDialog(c),
-                            icon: const Icon(Icons.edit_outlined, size: 16, color: Color(0xFF4338CA)),
+                            icon: const Icon(Icons.edit_outlined, size: 16, color: Color(0xFF94A3B8)),
                             tooltip: "Edit Course",
                             splashRadius: 16,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () => _showEditCourseDialog(course),
                           ),
+                          const SizedBox(width: 12),
                           IconButton(
-                            onPressed: () => _showDeleteCourseDialog(c),
-                            icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Color(0xFFEF4444)),
+                            icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Color(0xFF94A3B8)),
                             tooltip: "Delete Course",
                             splashRadius: 16,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () => _showDeleteCourseDialog(course),
                           ),
                         ],
                       ),
@@ -1014,74 +1804,45 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
               }).toList(),
             ),
           ),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
-
-          // Footer Pagination
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Page $_currentPage of $totalPages (${list.length} total)",
-                    style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF64748B)),
-                  ),
-                  const SizedBox(width: 24),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed: _currentPage > 1
-                            ? () => setState(() => _currentPage--)
-                            : null,
-                        icon: const Icon(Icons.chevron_left_rounded, size: 16),
-                        label: const Text("Prev"),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          minimumSize: Size.zero,
-                          side: const BorderSide(color: Color(0xFFE2E8F0)),
-                          foregroundColor: const Color(0xFF64748B),
-                          textStyle: GoogleFonts.poppins(fontSize: 11.5),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      OutlinedButton.icon(
-                        onPressed: _currentPage < totalPages
-                            ? () => setState(() => _currentPage++)
-                            : null,
-                        icon: const Icon(Icons.chevron_right_rounded, size: 16),
-                        label: const Text("Next"),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          minimumSize: Size.zero,
-                          side: const BorderSide(color: Color(0xFFE2E8F0)),
-                          foregroundColor: const Color(0xFF64748B),
-                          textStyle: GoogleFonts.poppins(fontSize: 11.5),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  DataColumn _buildColumn(String title) {
-    return DataColumn(
-      label: Text(
-        title,
+  // Helper chip for Course Type
+  Widget _buildTypeChip(String type) {
+    Color bg = const Color(0xFFF1F5F9);
+    Color fg = const Color(0xFF475569);
+
+    if (type == "Theory + Lab") {
+      bg = const Color(0xFFF3E8FF);
+      fg = const Color(0xFF7E22CE);
+    } else if (type == "Theory") {
+      bg = const Color(0xFFE0F2FE);
+      fg = const Color(0xFF0284C7);
+    } else if (type == "Lab") {
+      bg = const Color(0xFFECFDF5);
+      fg = const Color(0xFF059669);
+    } else if (type == "Elective") {
+      bg = const Color(0xFFFEF3C7);
+      fg = const Color(0xFFB45309);
+    } else if (type == "Project") {
+      bg = const Color(0xFFFFEDD5);
+      fg = const Color(0xFFC2410C);
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        type,
         style: GoogleFonts.poppins(
-          fontSize: 10.5,
-          fontWeight: FontWeight.w700,
-          color: const Color(0xFF64748B),
-          letterSpacing: 0.4,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: fg,
         ),
       ),
     );

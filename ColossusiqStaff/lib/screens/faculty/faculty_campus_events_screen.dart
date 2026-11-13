@@ -3,15 +3,18 @@ import 'package:google_fonts/google_fonts.dart';
 
 // =============================================================================
 // CAMPUS LIFE: CAMPUS EVENTS SCREEN
-// Exactly matches screenshot 4:
-// - Blueprint grid hero banner with watermark & badges (CAMPUS LIFE, Phase 3)
-//   and "+ Add event" amber button in banner
-// - Filter tab pills: All 3, Draft 1, Published 2, Completed 0, Cancelled 0
-// - Main Card with Table:
-//     * Search input ("Search by name, ID or type...") and "3 records" counter
-//     * Responsive Data Table with 9 columns: ID, EVENT TITLE, TYPE, DATE, VENUE,
-//       CAPACITY, STATUS, UPDATED, ACTIONS (View, Edit, Delete)
-//     * Pagination footer: "Page 1 of 1" with "< Prev" and "Next >"
+// Matches screenshot exactly:
+// - Blueprint grid hero banner with badges (CAMPUS LIFE, Phase 3)
+//   and megaphone illustration
+// - 4 Metric cards: Total Events (6), Upcoming (4), Ongoing (0), This Month (3)
+// - Search events... TextField + All Types dropdown + All Status dropdown + + Create Event button
+// - Event cards list with:
+//     * Date box on left (Month abbreviation + Day in bold)
+//     * Event title, Type pill, Status pill
+//     * Meta row (time, venue, organizer with icons)
+//     * Progress bar with capacity fraction (e.g. 60/60, 580/600)
+//     * Actions: Edit pencil icon, Delete trash icon
+// - Create Event dialog (matching Image 10) & Edit Event dialog
 // =============================================================================
 
 class FacultyCampusEventsScreen extends StatefulWidget {
@@ -25,39 +28,110 @@ class FacultyCampusEventsScreen extends StatefulWidget {
 
 class _FacultyCampusEventsScreenState extends State<FacultyCampusEventsScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedFilter = "All";
-  String _searchQuery = "";
+  String _selectedType = "All Types";
+  String _selectedStatus = "All Status";
 
   final List<Map<String, dynamic>> _events = [
     {
-      "id": "EVT-1003",
-      "title": "Workshop: GenAI for Engineers",
+      "id": "EVT-101",
+      "title": "AI Workshop - Basics to Production",
       "type": "Workshop",
-      "date": "4 Oct 2026",
-      "venue": "Seminar Hall 2",
-      "capacity": "180",
-      "status": "Draft",
-      "updated": "16 Sept 2026",
+      "status": "Completed",
+      "month": "OCT",
+      "day": "15",
+      "startDate": "10/15/2026",
+      "endDate": "10/15/2026",
+      "time": "10:00",
+      "venue": "Lab 3, Block B",
+      "organizer": "Dr. Anand V.",
+      "capacity": 60,
+      "registered": 60,
+      "description":
+          "Hands-on workshop covering fundamentals of AI models, fine-tuning, and production deployment.",
     },
     {
-      "id": "EVT-1002",
-      "title": "Smart India Hackathon — internal",
-      "type": "Hackathon",
-      "date": "6 Oct 2026",
-      "venue": "Innovation Lab",
-      "capacity": "300",
-      "status": "Published",
-      "updated": "15 Sept 2026",
+      "id": "EVT-102",
+      "title": "Diwali Holiday",
+      "type": "Holiday",
+      "status": "Completed",
+      "month": "OCT",
+      "day": "20",
+      "startDate": "10/20/2026",
+      "endDate": "10/22/2026",
+      "time": "",
+      "venue": "",
+      "organizer": "Administration",
+      "capacity": 0,
+      "registered": 0,
+      "description": "College closed for festival of lights celebrations.",
     },
     {
-      "id": "EVT-1001",
-      "title": "Techno Fest 2026",
+      "id": "EVT-103",
+      "title": "Annual Sports Meet",
+      "type": "Sports",
+      "status": "Upcoming",
+      "month": "OCT",
+      "day": "30",
+      "startDate": "10/30/2026",
+      "endDate": "10/31/2026",
+      "time": "08:00 · ends 31 Oct 2026",
+      "venue": "Sports Ground",
+      "organizer": "Physical Education Dept",
+      "capacity": 600,
+      "registered": 580,
+      "description":
+          "Annual track and field athletics, inter-department tournaments, and championship award ceremony.",
+    },
+    {
+      "id": "EVT-104",
+      "title": "Tech Symposium 2026",
+      "type": "Academic",
+      "status": "Upcoming",
+      "month": "NOV",
+      "day": "5",
+      "startDate": "11/05/2026",
+      "endDate": "11/06/2026",
+      "time": "10:00",
+      "venue": "Auditorium",
+      "organizer": "CSE Department",
+      "capacity": 500,
+      "registered": 320,
+      "description":
+          "Flagship technical symposium with hackathons, paper presentations, project exhibits, and keynote speakers.",
+    },
+    {
+      "id": "EVT-105",
+      "title": "Alumni Mentorship Conclave",
+      "type": "Academic",
+      "status": "Upcoming",
+      "month": "NOV",
+      "day": "12",
+      "startDate": "11/12/2026",
+      "endDate": "11/12/2026",
+      "time": "14:00",
+      "venue": "Seminar Hall A",
+      "organizer": "Alumni Relations Office",
+      "capacity": 200,
+      "registered": 145,
+      "description":
+          "Connecting pre-final and final year students with industry alumni for career mentorship and resume reviews.",
+    },
+    {
+      "id": "EVT-106",
+      "title": "Inter-Collegiate Cultural Festival",
       "type": "Cultural",
-      "date": "10 Oct 2026",
-      "venue": "Main Auditorium",
-      "capacity": "1500",
-      "status": "Published",
-      "updated": "14 Sept 2026",
+      "status": "Upcoming",
+      "month": "NOV",
+      "day": "25",
+      "startDate": "11/25/2026",
+      "endDate": "11/27/2026",
+      "time": "09:30",
+      "venue": "Open Air Amphitheatre",
+      "organizer": "Student Council & Fine Arts Club",
+      "capacity": 1200,
+      "registered": 850,
+      "description":
+          "Three days of dance, music, theater, visual arts, and literary competitions featuring colleges from across the region.",
     },
   ];
 
@@ -67,321 +141,698 @@ class _FacultyCampusEventsScreenState extends State<FacultyCampusEventsScreen> {
     super.dispose();
   }
 
-  void _showAddEventDialog() {
-    final titleCtrl = TextEditingController();
-    final venueCtrl = TextEditingController(text: "Seminar Hall 1");
-    final capacityCtrl = TextEditingController(text: "150");
-    String typeVal = "Workshop";
+  // Calculate dynamic stats
+  int get _totalEvents => _events.length;
+  int get _upcomingEvents =>
+      _events.where((e) => e["status"] == "Upcoming").length;
+  int get _ongoingEvents =>
+      _events.where((e) => e["status"] == "Ongoing").length;
+  int get _thisMonthEvents => _events.where((e) {
+        final m = (e["month"] as String?)?.toUpperCase() ?? "";
+        return m == "OCT";
+      }).length;
 
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFEF3C7),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.celebration_rounded,
-                  color: Color(0xFFD97706), size: 20),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              "Plan Campus Event",
-              style: GoogleFonts.poppins(
-                  fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Event Title",
-                  style: GoogleFonts.poppins(
-                      fontSize: 12, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 6),
-              TextField(
-                controller: titleCtrl,
-                style: GoogleFonts.poppins(fontSize: 13),
-                decoration: InputDecoration(
-                  hintText: "e.g. AI Symposium 2026",
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                ),
-              ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Venue",
-                            style: GoogleFonts.poppins(
-                                fontSize: 12, fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 6),
-                        TextField(
-                          controller: venueCtrl,
-                          style: GoogleFonts.poppins(fontSize: 13),
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 10),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Capacity",
-                            style: GoogleFonts.poppins(
-                                fontSize: 12, fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 6),
-                        TextField(
-                          controller: capacityCtrl,
-                          style: GoogleFonts.poppins(fontSize: 13),
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 10),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text("Cancel",
-                style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (titleCtrl.text.trim().isNotEmpty) {
-                setState(() {
-                  _events.insert(0, {
-                    "id": "EVT-${1004 + _events.length}",
-                    "title": titleCtrl.text.trim(),
-                    "type": typeVal,
-                    "date": "24 Oct 2026",
-                    "venue": venueCtrl.text.trim(),
-                    "capacity": capacityCtrl.text.trim(),
-                    "status": "Draft",
-                    "updated": "Today",
-                  });
-                });
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("Event created successfully!",
-                        style: GoogleFonts.poppins()),
-                    backgroundColor: const Color(0xFF0F766E),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD97706),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-            ),
-            child: Text("Create Event",
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
-    );
+  List<Map<String, dynamic>> get _filteredEvents {
+    final q = _searchController.text.trim().toLowerCase();
+    return _events.where((e) {
+      if (_selectedType != "All Types" && e["type"] != _selectedType) {
+        return false;
+      }
+      if (_selectedStatus != "All Status" && e["status"] != _selectedStatus) {
+        return false;
+      }
+      if (q.isNotEmpty) {
+        final title = (e["title"] as String).toLowerCase();
+        final venue = (e["venue"] as String).toLowerCase();
+        final organizer = (e["organizer"] as String).toLowerCase();
+        if (!title.contains(q) && !venue.contains(q) && !organizer.contains(q)) {
+          return false;
+        }
+      }
+      return true;
+    }).toList();
   }
 
-  void _showViewEventDialog(Map<String, dynamic> e) {
-    final isDraft = e["status"] == "Draft";
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEF3C7),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.event_note_rounded, color: Color(0xFFD97706), size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(e["title"] as String, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700)),
-                    Text(e["id"] as String, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF64748B))),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          content: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildEventDetailRow("Type", e["type"] as String),
-                _buildEventDetailRow("Date", e["date"] as String),
-                _buildEventDetailRow("Venue", e["venue"] as String),
-                _buildEventDetailRow("Expected Capacity", e["capacity"] as String),
-                _buildEventDetailRow("Current Status", e["status"] as String,
-                    statusColor: isDraft ? const Color(0xFFD97706) : const Color(0xFF15803D)),
-                _buildEventDetailRow("Last Updated", e["updated"] as String),
-              ],
-            ),
-          ),
-          actions: [
-            OutlinedButton.icon(
-              onPressed: () {
-                Navigator.pop(ctx);
-                _showEditEventDialog(e);
-              },
-              icon: const Icon(Icons.edit_outlined, size: 14),
-              label: Text("Edit", style: GoogleFonts.poppins()),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFFCBD5E1)),
-                foregroundColor: const Color(0xFF334155),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E2865),
-                foregroundColor: Colors.white,
-              ),
-              child: Text("Close", style: GoogleFonts.poppins()),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // ===========================================================================
+  // CREATE / EDIT EVENT MODAL DIALOG (Matching Image 10)
+  // ===========================================================================
+  void _showEventDialog({Map<String, dynamic>? eventToEdit}) {
+    final isEditing = eventToEdit != null;
 
-  Widget _buildEventDetailRow(String label, String value, {Color? statusColor}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF64748B))),
-          const SizedBox(width: 12),
-          Text(
-            value,
-            style: GoogleFonts.poppins(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w600,
-              color: statusColor ?? const Color(0xFF0F172A),
-            ),
-          ),
-        ],
-      ),
+    final titleCtrl = TextEditingController(
+      text: isEditing ? (eventToEdit["title"] as String) : "",
     );
-  }
+    String selectedType = isEditing ? (eventToEdit["type"] as String) : "Academic";
+    String selectedStatus =
+        isEditing ? (eventToEdit["status"] as String) : "Upcoming";
 
-  void _showEditEventDialog(Map<String, dynamic> e) {
-    final titleCtrl = TextEditingController(text: e["title"] as String);
-    final venueCtrl = TextEditingController(text: e["venue"] as String);
-    final dateCtrl = TextEditingController(text: e["date"] as String);
-    final capacityCtrl = TextEditingController(text: e["capacity"] as String);
-    String type = e["type"] as String;
-    String status = e["status"] as String;
+    final startDateCtrl = TextEditingController(
+      text: isEditing
+          ? (eventToEdit["startDate"] as String? ?? "10/30/2026")
+          : "",
+    );
+    final endDateCtrl = TextEditingController(
+      text: isEditing ? (eventToEdit["endDate"] as String? ?? "") : "",
+    );
+    final timeCtrl = TextEditingController(
+      text: isEditing ? (eventToEdit["time"] as String? ?? "") : "",
+    );
+    final venueCtrl = TextEditingController(
+      text: isEditing ? (eventToEdit["venue"] as String? ?? "") : "",
+    );
+    final organizerCtrl = TextEditingController(
+      text: isEditing ? (eventToEdit["organizer"] as String? ?? "") : "",
+    );
+    final capacityCtrl = TextEditingController(
+      text: isEditing ? "${eventToEdit["capacity"] ?? 0}" : "0",
+    );
+    final descCtrl = TextEditingController(
+      text: isEditing ? (eventToEdit["description"] as String? ?? "") : "",
+    );
 
     showDialog(
       context: context,
       builder: (ctx) {
         return StatefulBuilder(
-          builder: (context, setDlgState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: Text("Edit Campus Event", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700)),
-              content: SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 440),
+          builder: (context, setModalState) {
+            return Dialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              insetPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 540),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      // Header Row: Title & Close Button
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            isEditing ? "Edit Event" : "Create Event",
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            icon: const Icon(Icons.close_rounded,
+                                size: 20, color: Color(0xFF64748B)),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            splashRadius: 18,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Event Title *
+                      Text(
+                        "Event Title *",
+                        style: GoogleFonts.poppins(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1E293B),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
                       TextField(
                         controller: titleCtrl,
-                        decoration: const InputDecoration(labelText: "Event Title"),
+                        style: GoogleFonts.poppins(fontSize: 13.5),
+                        decoration: InputDecoration(
+                          hintText: "Annual Tech Symposium",
+                          hintStyle: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: const Color(0xFF94A3B8),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFCBD5E1)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFE2E8F0)),
+                          ),
+                        ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
+
+                      // Row: Type & Status
                       Row(
                         children: [
                           Expanded(
-                            child: DropdownButtonFormField<String>(
-                              isExpanded: true,
-                              initialValue: type,
-                              decoration: const InputDecoration(labelText: "Type"),
-                              items: ["Academic", "Workshop", "Sports", "Cultural", "Hackathon"]
-                                  .map((t) => DropdownMenuItem(value: t, child: Text(t, style: GoogleFonts.poppins(fontSize: 12.5))))
-                                  .toList(),
-                              onChanged: (val) {
-                                if (val != null) setDlgState(() => type = val);
-                              },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Type",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                        color: const Color(0xFFE2E8F0)),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: selectedType,
+                                      isExpanded: true,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 13,
+                                        color: const Color(0xFF0F172A),
+                                      ),
+                                      items: const [
+                                        DropdownMenuItem(
+                                            value: "Academic",
+                                            child: Text("Academic")),
+                                        DropdownMenuItem(
+                                            value: "Workshop",
+                                            child: Text("Workshop")),
+                                        DropdownMenuItem(
+                                            value: "Sports",
+                                            child: Text("Sports")),
+                                        DropdownMenuItem(
+                                            value: "Holiday",
+                                            child: Text("Holiday")),
+                                        DropdownMenuItem(
+                                            value: "Cultural",
+                                            child: Text("Cultural")),
+                                        DropdownMenuItem(
+                                            value: "Hackathon",
+                                            child: Text("Hackathon")),
+                                      ],
+                                      onChanged: (val) {
+                                        if (val != null) {
+                                          setModalState(() {
+                                            selectedType = val;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 14),
                           Expanded(
-                            child: DropdownButtonFormField<String>(
-                              isExpanded: true,
-                              initialValue: status,
-                              decoration: const InputDecoration(labelText: "Status"),
-                              items: ["Published", "Draft"]
-                                  .map((s) => DropdownMenuItem(value: s, child: Text(s, style: GoogleFonts.poppins(fontSize: 12.5))))
-                                  .toList(),
-                              onChanged: (val) {
-                                if (val != null) setDlgState(() => status = val);
-                              },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Status",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                        color: const Color(0xFFE2E8F0)),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: selectedStatus,
+                                      isExpanded: true,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 13,
+                                        color: const Color(0xFF0F172A),
+                                      ),
+                                      items: const [
+                                        DropdownMenuItem(
+                                            value: "Upcoming",
+                                            child: Text("Upcoming")),
+                                        DropdownMenuItem(
+                                            value: "Ongoing",
+                                            child: Text("Ongoing")),
+                                        DropdownMenuItem(
+                                            value: "Completed",
+                                            child: Text("Completed")),
+                                      ],
+                                      onChanged: (val) {
+                                        if (val != null) {
+                                          setModalState(() {
+                                            selectedStatus = val;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: venueCtrl,
-                        decoration: const InputDecoration(labelText: "Venue"),
-                      ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
+
+                      // Row: Start Date * & End Date
                       Row(
                         children: [
                           Expanded(
-                            child: TextField(
-                              controller: dateCtrl,
-                              decoration: const InputDecoration(labelText: "Date & Time"),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Start Date *",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                TextField(
+                                  controller: startDateCtrl,
+                                  style: GoogleFonts.poppins(fontSize: 13),
+                                  decoration: InputDecoration(
+                                    hintText: "mm/dd/yyyy",
+                                    hintStyle: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      color: const Color(0xFF94A3B8),
+                                    ),
+                                    suffixIcon: const Icon(
+                                      Icons.calendar_today_outlined,
+                                      size: 16,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 14, vertical: 12),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1)),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                          color: Color(0xFFE2E8F0)),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 14),
                           Expanded(
-                            child: TextField(
-                              controller: capacityCtrl,
-                              decoration: const InputDecoration(labelText: "Capacity"),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "End Date",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                TextField(
+                                  controller: endDateCtrl,
+                                  style: GoogleFonts.poppins(fontSize: 13),
+                                  decoration: InputDecoration(
+                                    hintText: "mm/dd/yyyy",
+                                    hintStyle: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      color: const Color(0xFF94A3B8),
+                                    ),
+                                    suffixIcon: const Icon(
+                                      Icons.calendar_today_outlined,
+                                      size: 16,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 14, vertical: 12),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1)),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                          color: Color(0xFFE2E8F0)),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Row: Time & Venue
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Time",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                TextField(
+                                  controller: timeCtrl,
+                                  style: GoogleFonts.poppins(fontSize: 13),
+                                  decoration: InputDecoration(
+                                    hintText: "--:-- --",
+                                    hintStyle: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      color: const Color(0xFF94A3B8),
+                                    ),
+                                    suffixIcon: const Icon(
+                                      Icons.access_time_rounded,
+                                      size: 16,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 14, vertical: 12),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1)),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                          color: Color(0xFFE2E8F0)),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Venue",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                TextField(
+                                  controller: venueCtrl,
+                                  style: GoogleFonts.poppins(fontSize: 13),
+                                  decoration: InputDecoration(
+                                    hintText: "Auditorium, Hall A...",
+                                    hintStyle: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      color: const Color(0xFF94A3B8),
+                                    ),
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 14, vertical: 12),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1)),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                          color: Color(0xFFE2E8F0)),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Row: Organizer & Capacity
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Organizer",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                TextField(
+                                  controller: organizerCtrl,
+                                  style: GoogleFonts.poppins(fontSize: 13),
+                                  decoration: InputDecoration(
+                                    hintText: "Department / Faculty",
+                                    hintStyle: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      color: const Color(0xFF94A3B8),
+                                    ),
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 14, vertical: 12),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1)),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                          color: Color(0xFFE2E8F0)),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Capacity",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                TextField(
+                                  controller: capacityCtrl,
+                                  keyboardType: TextInputType.number,
+                                  style: GoogleFonts.poppins(fontSize: 13),
+                                  decoration: InputDecoration(
+                                    hintText: "0",
+                                    hintStyle: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      color: const Color(0xFF94A3B8),
+                                    ),
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 14, vertical: 12),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1)),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                          color: Color(0xFFE2E8F0)),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Description
+                      Text(
+                        "Description",
+                        style: GoogleFonts.poppins(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1E293B),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: descCtrl,
+                        maxLines: 3,
+                        style: GoogleFonts.poppins(fontSize: 13),
+                        decoration: InputDecoration(
+                          hintText: "Brief event description...",
+                          hintStyle: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: const Color(0xFF94A3B8),
+                          ),
+                          contentPadding: const EdgeInsets.all(12),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFCBD5E1)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFE2E8F0)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Action Buttons: Cancel & Create / Save Changes
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: Text(
+                              "Cancel",
+                              style: GoogleFonts.poppins(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF475569),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          ElevatedButton(
+                            onPressed: () {
+                              final title = titleCtrl.text.trim();
+                              if (title.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Event title is required"),
+                                    backgroundColor: Color(0xFFEF4444),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                                return;
+                              }
+
+                              final parsedCapacity =
+                                  int.tryParse(capacityCtrl.text.trim()) ?? 0;
+
+                              setState(() {
+                                if (isEditing) {
+                                  eventToEdit["title"] = title;
+                                  eventToEdit["type"] = selectedType;
+                                  eventToEdit["status"] = selectedStatus;
+                                  eventToEdit["startDate"] =
+                                      startDateCtrl.text.trim();
+                                  eventToEdit["endDate"] =
+                                      endDateCtrl.text.trim();
+                                  eventToEdit["time"] = timeCtrl.text.trim();
+                                  eventToEdit["venue"] = venueCtrl.text.trim();
+                                  eventToEdit["organizer"] =
+                                      organizerCtrl.text.trim();
+                                  eventToEdit["capacity"] = parsedCapacity;
+                                  eventToEdit["description"] =
+                                      descCtrl.text.trim();
+                                } else {
+                                  _events.insert(0, {
+                                    "id": "EVT-${100 + _events.length + 1}",
+                                    "title": title,
+                                    "type": selectedType,
+                                    "status": selectedStatus,
+                                    "month": "NOV",
+                                    "day": "28",
+                                    "startDate": startDateCtrl.text.trim().isNotEmpty
+                                        ? startDateCtrl.text.trim()
+                                        : "11/28/2026",
+                                    "endDate": endDateCtrl.text.trim(),
+                                    "time": timeCtrl.text.trim().isNotEmpty
+                                        ? timeCtrl.text.trim()
+                                        : "10:00",
+                                    "venue": venueCtrl.text.trim().isNotEmpty
+                                        ? venueCtrl.text.trim()
+                                        : "Main Auditorium",
+                                    "organizer": organizerCtrl.text.trim().isNotEmpty
+                                        ? organizerCtrl.text.trim()
+                                        : "Faculty Event Committee",
+                                    "capacity": parsedCapacity > 0 ? parsedCapacity : 100,
+                                    "registered": 0,
+                                    "description": descCtrl.text.trim(),
+                                  });
+                                }
+                              });
+
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    isEditing
+                                        ? "Event updated successfully!"
+                                        : "Event created successfully!",
+                                  ),
+                                  backgroundColor: const Color(0xFF10B981),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF818CF8),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              isEditing ? "Save Changes" : "Create Event",
+                              style: GoogleFonts.poppins(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
@@ -390,37 +841,6 @@ class _FacultyCampusEventsScreenState extends State<FacultyCampusEventsScreen> {
                   ),
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: Text("Cancel", style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      e["title"] = titleCtrl.text.trim();
-                      e["venue"] = venueCtrl.text.trim();
-                      e["date"] = dateCtrl.text.trim();
-                      e["capacity"] = capacityCtrl.text.trim();
-                      e["type"] = type;
-                      e["status"] = status;
-                      e["updated"] = "Today";
-                    });
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("Event '${e["title"]}' updated successfully!", style: GoogleFonts.poppins()),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD97706),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text("Save Changes", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                ),
-              ],
             );
           },
         );
@@ -428,43 +848,42 @@ class _FacultyCampusEventsScreenState extends State<FacultyCampusEventsScreen> {
     );
   }
 
-  void _showDeleteEventDialog(Map<String, dynamic> e) {
+  void _showDeleteDialog(Map<String, dynamic> evt) {
     showDialog(
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text("Delete Event?", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: Text(
+            "Delete Event",
+            style: GoogleFonts.poppins(
+                fontSize: 16, fontWeight: FontWeight.w700),
+          ),
           content: Text(
-            "Are you sure you want to delete '${e["title"]}' (${e["id"]})? This cannot be undone.",
-            style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF475569)),
+            "Are you sure you want to delete '${evt["title"]}'? This action cannot be undone.",
+            style: GoogleFonts.poppins(
+                fontSize: 13, color: const Color(0xFF475569)),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text("Cancel", style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
+              child: Text(
+                "Cancel",
+                style: GoogleFonts.poppins(color: const Color(0xFF64748B)),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
-                final removed = Map<String, dynamic>.from(e);
-                final index = _events.indexOf(e);
                 setState(() {
-                  _events.remove(e);
+                  _events.remove(evt);
                 });
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("Event '${removed["title"]}' deleted", style: GoogleFonts.poppins()),
+                  const SnackBar(
+                    content: Text("Event deleted."),
+                    backgroundColor: Color(0xFFDC2626),
                     behavior: SnackBarBehavior.floating,
-                    action: SnackBarAction(
-                      label: "Undo",
-                      textColor: const Color(0xFFFBBF24),
-                      onPressed: () {
-                        setState(() {
-                          _events.insert(index >= 0 ? index : 0, removed);
-                        });
-                      },
-                    ),
                   ),
                 );
               },
@@ -472,7 +891,7 @@ class _FacultyCampusEventsScreenState extends State<FacultyCampusEventsScreen> {
                 backgroundColor: const Color(0xFFDC2626),
                 foregroundColor: Colors.white,
               ),
-              child: Text("Delete", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+              child: const Text("Delete"),
             ),
           ],
         );
@@ -482,35 +901,56 @@ class _FacultyCampusEventsScreenState extends State<FacultyCampusEventsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Filter events
-    final filtered = _events.where((e) {
-      final matchesFilter = _selectedFilter == "All" ||
-          e["status"].toString().toLowerCase() ==
-              _selectedFilter.toLowerCase();
-      final matchesQuery = _searchQuery.isEmpty ||
-          e["title"].toString().toLowerCase().contains(_searchQuery) ||
-          e["id"].toString().toLowerCase().contains(_searchQuery) ||
-          e["type"].toString().toLowerCase().contains(_searchQuery) ||
-          e["venue"].toString().toLowerCase().contains(_searchQuery);
-      return matchesFilter && matchesQuery;
-    }).toList();
-
     return Scaffold(
-      backgroundColor: const Color(0xFFFBFBFD),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 90),
-        children: [
-          // 1. Hero Blueprint Banner with "+ Add event" button
-          _buildHeroBanner(),
-          const SizedBox(height: 18),
+      backgroundColor: const Color(0xFFFAF9F6), // Warm off-white
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 90),
+            children: [
+              // 1. Hero Blueprint Banner
+              _buildHeroBanner(),
+              const SizedBox(height: 18),
 
-          // 2. Filter Pills Row
-          _buildFilterPillsRow(),
-          const SizedBox(height: 16),
+              // 2. 4 Stat Counter Metric Cards
+              _buildMetricCardsRow(constraints.maxWidth < 750),
+              const SizedBox(height: 18),
 
-          // 3. Main Card with Table
-          _buildTableCard(filtered),
-        ],
+              // 3. Search & Filter Bar with + Create Event Button
+              _buildSearchAndFilterBar(),
+              const SizedBox(height: 16),
+
+              // 4. Event Cards List
+              ..._filteredEvents.map((evt) => _buildEventCard(evt)),
+
+              if (_filteredEvents.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(40),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.event_busy_rounded,
+                          size: 44, color: Color(0xFF94A3B8)),
+                      const SizedBox(height: 10),
+                      Text(
+                        "No events match the selected filters",
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF475569),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -521,663 +961,707 @@ class _FacultyCampusEventsScreenState extends State<FacultyCampusEventsScreen> {
   Widget _buildHeroBanner() {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF141A46),
-            Color(0xFF1E2865),
-            Color(0xFF283685),
-          ],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
+        color: const Color(0xFF1E2865), // Deep Blueprint Navy
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF141A46).withValues(alpha: 0.18),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: const Color(0xFF1E2865).withValues(alpha: 0.2),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _GridPaperPainter(
-                  gridColor: Colors.white.withValues(alpha: 0.06),
-                  step: 26.0,
-                ),
-              ),
+      child: Stack(
+        children: [
+          // Blueprint Grid Pattern Overlay
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _EventGridPainter(),
             ),
-            Positioned(
-              right: 25,
-              top: -15,
-              bottom: -15,
-              child: Opacity(
-                opacity: 0.08,
-                child: const Icon(
-                  Icons.celebration_rounded,
-                  size: 160,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Breadcrumbs (clean, no leading arrow)
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        InkWell(
-                          onTap: widget.onBack,
-                          borderRadius: BorderRadius.circular(4),
-                          child: Text(
-                            "Home",
-                            style: GoogleFonts.poppins(
-                              color: Colors.white.withValues(alpha: 0.75),
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 7),
-                          child: Text(
-                            "›",
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.5),
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          "Campus Life",
-                          style: GoogleFonts.poppins(
-                            color: Colors.white.withValues(alpha: 0.75),
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 7),
-                          child: Text(
-                            "›",
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.5),
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          "Campus Events",
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
+          ),
 
-                  // Badges Row
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 6,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      _buildPillBadge(
-                        "CAMPUS LIFE",
-                        const Color(0xFF232D60),
-                        Colors.white,
+          // Faint Megaphone Watermark on right
+          Positioned(
+            right: -10,
+            bottom: -15,
+            child: Opacity(
+              opacity: 0.08,
+              child: const Icon(
+                Icons.campaign_rounded,
+                size: 160,
+                color: Colors.white,
+              ),
+            ),
+          ),
+
+          // Content
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Breadcrumb
+                Row(
+                  children: [
+                    if (widget.onBack != null) ...[
+                      InkWell(
+                        onTap: widget.onBack,
+                        borderRadius: BorderRadius.circular(6),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4),
+                          child: Icon(Icons.arrow_back_ios_new_rounded,
+                              size: 13, color: Colors.white70),
+                        ),
                       ),
-                      _buildPillBadge(
-                        "Phase 3",
-                        const Color(0xFFD97706),
-                        Colors.white,
-                      ),
+                      const SizedBox(width: 8),
                     ],
-                  ),
-                  const SizedBox(height: 12),
+                    Text(
+                      "Home  ›  Campus Life  ›  Campus Events",
+                      style: GoogleFonts.poppins(
+                        fontSize: 11.5,
+                        color: Colors.white70,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
 
-                  // Title + Subtitle + Action Button
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final isNarrow = constraints.maxWidth < 650;
-                      final titleWidget = Row(
+                // Badges Row
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: Text(
+                        "CAMPUS LIFE",
+                        style: GoogleFonts.poppins(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD97706),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        "Phase 3",
+                        style: GoogleFonts.poppins(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+
+                // Title with megaphone icon container
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.campaign_rounded,
+                          size: 24,
+                          color: Color(0xFFFBBF24),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF232F6E),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.12),
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.celebration_rounded,
-                              color: Color(0xFFFBBF24),
-                              size: 26,
+                          Text(
+                            "Campus Events",
+                            style: GoogleFonts.poppins(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
                             ),
                           ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Campus Events",
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: -0.3,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "College and department events, seminars, workshops, cultural and alumni events.",
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.white.withValues(alpha: 0.8),
-                                    fontSize: 13,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ],
+                          const SizedBox(height: 2),
+                          Text(
+                            "College and department events, seminars, workshops, cultural and alumni events.",
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.85),
                             ),
                           ),
                         ],
-                      );
-
-                      final btnWidget = ElevatedButton.icon(
-                        onPressed: _showAddEventDialog,
-                        icon: const Icon(Icons.add_rounded, size: 16),
-                        label: Text(
-                          "Add event",
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD97706),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 0,
-                        ),
-                      );
-
-                      if (isNarrow) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            titleWidget,
-                            const SizedBox(height: 14),
-                            btnWidget,
-                          ],
-                        );
-                      }
-
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(child: titleWidget),
-                          const SizedBox(width: 16),
-                          btnWidget,
-                        ],
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPillBadge(String label, Color bg, Color text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-      ),
-      child: Text(
-        label,
-        style: GoogleFonts.poppins(
-          fontSize: 10.5,
-          fontWeight: FontWeight.w700,
-          color: text,
-          letterSpacing: 0.4,
-        ),
-      ),
-    );
-  }
-
-  // ===========================================================================
-  // 2. FILTER PILLS ROW
-  // ===========================================================================
-  Widget _buildFilterPillsRow() {
-    final draftCount = _events.where((e) => e["status"] == "Draft").length;
-    final publishedCount =
-        _events.where((e) => e["status"] == "Published").length;
-    final completedCount =
-        _events.where((e) => e["status"] == "Completed").length;
-    final cancelledCount =
-        _events.where((e) => e["status"] == "Cancelled").length;
-
-    final filters = [
-      {"label": "All", "count": "${_events.length}"},
-      {"label": "Draft", "count": "$draftCount"},
-      {"label": "Published", "count": "$publishedCount"},
-      {"label": "Completed", "count": "$completedCount"},
-      {"label": "Cancelled", "count": "$cancelledCount"},
-    ];
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: filters.map((f) {
-          final isSelected = _selectedFilter == f["label"];
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  _selectedFilter = f["label"]!;
-                });
-              },
-              borderRadius: BorderRadius.circular(20),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF1E2865) : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFF1E2865)
-                        : const Color(0xFFE2E8F0),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      f["label"]!,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12.5,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.w500,
-                        color: isSelected
-                            ? Colors.white
-                            : const Color(0xFF475569),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      f["count"]!,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: isSelected
-                            ? Colors.white.withValues(alpha: 0.8)
-                            : const Color(0xFF94A3B8),
                       ),
                     ),
                   ],
                 ),
-              ),
+              ],
             ),
-          );
-        }).toList(),
+          ),
+        ],
       ),
     );
   }
 
   // ===========================================================================
-  // 3. TABLE CARD
+  // 2. 4 STAT METRIC CARDS
   // ===========================================================================
-  Widget _buildTableCard(List<Map<String, dynamic>> filtered) {
+  Widget _buildMetricCardsRow(bool isNarrow) {
+    final card1 = _buildMetricCard(
+      title: "Total Events",
+      value: "$_totalEvents",
+      icon: Icons.calendar_month_outlined,
+      iconColor: const Color(0xFF3B82F6),
+    );
+    final card2 = _buildMetricCard(
+      title: "Upcoming",
+      value: "$_upcomingEvents",
+      icon: Icons.access_time_rounded,
+      iconColor: const Color(0xFF06B6D4),
+    );
+    final card3 = _buildMetricCard(
+      title: "Ongoing",
+      value: "$_ongoingEvents",
+      icon: Icons.check_circle_outline_rounded,
+      iconColor: const Color(0xFF10B981),
+    );
+    final card4 = _buildMetricCard(
+      title: "This Month",
+      value: "$_thisMonthEvents",
+      icon: Icons.calendar_today_outlined,
+      iconColor: const Color(0xFFF59E0B),
+    );
+
+    if (isNarrow) {
+      return Column(
+        children: [
+          Row(children: [
+            Expanded(child: card1),
+            const SizedBox(width: 12),
+            Expanded(child: card2),
+          ]),
+          const SizedBox(height: 12),
+          Row(children: [
+            Expanded(child: card3),
+            const SizedBox(width: 12),
+            Expanded(child: card4),
+          ]),
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        Expanded(child: card1),
+        const SizedBox(width: 14),
+        Expanded(child: card2),
+        const SizedBox(width: 14),
+        Expanded(child: card3),
+        const SizedBox(width: 14),
+        Expanded(child: card4),
+      ],
+    );
+  }
+
+  Widget _buildMetricCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color iconColor,
+  }) {
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Search Bar + Record count
-          Padding(
-            padding: const EdgeInsets.all(18),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (val) {
-                        setState(() {
-                          _searchQuery = val.trim().toLowerCase();
-                        });
-                      },
-                      style: GoogleFonts.poppins(fontSize: 13),
-                      decoration: InputDecoration(
-                        hintText: "Search by name, ID or type...",
-                        hintStyle: GoogleFonts.poppins(
-                          fontSize: 12.5,
-                          color: const Color(0xFF94A3B8),
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.search_rounded,
-                          size: 18,
-                          color: Color(0xFF94A3B8),
-                        ),
-                        border: InputBorder.none,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 10),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  "${filtered.length} records",
-                  style: GoogleFonts.poppins(
-                    fontSize: 12.5,
-                    color: const Color(0xFF64748B),
-                  ),
-                ),
-              ],
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF64748B),
             ),
           ),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
-
-          // Data Table with Horizontal Scroll
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              horizontalMargin: 20,
-              columnSpacing: 24,
-              dataRowMinHeight: 56,
-              dataRowMaxHeight: 64,
-              headingRowHeight: 44,
-              headingRowColor:
-                  WidgetStateProperty.all(const Color(0xFFFAF9F6)),
-              columns: [
-                _buildDataColumn("ID"),
-                _buildDataColumn("EVENT TITLE"),
-                _buildDataColumn("TYPE"),
-                _buildDataColumn("DATE"),
-                _buildDataColumn("VENUE"),
-                _buildDataColumn("CAPACITY"),
-                _buildDataColumn("STATUS"),
-                _buildDataColumn("UPDATED"),
-                _buildDataColumn("ACTIONS"),
-              ],
-              rows: filtered.map((e) {
-                final isDraft = e["status"] == "Draft";
-                return DataRow(
-                  cells: [
-                    DataCell(
-                      Text(
-                        e["id"],
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: const Color(0xFF64748B),
-                        ),
-                      ),
-                    ),
-                    DataCell(
-                      Text(
-                        e["title"],
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF0F172A),
-                        ),
-                      ),
-                    ),
-                    DataCell(
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 3.5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEEF2FF),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          e["type"],
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF4338CA),
-                          ),
-                        ),
-                      ),
-                    ),
-                    DataCell(
-                      Text(
-                        e["date"],
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: const Color(0xFF334155),
-                        ),
-                      ),
-                    ),
-                    DataCell(
-                      Text(
-                        e["venue"],
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: const Color(0xFF334155),
-                        ),
-                      ),
-                    ),
-                    DataCell(
-                      Text(
-                        e["capacity"],
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: const Color(0xFF334155),
-                        ),
-                      ),
-                    ),
-                    DataCell(
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 9, vertical: 3.5),
-                        decoration: BoxDecoration(
-                          color: isDraft
-                              ? const Color(0xFFFEF3C7)
-                              : const Color(0xFFDCFCE7),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          e["status"],
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: isDraft
-                                ? const Color(0xFF92400E)
-                                : const Color(0xFF15803D),
-                          ),
-                        ),
-                      ),
-                    ),
-                    DataCell(
-                      Text(
-                        e["updated"],
-                        style: GoogleFonts.poppins(
-                          fontSize: 11.5,
-                          color: const Color(0xFF64748B),
-                        ),
-                      ),
-                    ),
-                    DataCell(
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.visibility_outlined,
-                                size: 16, color: Color(0xFF64748B)),
-                            onPressed: () => _showViewEventDialog(e),
-                            tooltip: "View Event Details",
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.edit_outlined,
-                                size: 16, color: Color(0xFF4338CA)),
-                            onPressed: () => _showEditEventDialog(e),
-                            tooltip: "Edit Event",
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline_rounded,
-                                size: 16, color: Color(0xFFEF4444)),
-                            onPressed: () => _showDeleteEventDialog(e),
-                            tooltip: "Delete Event",
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              }).toList(),
-            ),
-          ),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
-
-          // Pagination Footer
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Page 1 of 1",
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: const Color(0xFF64748B),
-                  ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Icon(icon, size: 16, color: iconColor),
+              const SizedBox(width: 8),
+              Text(
+                value,
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF0F172A),
                 ),
-                Row(
-                  children: [
-                    OutlinedButton(
-                      onPressed: null,
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6)),
-                      ),
-                      child: Text(
-                        "‹ Prev",
-                        style: GoogleFonts.poppins(
-                            fontSize: 12, color: const Color(0xFF94A3B8)),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    OutlinedButton(
-                      onPressed: null,
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6)),
-                      ),
-                      child: Text(
-                        "Next ›",
-                        style: GoogleFonts.poppins(
-                            fontSize: 12, color: const Color(0xFF94A3B8)),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  DataColumn _buildDataColumn(String label) {
-    return DataColumn(
-      label: Text(
-        label,
-        style: GoogleFonts.poppins(
-          fontSize: 10.5,
-          fontWeight: FontWeight.w700,
-          color: const Color(0xFF64748B),
-          letterSpacing: 0.5,
+  // ===========================================================================
+  // 3. SEARCH & FILTERS BAR
+  // ===========================================================================
+  Widget _buildSearchAndFilterBar() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Search TextField
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: TextField(
+            controller: _searchController,
+            onChanged: (_) => setState(() {}),
+            style: GoogleFonts.poppins(fontSize: 13),
+            decoration: InputDecoration(
+              hintText: "Search events...",
+              hintStyle: GoogleFonts.poppins(
+                fontSize: 13,
+                color: const Color(0xFF94A3B8),
+              ),
+              prefixIcon: const Icon(
+                Icons.search_rounded,
+                size: 18,
+                color: Color(0xFF94A3B8),
+              ),
+              border: InputBorder.none,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
         ),
+        const SizedBox(height: 10),
+
+        // All Types Dropdown
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedType,
+              isExpanded: true,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: const Color(0xFF1E293B),
+              ),
+              items: const [
+                DropdownMenuItem(value: "All Types", child: Text("All Types")),
+                DropdownMenuItem(value: "Academic", child: Text("Academic")),
+                DropdownMenuItem(value: "Workshop", child: Text("Workshop")),
+                DropdownMenuItem(value: "Sports", child: Text("Sports")),
+                DropdownMenuItem(value: "Holiday", child: Text("Holiday")),
+                DropdownMenuItem(value: "Cultural", child: Text("Cultural")),
+              ],
+              onChanged: (val) {
+                if (val != null) {
+                  setState(() {
+                    _selectedType = val;
+                  });
+                }
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        // All Status Dropdown
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedStatus,
+              isExpanded: true,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: const Color(0xFF1E293B),
+              ),
+              items: const [
+                DropdownMenuItem(
+                    value: "All Status", child: Text("All Status")),
+                DropdownMenuItem(
+                    value: "Upcoming", child: Text("Upcoming")),
+                DropdownMenuItem(
+                    value: "Ongoing", child: Text("Ongoing")),
+                DropdownMenuItem(
+                    value: "Completed", child: Text("Completed")),
+              ],
+              onChanged: (val) {
+                if (val != null) {
+                  setState(() {
+                    _selectedStatus = val;
+                  });
+                }
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // + Create Event Button
+        Align(
+          alignment: Alignment.centerLeft,
+          child: ElevatedButton.icon(
+            onPressed: () => _showEventDialog(),
+            icon: const Icon(Icons.add_rounded, size: 16),
+            label: const Text("+ Create Event"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2E2A72), // Deep purple pill
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              elevation: 0,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ===========================================================================
+  // 4. EVENT CARD ITEM
+  // ===========================================================================
+  Widget _buildEventCard(Map<String, dynamic> evt) {
+    final month = (evt["month"] as String?) ?? "OCT";
+    final day = (evt["day"] as String?) ?? "15";
+    final title = evt["title"] as String;
+    final type = (evt["type"] as String?) ?? "Academic";
+    final status = (evt["status"] as String?) ?? "Upcoming";
+    final time = (evt["time"] as String?) ?? "";
+    final venue = (evt["venue"] as String?) ?? "";
+    final organizer = (evt["organizer"] as String?) ?? "";
+    final capacity = (evt["capacity"] as int?) ?? 0;
+    final registered = (evt["registered"] as int?) ?? 0;
+
+    // Type Colors
+    Color typeBg = const Color(0xFFF1F5F9);
+    Color typeFg = const Color(0xFF475569);
+    if (type == "Workshop") {
+      typeBg = const Color(0xFFF3E8FF);
+      typeFg = const Color(0xFF7E22CE);
+    } else if (type == "Holiday") {
+      typeBg = const Color(0xFFFEF3C7);
+      typeFg = const Color(0xFFB45309);
+    } else if (type == "Sports") {
+      typeBg = const Color(0xFFCCFBF1);
+      typeFg = const Color(0xFF0F766E);
+    } else if (type == "Academic") {
+      typeBg = const Color(0xFFDBEAFE);
+      typeFg = const Color(0xFF1D4ED8);
+    } else if (type == "Cultural") {
+      typeBg = const Color(0xFFFCE7F3);
+      typeFg = const Color(0xFFBE185D);
+    }
+
+    // Status Colors
+    Color statusBg = const Color(0xFFF1F5F9);
+    Color statusFg = const Color(0xFF475569);
+    if (status == "Upcoming") {
+      statusBg = const Color(0xFFE0F2FE);
+      statusFg = const Color(0xFF0284C7);
+    } else if (status == "Ongoing") {
+      statusBg = const Color(0xFFDCFCE7);
+      statusFg = const Color(0xFF15803D);
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Left Date Block: OCT / 15
+          SizedBox(
+            width: 44,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  month,
+                  style: GoogleFonts.poppins(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                    letterSpacing: 0.6,
+                  ),
+                ),
+                Text(
+                  day,
+                  style: GoogleFonts.poppins(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF0F172A),
+                    height: 1.1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+
+          // Event Center Details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title and Badges Wrap
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    // Type Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: typeBg,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        type,
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: typeFg,
+                        ),
+                      ),
+                    ),
+                    // Status Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: statusBg,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        status,
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: statusFg,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+
+                // Meta Row (time, venue, organizer)
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    if (time.isNotEmpty)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.access_time_rounded,
+                              size: 13, color: Color(0xFF64748B)),
+                          const SizedBox(width: 4),
+                          Text(
+                            time,
+                            style: GoogleFonts.poppins(
+                              fontSize: 11.5,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    if (venue.isNotEmpty)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.location_on_outlined,
+                              size: 13, color: Color(0xFF64748B)),
+                          const SizedBox(width: 4),
+                          Text(
+                            venue,
+                            style: GoogleFonts.poppins(
+                              fontSize: 11.5,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    if (organizer.isNotEmpty)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.apartment_rounded,
+                              size: 13, color: Color(0xFF64748B)),
+                          const SizedBox(width: 4),
+                          Text(
+                            organizer,
+                            style: GoogleFonts.poppins(
+                              fontSize: 11.5,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+
+                // Capacity Progress Bar
+                if (capacity > 0) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 3.5,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE2E8F0),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                        child: FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: (registered / capacity).clamp(0.0, 1.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE11D48), // Rose pink line
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "$registered/$capacity",
+                        style: GoogleFonts.poppins(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          // Right Action Icons (Edit Pencil & Delete Trash)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                onPressed: () => _showEventDialog(eventToEdit: evt),
+                icon: const Icon(Icons.edit_outlined, size: 16),
+                color: const Color(0xFF64748B),
+                splashRadius: 16,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: "Edit Event",
+              ),
+              const SizedBox(width: 12),
+              IconButton(
+                onPressed: () => _showDeleteDialog(evt),
+                icon: const Icon(Icons.delete_outline_rounded, size: 16),
+                color: const Color(0xFF64748B),
+                splashRadius: 16,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: "Delete Event",
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
-// =============================================================================
-// GRID PAPER PAINTER
-// =============================================================================
-class _GridPaperPainter extends CustomPainter {
-  final Color gridColor;
-  final double step;
-
-  _GridPaperPainter({required this.gridColor, this.step = 24.0});
-
+// Blueprint grid overlay painter
+class _EventGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = gridColor
-      ..strokeWidth = 0.8
-      ..style = PaintingStyle.stroke;
+      ..color = Colors.white.withValues(alpha: 0.05)
+      ..strokeWidth = 1;
 
-    for (double x = 0; x <= size.width; x += step) {
+    const step = 24.0;
+    for (double x = 0; x < size.width; x += step) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
-    for (double y = 0; y <= size.height; y += step) {
+    for (double y = 0; y < size.height; y += step) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _GridPaperPainter oldDelegate) {
-    return oldDelegate.gridColor != gridColor || oldDelegate.step != step;
-  }
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

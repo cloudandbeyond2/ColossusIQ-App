@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // =============================================================================
@@ -41,6 +42,1202 @@ class _ClassPerformanceScreenState extends State<ClassPerformanceScreen> {
     'Mid-Term Assessment',
     'Quiz 1 & 2 Average',
   ];
+
+  late List<Map<String, dynamic>> _remedials;
+
+  @override
+  void initState() {
+    super.initState();
+    _remedials = [
+      {
+        'id': 1,
+        'status': 'Scheduled',
+        'statusColor': const Color(0xFF2563EB),
+        'statusBg': const Color(0xFFEFF6FF),
+        'title':
+            'Unit 3: Normalization & Functional Dependencies · Remedial Lecture',
+        'date': '2026-10-16',
+        'time': '16:00 - 17:00',
+        'venue': 'Seminar Hall 2 / LH-204',
+        'target': '8 students',
+        'notes':
+            'Focus on 3NF vs BCNF loss-less decomposition algorithms and canonical cover calculations.',
+        'enrolled': 'Aakash R, Abishek K, Kiruthika N, Mithun S',
+        'hasStartNow': true,
+      },
+      {
+        'id': 2,
+        'status': 'In Progress',
+        'statusColor': const Color(0xFFD97706),
+        'statusBg': const Color(0xFFFEF3C7),
+        'title':
+            'Unit 5: NoSQL & Distributed Consistency · Targeted Practice Worksheet',
+        'date': '2026-10-18',
+        'time': 'Online Canvas',
+        'venue': 'LMS Portal Worksheet',
+        'target': '12 students',
+        'notes':
+            'Assigned CAP theorem tradeoffs quiz and MongoDB replication architecture problems.',
+        'enrolled': 'Lokesh Kumar, Mohamed Farooq, Praveen Raj, Rohit Verma',
+        'hasStartNow': false,
+      },
+    ];
+  }
+
+  // ===========================================================================
+  // MODAL 1: AI REMEDIAL STUDY GUIDE & WORKSHEET (Unit 1) (Screenshots 1 & 2)
+  // Matches screenshots: Overview, Core Concepts, Misconceptions, Worked Example, Formative Questions, Faculty Tips
+  // ===========================================================================
+  void _showStudyGuideAndWorksheetDialog(BuildContext context, {String? unitTitle}) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 680),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Header Row: Sparkles Icon, Title, Copy Button, Close Button
+                  Row(
+                    children: [
+                      const Icon(Icons.auto_awesome_rounded, size: 20, color: Color(0xFF2E2A72)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'AI Remedial Study Guide & Worksheet (Unit 1)',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0F172A),
+                          ),
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: () {
+                          Clipboard.setData(const ClipboardData(
+                            text: "AI Remedial Study Guide & Worksheet (Unit 1)\n\n"
+                                "AI Ethics, Bias, and Governance Fundamentals & Principles\n"
+                                "This remedial reinforcement module addresses core conceptual pitfalls in AI Ethics, Bias, and Governance Fundamentals & Principles...",
+                          ));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Remedial Study Guide & Worksheet copied to clipboard!',
+                                style: GoogleFonts.poppins(),
+                              ),
+                              backgroundColor: const Color(0xFF0F766E),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.copy_rounded, size: 14, color: Color(0xFF475569)),
+                        label: Text(
+                          'Copy',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF475569),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF64748B)),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 24, color: Color(0xFFF1F5F9)),
+
+                  // Unit Title & Subtitle Description
+                  Text(
+                    'AI Ethics, Bias, and Governance Fundamentals & Principles',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'This remedial reinforcement module addresses core conceptual pitfalls in AI Ethics, Bias, and Governance Fundamentals & Principles. Tailored specifically for learners struggling with abstract decomposition and procedural formulations, it emphasizes algorithmic clarity and visual verification techniques.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12.5,
+                      height: 1.5,
+                      color: const Color(0xFF475569),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Section 1: Core Concepts & Visual Heuristics
+                  Text(
+                    'Core Concepts & Visual Heuristics',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildStudyBeigeCard(
+                    title: 'Foundational Invariants & Properties',
+                    body: 'Ensure students memorize the non-negotiable axioms underlying AI Ethics, Bias, and Governance Fundamentals & Principles. When analyzing problems, always verify the minimal cover before jumping into decomposition.',
+                    analogy: 'Analogy: Like inspecting load-bearing pillars of a building before renovating internal partition walls.',
+                  ),
+                  const SizedBox(height: 10),
+                  _buildStudyBeigeCard(
+                    title: 'Step-by-Step Validation Heuristic',
+                    body: 'Break the resolution into 3 micro-steps: (1) Identify LHS closure, (2) Test dependency preservation, (3) Confirm lossless join property using the Chase algorithm tableau.',
+                    analogy: 'Analogy: A flight pre-flight checklist: skipping one sub-check leads to data anomalies in production.',
+                  ),
+                  const SizedBox(height: 10),
+                  _buildStudyBeigeCard(
+                    title: 'Boundary & Edge Case Testing',
+                    body: 'Always test with relations where primary keys are composite or where transitive functional dependencies masquerade as direct keys.',
+                    analogy: 'Analogy: Stress-testing a bridge with maximum simulated traffic rather than average conditions.',
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Section 2: Common Misconceptions & Corrections
+                  Text(
+                    'Common Misconceptions & Corrections',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFFB91C1C),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildMisconceptionCard(
+                    pitfall: 'Pitfall: Assuming 3NF implies BCNF or that every decomposition retains all dependencies.',
+                    correction: 'Correction: BCNF is strictly stronger than 3NF. Dependency preservation is guaranteed in 3NF synthesis but may require extra relations in BCNF.',
+                  ),
+                  const SizedBox(height: 10),
+                  _buildMisconceptionCard(
+                    pitfall: 'Pitfall: Calculating attribute closure without recursively checking implied transitive derivations.',
+                    correction: 'Correction: Attribute closure X+ must be iteratively expanded until no new attributes can be appended.',
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Section 3: Worked Diagnostic Example
+                  Text(
+                    'Worked Diagnostic Example',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFBF8F1),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFF1E6D0)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Given relation R(A, B, C, D) with FDs { A → B, B → C, C → D }. Decompose into BCNF and evaluate whether dependency preservation holds.',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0F172A),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          '1. Step 1: Compute candidate key for R: A+ = {A, B, C, D}. Hence A is the only candidate key.\n'
+                          '2. Step 2: Check FDs: B → C and C → D violate BCNF since B and C are not superkeys.\n'
+                          '3. Step 3: Decompose R using B → C: R1(B, C), R2(A, B, D).\n'
+                          '4. Step 4: Decompose R2 using C → D: FD C → D is lost without synthesis check.\n'
+                          '5. Step 5: Conclude: BCNF achieved, but check if original FD set can be recovered without joining.',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            height: 1.6,
+                            color: const Color(0xFF334155),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEDE9FE),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'Key Takeaway: When decomposing for BCNF, always verify if a 3NF lossless synthesis would be preferable for write-heavy transaction workloads.',
+                            style: GoogleFonts.poppins(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF4338CA),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Section 4: Formative Practice Questions
+                  Text(
+                    'Formative Practice Questions',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildQuestionCard(
+                    qNum: 'Question 1',
+                    badge: 'Easy',
+                    badgeBg: const Color(0xFFDCFCE7),
+                    badgeText: const Color(0xFF15803D),
+                    question: 'State the formal definition of 3NF in terms of superkeys and prime attributes.',
+                    hint: 'Consider the condition for each FD X -> Y: either X is a superkey, or Y is prime.',
+                    answer: 'A relation R is in 3NF if for every non-trivial FD X -> Y, either X is a superkey of R or every attribute in Y is a prime attribute (part of some candidate key).',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildQuestionCard(
+                    qNum: 'Question 2',
+                    badge: 'Medium',
+                    badgeBg: const Color(0xFFFEF3C7),
+                    badgeText: const Color(0xFFD97706),
+                    question: 'Find the minimal canonical cover for F = { A -> BC, B -> C, A -> B, AB -> C }.',
+                    hint: 'Decompose RHS, eliminate redundant FDs, and check extraneous LHS attributes.',
+                    answer: 'Minimal cover: { A -> B, B -> C }. AB -> C is redundant, and A -> BC is decomposed into A -> B and A -> C (where A -> C is transitive via B).',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildQuestionCard(
+                    qNum: 'Question 3',
+                    badge: 'Challenging',
+                    badgeBg: const Color(0xFFFEE2E2),
+                    badgeText: const Color(0xFFDC2626),
+                    question: 'Why does the Chase algorithm prove a decomposition is lossless? Explain using a tableau matrix.',
+                    hint: 'Look for a row consisting entirely of unsubscripted symbols (a1, a2, ... an).',
+                    answer: 'The Chase algorithm iteratively replaces subscripted symbols with unsubscripted symbols according to given FDs. If any row becomes all unsubscripted symbols, the join of the decomposed relations is mathematically guaranteed to recover the original relation without spurious tuples.',
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Section 5: Pedagogical Tips for Faculty
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Pedagogical Tips for Faculty',
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '• Dedicate the first 15 minutes of the remedial session entirely to live student-driven problem solving on the whiteboard rather than lecturing slides.\n'
+                          '• Pair each student scoring <50% with a student who scored 80%+ on Assessment 1 as a peer study buddy for this worksheet.\n'
+                          '• Administer the 3-question formative quiz at the end of the session to immediately verify comprehension before students leave.',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            height: 1.6,
+                            color: const Color(0xFF475569),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Bottom Action Button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2E2A72),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Done',
+                          style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStudyBeigeCard({required String title, required String body, required String analogy}) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            body,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              height: 1.5,
+              color: const Color(0xFF334155),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            analogy,
+            style: GoogleFonts.poppins(
+              fontSize: 11.5,
+              fontStyle: FontStyle.italic,
+              color: const Color(0xFF0F766E),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMisconceptionCard({required String pitfall, required String correction}) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF2F2),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFFECACA)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            pitfall,
+            style: GoogleFonts.poppins(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFFB91C1C),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            correction,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              height: 1.45,
+              color: const Color(0xFF334155),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuestionCard({
+    required String qNum,
+    required String badge,
+    required Color badgeBg,
+    required Color badgeText,
+    required String question,
+    required String hint,
+    required String answer,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                qNum,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: badgeBg,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  badge,
+                  style: GoogleFonts.poppins(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color: badgeText,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            question,
+            style: GoogleFonts.poppins(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            hint,
+            style: GoogleFonts.poppins(
+              fontSize: 11.5,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0FDF4),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFBBF7D0)),
+            ),
+            child: RichText(
+              text: TextSpan(
+                text: 'Correct Answer: ',
+                style: GoogleFonts.poppins(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF15803D),
+                ),
+                children: [
+                  TextSpan(
+                    text: answer,
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w400,
+                      color: const Color(0xFF166534),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // MODAL 2: SCHEDULE REMEDIAL INTERVENTION (Screenshots 3 & 4)
+  // Matches screenshots: Course, Topic, Strategy dropdown, Date, Time Slot, Venue, Cohort, Notes
+  // ===========================================================================
+  void _showScheduleRemedialDialog(
+    BuildContext context, {
+    String? studentName,
+    String? topic,
+    String? strategy,
+  }) {
+    final topicCtrl = TextEditingController(
+      text: topic ??
+          (studentName != null
+              ? 'Remedial Mentoring: None identified'
+              : 'Unit 1: AI Ethics, Bias, and Governance Fundamentals & Principles'),
+    );
+    String selectedStrategy = strategy ??
+        (studentName != null ? '1-on-1 Mentoring' : 'Remedial Lecture');
+    DateTime selectedDate = DateTime(2026, 11, 14);
+    final timeCtrl = TextEditingController(text: '16:00 - 17:00');
+    final venueCtrl = TextEditingController(text: 'LH-204 / Seminar Hall');
+    final cohortCtrl = TextEditingController(text: studentName ?? '');
+    final notesCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Dialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(22),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Header
+                      Row(
+                        children: [
+                          const Icon(Icons.calendar_today_outlined,
+                              size: 18, color: Color(0xFF2E2A72)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Schedule Remedial Intervention',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16.5,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            icon: const Icon(Icons.close_rounded,
+                                size: 18, color: Color(0xFF64748B)),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Target Course & Section (Readonly)
+                      _buildDialogFieldLabel('Target Course & Section'),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Text(
+                          'AID102 · AI&DS-A · Term 1',
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: const Color(0xFF64748B),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Remedial Topic / Concept *
+                      _buildDialogFieldLabel('Remedial Topic / Concept *'),
+                      TextField(
+                        controller: topicCtrl,
+                        style: GoogleFonts.poppins(fontSize: 13),
+                        decoration: _dialogInputDec(),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Pedagogical Strategy * & Session Date *
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildDialogFieldLabel('Pedagogical Strategy *'),
+                                Container(
+                                  height: 44,
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: const Color(0xFFCBD5E1)),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: selectedStrategy,
+                                      isExpanded: true,
+                                      icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                                          color: Color(0xFF64748B)),
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 12.5, color: const Color(0xFF1E293B)),
+                                      items: [
+                                        'Remedial Lecture',
+                                        '1-on-1 Mentoring',
+                                        'Peer Study Group',
+                                        'Practical Lab Session',
+                                        'Problem Solving Clinic',
+                                      ].map((s) => DropdownMenuItem(value: s, child: Text(s, overflow: TextOverflow.ellipsis))).toList(),
+                                      onChanged: (val) {
+                                        if (val != null) setModalState(() => selectedStrategy = val);
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildDialogFieldLabel('Session Date *'),
+                                InkWell(
+                                  onTap: () async {
+                                    final d = await showDatePicker(
+                                      context: context,
+                                      initialDate: selectedDate,
+                                      firstDate: DateTime(2026, 1, 1),
+                                      lastDate: DateTime(2027, 12, 31),
+                                    );
+                                    if (d != null) setModalState(() => selectedDate = d);
+                                  },
+                                  child: Container(
+                                    height: 44,
+                                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: const Color(0xFFCBD5E1)),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          '${selectedDate.month}/${selectedDate.day}/${selectedDate.year}',
+                                          style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF1E293B)),
+                                        ),
+                                        const Icon(Icons.calendar_today_outlined, size: 16, color: Color(0xFF64748B)),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Time Slot * & Venue / Platform *
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildDialogFieldLabel('Time Slot *'),
+                                TextField(
+                                  controller: timeCtrl,
+                                  style: GoogleFonts.poppins(fontSize: 13),
+                                  decoration: _dialogInputDec(),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildDialogFieldLabel('Venue / Platform *'),
+                                TextField(
+                                  controller: venueCtrl,
+                                  style: GoogleFonts.poppins(fontSize: 13),
+                                  decoration: _dialogInputDec(),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Target Student Cohort
+                      _buildDialogFieldLabel(studentName != null
+                          ? 'Target Student Cohort (1 students)'
+                          : 'Target Student Cohort (All At-Risk students)'),
+                      TextField(
+                        controller: cohortCtrl,
+                        maxLines: 2,
+                        style: GoogleFonts.poppins(fontSize: 12.5),
+                        decoration: _dialogInputDec(
+                          hint: 'Comma-separated student names or leave blank to assign all at-risk students',
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Faculty Pedagogical Notes
+                      _buildDialogFieldLabel('Faculty Pedagogical Notes'),
+                      TextField(
+                        controller: notesCtrl,
+                        maxLines: 2,
+                        style: GoogleFonts.poppins(fontSize: 12.5),
+                        decoration: _dialogInputDec(
+                          hint: 'Focus areas, practice problems, or prerequisite topics to review...',
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Footer Actions: Cancel & Confirm Schedule
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          OutlinedButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xFFCBD5E1)),
+                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF475569),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              final topicText = topicCtrl.text.trim();
+                              if (topicText.isEmpty) return;
+
+                              setState(() {
+                                _remedials.insert(0, {
+                                  'id': DateTime.now().millisecondsSinceEpoch,
+                                  'status': 'Scheduled',
+                                  'statusColor': const Color(0xFF2563EB),
+                                  'statusBg': const Color(0xFFEFF6FF),
+                                  'title': '$topicText · $selectedStrategy',
+                                  'date': '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}',
+                                  'time': timeCtrl.text.trim(),
+                                  'venue': venueCtrl.text.trim(),
+                                  'target': cohortCtrl.text.trim().isNotEmpty
+                                      ? cohortCtrl.text.trim()
+                                      : 'All At-Risk students',
+                                  'notes': notesCtrl.text.trim().isNotEmpty
+                                      ? notesCtrl.text.trim()
+                                      : 'Targeted pedagogical remedial session.',
+                                  'enrolled': cohortCtrl.text.trim().isNotEmpty
+                                      ? cohortCtrl.text.trim()
+                                      : 'At-risk student cohort',
+                                  'hasStartNow': true,
+                                });
+                              });
+
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Remedial Intervention scheduled successfully!',
+                                    style: GoogleFonts.poppins(),
+                                  ),
+                                  backgroundColor: const Color(0xFF1E2865),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
+                            label: Text(
+                              'Confirm Schedule',
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2E2A72),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ===========================================================================
+  // MODAL 3: STUDENT DIAGNOSTIC PROFILE (Screenshot 5)
+  // Matches screenshot: Name, Roll, Normal/At-risk badge, 2 stat cards, weak areas, status, assign button
+  // ===========================================================================
+  void _showStudentDiagnosticProfileDialog(BuildContext context, Map<String, dynamic> student) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        final isRisk = (student['risk'] as String? ?? '').toLowerCase().contains('risk');
+        final scoreStr = (student['score'] as String? ?? '68%').replaceAll('%', '');
+        final attStr = (student['attendance'] as String? ?? '92%').replaceAll('%', '');
+        final scoreVal = ((double.tryParse(scoreStr) ?? 68) / 100).clamp(0.0, 1.0);
+        final attVal = ((double.tryParse(attStr) ?? 92) / 100).clamp(0.0, 1.0);
+
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Padding(
+              padding: const EdgeInsets.all(22),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Header
+                  Row(
+                    children: [
+                      const Icon(Icons.school_outlined, size: 18, color: Color(0xFF2E2A72)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Student Diagnostic Profile',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0F172A),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(Icons.close_rounded, size: 18, color: Color(0xFF64748B)),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Student Beige Card (matching Image 5)
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFBEB),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFFDE68A)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              student['name'] as String? ?? 'Anand Kumar',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: isRisk ? const Color(0xFFFEE2E2) : const Color(0xFFE6FFFA),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                student['risk'] as String? ?? 'Normal',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: isRisk ? const Color(0xFFDC2626) : const Color(0xFF0D9488),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Roll No: ${student['roll'] ?? '110124001'}',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                        Text(
+                          student['section'] as String? ?? 'CSE-A',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Two Metric Cards (Academic Score Average & Attendance Ratio)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Academic Score Average',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                student['score'] as String? ?? '68%',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF0F172A),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: scoreVal,
+                                  minHeight: 5,
+                                  backgroundColor: const Color(0xFFF1F5F9),
+                                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF0D9488)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Attendance Ratio',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                student['attendance'] as String? ?? '92%',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF0F172A),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: attVal,
+                                  minHeight: 5,
+                                  backgroundColor: const Color(0xFFF1F5F9),
+                                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Identified Weak Areas & Struggle Topics
+                  Text(
+                    'Identified Weak Areas & Struggle Topics:',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEE2E2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      student['weakTopics'] as String? ?? 'None identified',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFDC2626),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Remedial Action Status
+                  Text(
+                    'Remedial Action Status:',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  RichText(
+                    text: TextSpan(
+                      text: 'Current state: ',
+                      style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF475569)),
+                      children: [
+                        TextSpan(
+                          text: student['remedial'] as String? ?? 'Resolved',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0F172A),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Actions: Close & + Assign Remedial Intervention
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: Text(
+                          'Close',
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF475569),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _showScheduleRemedialDialog(
+                            context,
+                            studentName: student['name'] as String?,
+                            topic: 'Remedial Mentoring: ${student['weakTopics']}',
+                            strategy: '1-on-1 Mentoring',
+                          );
+                        },
+                        icon: const Icon(Icons.add, size: 15),
+                        label: Text(
+                          'Assign Remedial Intervention',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2E2A72),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDialogFieldLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 5),
+      child: Text(
+        label,
+        style: GoogleFonts.poppins(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF334155),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _dialogInputDec({String? hint}) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF94A3B8)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFF2E2A72), width: 1.5),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      isDense: true,
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -469,17 +1666,7 @@ class _ClassPerformanceScreenState extends State<ClassPerformanceScreen> {
                 ),
               ),
               ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Opening AI remedial scheduler for Normalization unit...',
-                        style: GoogleFonts.poppins(),
-                      ),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
+                onPressed: () => _showScheduleRemedialDialog(context),
                 icon: const Icon(Icons.add, size: 14),
                 label: Text(
                   'Schedule Remedial',
@@ -611,7 +1798,7 @@ class _ClassPerformanceScreenState extends State<ClassPerformanceScreen> {
             ),
             _buildMetricTile(
               title: 'Active Remedials',
-              value: '2',
+              value: '${_remedials.length}',
               subtext: 'Underway & scheduled',
               subtextColor: const Color(0xFF64748B),
               icon: Icons.access_time_rounded,
@@ -710,7 +1897,7 @@ class _ClassPerformanceScreenState extends State<ClassPerformanceScreen> {
       'Overview & Visualizations',
       'Topic-Wise Mastery (5)',
       'Student Diagnostics (64)',
-      'Remedial Tracker (2)',
+      'Remedial Tracker (${_remedials.length})',
       'AI Recommendations (4)',
     ];
 
@@ -1566,16 +2753,9 @@ class _ClassPerformanceScreenState extends State<ClassPerformanceScreen> {
                     ],
                   ),
                   OutlinedButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'AI generating targeted remedial plan for ${u['title']}...',
-                              style: GoogleFonts.poppins()),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
+                    onPressed: () => _showStudyGuideAndWorksheetDialog(
+                        context,
+                        unitTitle: u['title'] as String?),
                     icon: const Icon(Icons.auto_awesome_rounded, size: 14),
                     label: Text(
                       'AI Remedial Plan',
@@ -1595,16 +2775,10 @@ class _ClassPerformanceScreenState extends State<ClassPerformanceScreen> {
                     ),
                   ),
                   ElevatedButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'Scheduling extra class for ${u['title']}',
-                              style: GoogleFonts.poppins()),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
+                    onPressed: () => _showScheduleRemedialDialog(
+                        context,
+                        topic: u['title'] as String?,
+                        strategy: 'Remedial Lecture'),
                     icon: const Icon(Icons.add, size: 14),
                     label: Text(
                       'Schedule Class',
@@ -1757,6 +2931,29 @@ class _ClassPerformanceScreenState extends State<ClassPerformanceScreen> {
   // ===========================================================================
   Widget _buildStudentDiagnosticsTab() {
     final students = [
+      {
+        'name': 'Anand Kumar',
+        'email': 'anand.kumar@campus.edu',
+        'roll': '110124001',
+        'section': 'CSE-A',
+        'score': '68%',
+        'scoreColor': const Color(0xFF0F766E),
+        'scoreBg': const Color(0xFFCCFBF1),
+        'attendance': '92%',
+        'attColor': const Color(0xFF2563EB),
+        'attBg': const Color(0xFFEFF6FF),
+        'risk': 'Normal',
+        'riskColor': const Color(0xFF0F766E),
+        'riskBg': const Color(0xFFCCFBF1),
+        'weakTopics': 'None identified',
+        'remedial': 'Resolved',
+        'remedialColor': const Color(0xFF0F766E),
+        'remedialBg': const Color(0xFFCCFBF1),
+        'isAtRisk': false,
+        'isLowMastery': false,
+        'isLowAtt': false,
+        'isDistinction': false,
+      },
       {
         'name': 'Aaditya Raj',
         'email': 'aadityaraj.22cs001@campus.edu',
@@ -2344,16 +3541,8 @@ class _ClassPerformanceScreenState extends State<ClassPerformanceScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           TextButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                      'Viewing diagnostic profile of ${s['name']}',
-                                      style: GoogleFonts.poppins()),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            },
+                            onPressed: () =>
+                                _showStudentDiagnosticProfileDialog(context, s),
                             child: Text(
                               'View Profile',
                               style: GoogleFonts.poppins(
@@ -2365,16 +3554,12 @@ class _ClassPerformanceScreenState extends State<ClassPerformanceScreen> {
                           ),
                           const SizedBox(width: 6),
                           OutlinedButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                      '1-on-1 scheduled with ${s['name']} for topic ${s['weakTopics']}',
-                                      style: GoogleFonts.poppins()),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            },
+                            onPressed: () => _showScheduleRemedialDialog(
+                              context,
+                              studentName: s['name'] as String?,
+                              topic: 'Remedial Mentoring: ${s['weakTopics']}',
+                              strategy: '1-on-1 Mentoring',
+                            ),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: const Color(0xFF1E2865),
                               side: const BorderSide(color: Color(0xFFCBD5E1)),
@@ -2409,41 +3594,6 @@ class _ClassPerformanceScreenState extends State<ClassPerformanceScreen> {
   // TAB 3: REMEDIAL TRACKER (2) (Screenshot 2)
   // ===========================================================================
   Widget _buildRemedialTrackerTab() {
-    final remedials = [
-      {
-        'id': 1,
-        'status': 'Scheduled',
-        'statusColor': const Color(0xFF2563EB),
-        'statusBg': const Color(0xFFEFF6FF),
-        'title':
-            'Unit 3: Normalization & Functional Dependencies · Remedial Lecture',
-        'date': '2026-10-16',
-        'time': '16:00 - 17:00',
-        'venue': 'Seminar Hall 2 / LH-204',
-        'target': '8 students',
-        'notes':
-            'Focus on 3NF vs BCNF loss-less decomposition algorithms and canonical cover calculations.',
-        'enrolled': 'Aakash R, Abishek K, Kiruthika N, Mithun S',
-        'hasStartNow': true,
-      },
-      {
-        'id': 2,
-        'status': 'In Progress',
-        'statusColor': const Color(0xFFD97706),
-        'statusBg': const Color(0xFFFEF3C7),
-        'title':
-            'Unit 5: NoSQL & Distributed Consistency · Targeted Practice Worksheet',
-        'date': '2026-10-18',
-        'time': 'Online Canvas',
-        'venue': 'LMS Portal Worksheet',
-        'target': '12 students',
-        'notes':
-            'Assigned CAP theorem tradeoffs quiz and MongoDB replication architecture problems.',
-        'enrolled': 'Lokesh Kumar, Mohamed Farooq, Praveen Raj, Rohit Verma',
-        'hasStartNow': false,
-      },
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -2475,15 +3625,7 @@ class _ClassPerformanceScreenState extends State<ClassPerformanceScreen> {
             );
 
             final addBtn = ElevatedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Opening scheduler for new remedial session...',
-                        style: GoogleFonts.poppins()),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
+              onPressed: () => _showScheduleRemedialDialog(context),
               icon: const Icon(Icons.add, size: 14),
               label: Text(
                 'Schedule New Remedial',
@@ -2528,7 +3670,7 @@ class _ClassPerformanceScreenState extends State<ClassPerformanceScreen> {
         const SizedBox(height: 16),
 
         // Remedial Cards (Screenshot 2)
-        ...remedials.map((r) {
+        ..._remedials.map((r) {
           final id = r['id'] as int;
           final isCompleted = _completedRemedials.contains(id);
 
@@ -2998,16 +4140,11 @@ class _ClassPerformanceScreenState extends State<ClassPerformanceScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             OutlinedButton.icon(
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        'Generating targeted AI worksheet for ${rec['title']}...',
-                                        style: GoogleFonts.poppins()),
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                              },
+                              onPressed: () =>
+                                  _showStudyGuideAndWorksheetDialog(
+                                context,
+                                unitTitle: rec['title'] as String?,
+                              ),
                               icon: const Icon(Icons.description_outlined,
                                   size: 14),
                               label: Text(

@@ -1098,104 +1098,111 @@ class _PrincipalCertificateAuthorityScreenState
                   const SizedBox(height: 24),
 
                   // Bottom Row: QR Code, Gold Certified Ribbon Seal, Principal Signature
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      // QR Code
-                      Row(
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.bottomCenter,
+                    child: SizedBox(
+                      width: 520,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Container(
-                            width: 52,
-                            height: 52,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(color: const Color(0xFFCBD5E1)),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: const Center(
-                              child: Icon(Icons.qr_code_2_rounded, size: 46, color: Color(0xFF0F172A)),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          // QR Code
+                          Row(
                             children: [
-                              Text(
-                                "SCAN TO VERIFY",
-                                style: GoogleFonts.poppins(
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF64748B),
+                              Container(
+                                width: 52,
+                                height: 52,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Center(
+                                  child: Icon(Icons.qr_code_2_rounded, size: 46, color: Color(0xFF0F172A)),
                                 ),
                               ),
+                              const SizedBox(width: 8),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "SCAN TO VERIFY",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                  Text(
+                                    "CIQ-0000-PREVIEW",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  Text(
+                                    "colossus-iq-new.vercel.app/verify",
+                                    style: GoogleFonts.poppins(fontSize: 7, color: const Color(0xFF94A3B8)),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+
+                          // Center Authentic Gold Ribbon Stamp
+                          Column(
+                            children: [
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: LinearGradient(
+                                    colors: [Color(0xFFFBBF24), Color(0xFFB45309)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: Icon(Icons.check_rounded, color: Colors.white, size: 24),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          // Principal Signature
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
                               Text(
-                                "CIQ-0000-PREVIEW",
+                                "Dr. Lakshmi Sundaram",
+                                style: GoogleFonts.dancingScript(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF1E2865),
+                                ),
+                              ),
+                              Container(width: 110, height: 1, color: const Color(0xFFCBD5E1)),
+                              const SizedBox(height: 2),
+                              Text(
+                                "Dr. Lakshmi Sundaram",
                                 style: GoogleFonts.poppins(
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w700,
                                   color: const Color(0xFF0F172A),
                                 ),
                               ),
                               Text(
-                                "colossus-iq-new.vercel.app/verify",
-                                style: GoogleFonts.poppins(fontSize: 7, color: const Color(0xFF94A3B8)),
+                                "Principal, Anna Institute of Technology",
+                                style: GoogleFonts.poppins(fontSize: 8, color: const Color(0xFF64748B)),
                               ),
                             ],
                           ),
                         ],
                       ),
-
-                      // Center Authentic Gold Ribbon Stamp
-                      Column(
-                        children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                colors: [Color(0xFFFBBF24), Color(0xFFB45309)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                            ),
-                            child: const Center(
-                              child: Icon(Icons.check_rounded, color: Colors.white, size: 24),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      // Principal Signature
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Dr. Lakshmi Sundaram",
-                            style: GoogleFonts.dancingScript(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF1E2865),
-                            ),
-                          ),
-                          Container(width: 110, height: 1, color: const Color(0xFFCBD5E1)),
-                          const SizedBox(height: 2),
-                          Text(
-                            "Dr. Lakshmi Sundaram",
-                            style: GoogleFonts.poppins(
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF0F172A),
-                            ),
-                          ),
-                          Text(
-                            "Principal, Anna Institute of Technology",
-                            style: GoogleFonts.poppins(fontSize: 8, color: const Color(0xFF64748B)),
-                          ),
-                        ],
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),

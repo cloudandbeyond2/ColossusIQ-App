@@ -1981,7 +1981,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                             _activeSubScreenTitle == "Reports"),
                     onTap: () => _openSubScreen(
                       FacultyReportsScreen(onBack: _closeSubScreen),
-                      title: "Department Reports",
+                      title: "Reports",
                     ),
                   ),
                 ],

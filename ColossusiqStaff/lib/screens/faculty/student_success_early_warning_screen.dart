@@ -58,8 +58,34 @@ class _StudentSuccessEarlyWarningScreenState
     'Resolved',
   ];
 
-  // Exact 14 student dataset matching Screenshot 3 & 4
+  // Exact student dataset matching Screenshot 3 & 4
   final List<Map<String, dynamic>> _rosterStudents = [
+    {
+      'name': 'bala',
+      'roll': '27549861',
+      'batch': '2023–2027 (Final Year)',
+      'dept': 'Computer Science & Engineering',
+      'quiz': '0%',
+      'quizVal': 0.0,
+      'certs': '0',
+      'interview': '0',
+      'resume': '0',
+      'overall': '0',
+      'overallColor': const Color(0xFFDC2626),
+      'overallBg': const Color(0xFFFEE2E2),
+      'tier': 'Critical',
+      'tierColor': const Color(0xFFDC2626),
+      'tierBg': const Color(0xFFFEE2E2),
+      'signals': [
+        'Zero Quizzes Attempted',
+        'No Verified Certifications',
+        'Mock Technical Interview Pending',
+        'Resume ATS Benchmark Missing',
+        'Placement Readiness Alert (0/100)',
+      ],
+      'recommendation': '1-on-1 Academic Tutoring with far',
+      'status': 'Pending review',
+    },
     {
       'name': 'Kavya Menon',
       'roll': '110121008',
@@ -873,21 +899,21 @@ class _StudentSuccessEarlyWarningScreenState
   }
 
   // ===========================================================================
-  // 5 STAT METRIC KPI CARDS (Screenshot 2)
+  // 4 STAT METRIC KPI CARDS (Matches Image 5)
   // ===========================================================================
   Widget _buildStatMetricCards() {
     return LayoutBuilder(
       builder: (context, constraints) {
         final count = constraints.maxWidth >= 1050
-            ? 5
+            ? 4
             : (constraints.maxWidth >= 650
-                ? 3
-                : (constraints.maxWidth >= 420 ? 2 : 1));
+                ? 2
+                : 1);
         final ratio = constraints.maxWidth >= 1050
-            ? 2.1
+            ? 2.3
             : (constraints.maxWidth >= 650
-                ? 1.85
-                : (constraints.maxWidth >= 420 ? 1.45 : 2.4));
+                ? 1.95
+                : 2.3);
 
         return GridView.count(
           crossAxisCount: count,
@@ -898,43 +924,35 @@ class _StudentSuccessEarlyWarningScreenState
           childAspectRatio: ratio,
           children: [
             _buildKpiCard(
-              title: 'Flagged for Attention',
-              badge: '0 critical',
-              badgeColor: const Color(0xFFD97706),
-              badgeBg: const Color(0xFFFEF3C7),
-              value: '10',
-              subtitle: 'Students with academic, certification...',
-            ),
-            _buildKpiCard(
               title: 'Critical Risk Flags',
               badge: 'Urgent review',
-              badgeColor: const Color(0xFF0F766E),
-              badgeBg: const Color(0xFFCCFBF1),
-              value: '0',
+              badgeColor: const Color(0xFFDC2626),
+              badgeBg: const Color(0xFFFEE2E2),
+              value: '4',
               subtitle: 'Requires faculty counsellor or tutor in...',
             ),
             _buildKpiCard(
               title: 'Active Support Plans',
-              badge: '0 total logged',
-              badgeColor: const Color(0xFF2563EB),
-              badgeBg: const Color(0xFFEFF6FF),
-              value: '0',
+              badge: '${_loggedSupportPlans.length} total logged',
+              badgeColor: const Color(0xFF64748B),
+              badgeBg: const Color(0xFFF1F5F9),
+              value: '${_loggedSupportPlans.length}',
               subtitle: 'Interventions currently assigned and ...',
             ),
             _buildKpiCard(
               title: 'Resolved / On Track',
-              badge: '29% cohort',
-              badgeColor: const Color(0xFF10B981),
-              badgeBg: const Color(0xFFDCFCE7),
-              value: '4',
+              badge: '0% cohort',
+              badgeColor: const Color(0xFF059669),
+              badgeBg: const Color(0xFFD1FAE5),
+              value: '0',
               subtitle: 'Students cleared of risk flags or met r...',
             ),
             _buildKpiCard(
               title: 'Cohort Avg Readiness',
-              badge: 'Satisfactory',
-              badgeColor: const Color(0xFF0F766E),
-              badgeBg: const Color(0xFFCCFBF1),
-              value: '65 / 100',
+              badge: 'Uplift needed',
+              badgeColor: const Color(0xFFD97706),
+              badgeBg: const Color(0xFFFEF3C7),
+              value: '18 / 100',
               subtitle: 'Combined index across quiz, certs, in...',
             ),
           ],
@@ -1592,12 +1610,11 @@ class _StudentSuccessEarlyWarningScreenState
                           ),
                           const SizedBox(width: 6),
                           Material(
-                            color: const Color(0xFF1E2865),
+                            color: const Color(0xFF2E2A72),
                             borderRadius: BorderRadius.circular(6),
                             child: InkWell(
                               borderRadius: BorderRadius.circular(6),
-                              onTap: () => _showCreateSupportPlanDialog(
-                                  s['name'] as String),
+                              onTap: () => _showSupportPlanForStudentDialog(s),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 5),
@@ -2300,381 +2317,889 @@ class _StudentSuccessEarlyWarningScreenState
     );
   }
 
+  // ===========================================================================
+  // MODAL 1: STUDENT DEFICIT SIGNALS MODAL (Matches Image 2)
+  // ===========================================================================
   void _showStudentDetailsModal(Map<String, dynamic> s) {
+    final signals =
+        (s['signals'] as List<dynamic>?)?.cast<String>() ?? <String>[];
+    final recommendation =
+        s['recommendation'] as String? ?? '1-on-1 Academic Tutoring with far';
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.person, color: Color(0xFF1E2865), size: 20),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    s['name'] as String,
-                    style: GoogleFonts.poppins(
-                        fontSize: 15, fontWeight: FontWeight.w700),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560, maxHeight: 680),
+          child: Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header: Student Name + Roll/Dept/Batch + Close Button
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            s['name'] as String,
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            "${s['roll']} • ${s['dept']} • ${s['batch'] ?? '2023–2027 (Final Year)'}",
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      icon: const Icon(Icons.close_rounded,
+                          size: 20, color: Color(0xFF64748B)),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      splashRadius: 18,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Metrics Strip in warm cream background
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFAF7F0),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFEFE9DB)),
                   ),
-                  Text(
-                    "${s['roll']} • ${s['dept']}",
-                    style: GoogleFonts.poppins(
-                        fontSize: 11, color: const Color(0xFF64748B)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildDeficitMetricCol('Quiz Avg', s['quiz'] as String,
+                          const Color(0xFFDC2626)),
+                      _buildDeficitMetricCol(
+                          'Certs', s['certs'] as String, const Color(0xFFD97706)),
+                      _buildDeficitMetricCol('Interview', s['interview'] as String,
+                          const Color(0xFFD97706)),
+                      _buildDeficitMetricCol('Resume ATS', s['resume'] as String,
+                          const Color(0xFFD97706)),
+                      _buildDeficitMetricCol('Readiness', "${s['overall']}/100",
+                          const Color(0xFF1E2865)),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 18),
+
+                // Section Title: OBSERVED DEFICIT SIGNALS
+                Text(
+                  "OBSERVED DEFICIT SIGNALS (${signals.length})",
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.6,
+                    color: const Color(0xFF475569),
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Deficit Cards Scrollable List
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: signals.length,
+                    separatorBuilder: (_, index) => const SizedBox(height: 8),
+                    itemBuilder: (context, i) {
+                      final sig = signals[i];
+                      final isCritical = sig.toLowerCase().contains('zero') ||
+                          sig.toLowerCase().contains('no verified') ||
+                          sig.toLowerCase().contains('readiness alert');
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isCritical
+                                    ? const Color(0xFFDC2626)
+                                    : const Color(0xFFD97706),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                sig,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 2.5),
+                              decoration: BoxDecoration(
+                                color: isCritical
+                                    ? const Color(0xFFFEE2E2)
+                                    : const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                isCritical ? 'critical' : 'moderate',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: isCritical
+                                      ? const Color(0xFFDC2626)
+                                      : const Color(0xFFD97706),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Algorithmic Recommendation Box
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.psychology_outlined,
+                          size: 18, color: Color(0xFF2E2A72)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            style: GoogleFonts.poppins(
+                                fontSize: 12, color: const Color(0xFF1E293B)),
+                            children: [
+                              TextSpan(
+                                text: 'Algorithmic Recommendation: ',
+                                style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF2E2A72)),
+                              ),
+                              TextSpan(text: recommendation),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Footer Actions
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  alignment: WrapAlignment.end,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF475569),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 11),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: Text('Close',
+                          style: GoogleFonts.poppins(
+                              fontSize: 12.5, fontWeight: FontWeight.w600)),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _showSupportPlanForStudentDialog(s);
+                      },
+                      icon: const Icon(Icons.add_rounded, size: 16),
+                      label: Text('+ Schedule Support Plan',
+                          style: GoogleFonts.poppins(
+                              fontSize: 12.5, fontWeight: FontWeight.w600)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2E2A72),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 11),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
-        content: SizedBox(
-          width: 440,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildDetailRow('Quiz Average', s['quiz'] as String),
-              _buildDetailRow('Certifications', s['certs'] as String),
-              _buildDetailRow('Interview Score', "${s['interview']}/100"),
-              _buildDetailRow('Resume Score', "${s['resume']}/100"),
-              _buildDetailRow('Overall Readiness', "${s['overall']}/100"),
-              _buildDetailRow('Risk Tier', s['tier'] as String),
-              _buildDetailRow('Review Status', s['status'] as String),
-            ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Close',
-                style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _showCreateSupportPlanDialog(s['name'] as String);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1E2865),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-            ),
-            child: Text('+ Create Plan',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-          ),
-        ],
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label,
-              style: GoogleFonts.poppins(
-                  fontSize: 12, color: const Color(0xFF64748B))),
-          Text(value,
-              style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF0F172A))),
-        ],
-      ),
+  Widget _buildDeficitMetricCol(String label, String value, Color valColor) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+              fontSize: 11,
+              color: const Color(0xFF64748B),
+              fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: GoogleFonts.poppins(
+              fontSize: 14, fontWeight: FontWeight.w700, color: valColor),
+        ),
+      ],
     );
   }
 
-  void _showCreateSupportPlanDialog(String studentName) {
-    final actionController = TextEditingController(
-        text: 'Targeted Remedial Support & Weekly Review');
-    final mentorController = TextEditingController(text: 'Assigned Advisor');
-    String selectedType = 'Remedial Mentorship';
+  // ===========================================================================
+  // MODAL 2: SUPPORT PLAN FOR STUDENT (Matches Image 3)
+  // ===========================================================================
+  void _showSupportPlanForStudentDialog(Map<String, dynamic> s) {
+    String selectedStrategy = '1-on-1 Faculty Mentorship';
+    String selectedAdvisor = 'far';
+    final dateCtrl = TextEditingController(text: '11/26/2026');
+    final notesCtrl = TextEditingController();
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
+        builder: (ctx, setDialogState) => Dialog(
+          backgroundColor: Colors.white,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(
-            'Create Support Plan for $studentName',
-            style: GoogleFonts.poppins(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF0F172A),
-            ),
-          ),
-          content: SizedBox(
-            width: 440,
-            child: SingleChildScrollView(
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 540, maxHeight: 680),
+            child: Padding(
+              padding: const EdgeInsets.all(22),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('Intervention Strategy',
-                      style: GoogleFonts.poppins(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF475569))),
-                  const SizedBox(height: 6),
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedType,
-                    isDense: true,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                    ),
-                    items: [
-                      'Remedial Mentorship',
-                      'Skill Booster Track',
-                      'Academic Counselling',
-                      'Interview Prep Coaching',
-                    ]
-                        .map((e) => DropdownMenuItem(
-                            value: e,
-                            child: Text(e,
-                                style: GoogleFonts.poppins(fontSize: 12))))
-                        .toList(),
-                    onChanged: (v) => setDialogState(() => selectedType = v!),
+                  // Title + Close
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.person_outline_rounded,
+                              size: 20, color: Color(0xFF2E2A72)),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Support Plan for ${s['name']}",
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(Icons.close_rounded,
+                            size: 20, color: Color(0xFF64748B)),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        splashRadius: 18,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  Text('Action Description',
-                      style: GoogleFonts.poppins(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF475569))),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: actionController,
-                    maxLines: 2,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                  const SizedBox(height: 16),
+
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Target Student Box (read-only)
+                          _buildSupportFieldLabel('Target Student'),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(8),
+                              border:
+                                  Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    "${s['name']} (${s['roll']} • ${s['dept']})",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF1E293B),
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFEE2E2),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    "Risk Tier: ${s['tier']} • Overall: ${s['overall']}/100",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFFDC2626),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Support Strategy
+                          _buildSupportFieldLabel('Support Strategy *'),
+                          DropdownButtonFormField<String>(
+                            initialValue: selectedStrategy,
+                            isDense: true,
+                            decoration: _supportInputDec(),
+                            style: GoogleFonts.poppins(
+                                fontSize: 12.5,
+                                color: const Color(0xFF0F172A)),
+                            items: const [
+                              DropdownMenuItem(
+                                  value: '1-on-1 Faculty Mentorship',
+                                  child: Text('1-on-1 Faculty Mentorship')),
+                              DropdownMenuItem(
+                                  value: 'Peer Tutoring Session',
+                                  child: Text('Peer Tutoring Session')),
+                              DropdownMenuItem(
+                                  value: 'Remedial Code Lab',
+                                  child: Text('Remedial Code Lab')),
+                              DropdownMenuItem(
+                                  value: 'Certification Fast-Track',
+                                  child: Text('Certification Fast-Track')),
+                              DropdownMenuItem(
+                                  value: 'Mock Technical Interview Prep',
+                                  child: Text(
+                                      'Mock Technical Interview Prep')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) {
+                                setDialogState(() => selectedStrategy = val);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Assigned Faculty / Advisor Lead
+                          _buildSupportFieldLabel(
+                              'Assigned Faculty / Advisor Lead *'),
+                          DropdownButtonFormField<String>(
+                            initialValue: selectedAdvisor,
+                            isDense: true,
+                            decoration: _supportInputDec(),
+                            style: GoogleFonts.poppins(
+                                fontSize: 12.5,
+                                color: const Color(0xFF0F172A)),
+                            items: const [
+                              DropdownMenuItem(
+                                  value: 'far', child: Text('far')),
+                              DropdownMenuItem(
+                                  value: 'Dr. Meena Raghavan',
+                                  child: Text('Dr. Meena Raghavan')),
+                              DropdownMenuItem(
+                                  value: 'Prof. R. Balaji',
+                                  child: Text('Prof. R. Balaji')),
+                              DropdownMenuItem(
+                                  value: 'Dr. Anand V.',
+                                  child: Text('Dr. Anand V.')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) {
+                                setDialogState(() => selectedAdvisor = val);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Target Review / Follow-up Date
+                          _buildSupportFieldLabel(
+                              'Target Review / Follow-up Date *'),
+                          TextField(
+                            controller: dateCtrl,
+                            readOnly: true,
+                            onTap: () async {
+                              final d = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime(2026, 11, 26),
+                                firstDate: DateTime(2020),
+                                lastDate: DateTime(2035),
+                              );
+                              if (d != null) {
+                                setDialogState(() {
+                                  dateCtrl.text =
+                                      "${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}/${d.year}";
+                                });
+                              }
+                            },
+                            style: GoogleFonts.poppins(fontSize: 12.5),
+                            decoration: _supportInputDec().copyWith(
+                              suffixIcon: const Icon(
+                                  Icons.calendar_today_outlined,
+                                  size: 16,
+                                  color: Color(0xFF64748B)),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Case Notes & Specific Instructions
+                          _buildSupportFieldLabel(
+                              'Case Notes & Specific Instructions'),
+                          TextField(
+                            controller: notesCtrl,
+                            maxLines: 3,
+                            style: GoogleFonts.poppins(fontSize: 12.5),
+                            decoration: _supportInputDec().copyWith(
+                              hintText:
+                                  'Document specific learning gaps, weekly checkpoints, or resources assigned to this student...',
+                              hintStyle: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: const Color(0xFF94A3B8)),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text('Assigned Faculty / Mentor',
-                      style: GoogleFonts.poppins(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF475569))),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: mentorController,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                    ),
+                  const SizedBox(height: 16),
+
+                  // Actions
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    alignment: WrapAlignment.end,
+                    children: [
+                      OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF475569),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 11),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text('Cancel',
+                            style: GoogleFonts.poppins(
+                                fontSize: 12.5, fontWeight: FontWeight.w600)),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          setState(() {
+                            _loggedSupportPlans.insert(0, {
+                              'student': s['name'],
+                              'roll': s['roll'],
+                              'dept': s['dept'],
+                              'title': selectedStrategy,
+                              'mentor': selectedAdvisor,
+                              'type': selectedStrategy,
+                              'date': dateCtrl.text.trim(),
+                              'status': 'Scheduled',
+                              'notes': notesCtrl.text.trim(),
+                            });
+                            s['status'] = 'Support Active';
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Support Plan confirmed for ${s['name']}!',
+                                style: GoogleFonts.poppins(),
+                              ),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2E2A72),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 18, vertical: 11),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text('Confirm Support Plan',
+                            style: GoogleFonts.poppins(
+                                fontSize: 12.5, fontWeight: FontWeight.w600)),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancel',
-                  style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                setState(() {
-                  _loggedSupportPlans.add({
-                    'student': studentName,
-                    'roll': 'Flagged',
-                    'title': actionController.text.trim(),
-                    'mentor': mentorController.text.trim(),
-                    'type': selectedType,
-                    'date': 'Today, 04:00 PM',
-                    'status': 'Scheduled',
-                  });
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Support plan created for $studentName!',
-                      style: GoogleFonts.poppins(),
-                    ),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E2865),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-              ),
-              child: Text('Create Plan',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-            ),
-          ],
         ),
       ),
     );
   }
 
+  // ===========================================================================
+  // MODAL 3: SCHEDULE STUDENT SUPPORT PLAN (Matches Image 4)
+  // ===========================================================================
   void _showScheduleSupportActionDialog() {
-    final studentController =
-        TextEditingController(text: 'Kavya Menon (110121008)');
-    final actionController = TextEditingController(
-        text: '1-on-1 Remedial Mentorship & Certification Roadmap');
-    final mentorController =
-        TextEditingController(text: 'Dr. Meena Raghavan');
-    String selectedType = 'Remedial Mentorship';
+    String selectedStudentKey = 'bala';
+    String selectedStrategy = '1-on-1 Faculty Mentorship';
+    String selectedAdvisor = 'far';
+    final dateCtrl = TextEditingController(text: '11/26/2026');
+    final notesCtrl = TextEditingController();
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
+        builder: (ctx, setDialogState) => Dialog(
+          backgroundColor: Colors.white,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(
-            'Schedule Support Action',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF0F172A),
-            ),
-          ),
-          content: SizedBox(
-            width: 480,
-            child: SingleChildScrollView(
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 540, maxHeight: 680),
+            child: Padding(
+              padding: const EdgeInsets.all(22),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('Student Target',
-                      style: GoogleFonts.poppins(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF475569))),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: studentController,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                  // Title + Close
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.person_outline_rounded,
+                              size: 20, color: Color(0xFF2E2A72)),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Schedule Student Support Plan",
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(Icons.close_rounded,
+                            size: 20, color: Color(0xFF64748B)),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        splashRadius: 18,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Target Student Dropdown
+                          _buildSupportFieldLabel('Target Student *'),
+                          DropdownButtonFormField<String>(
+                            initialValue: selectedStudentKey,
+                            isDense: true,
+                            decoration: _supportInputDec(),
+                            style: GoogleFonts.poppins(
+                                fontSize: 12.5,
+                                color: const Color(0xFF0F172A)),
+                            items: _rosterStudents.map((st) {
+                              final label =
+                                  "${st['name']} (${st['roll']} • ${st['dept']}) - ${st['tier']}";
+                              return DropdownMenuItem<String>(
+                                value: st['name'] as String,
+                                child: Text(label,
+                                    overflow: TextOverflow.ellipsis),
+                              );
+                            }).toList(),
+                            onChanged: (val) {
+                              if (val != null) {
+                                setDialogState(
+                                    () => selectedStudentKey = val);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Support Strategy
+                          _buildSupportFieldLabel('Support Strategy *'),
+                          DropdownButtonFormField<String>(
+                            initialValue: selectedStrategy,
+                            isDense: true,
+                            decoration: _supportInputDec(),
+                            style: GoogleFonts.poppins(
+                                fontSize: 12.5,
+                                color: const Color(0xFF0F172A)),
+                            items: const [
+                              DropdownMenuItem(
+                                  value: '1-on-1 Faculty Mentorship',
+                                  child: Text('1-on-1 Faculty Mentorship')),
+                              DropdownMenuItem(
+                                  value: 'Peer Tutoring Session',
+                                  child: Text('Peer Tutoring Session')),
+                              DropdownMenuItem(
+                                  value: 'Remedial Code Lab',
+                                  child: Text('Remedial Code Lab')),
+                              DropdownMenuItem(
+                                  value: 'Certification Fast-Track',
+                                  child: Text('Certification Fast-Track')),
+                              DropdownMenuItem(
+                                  value: 'Mock Technical Interview Prep',
+                                  child: Text(
+                                      'Mock Technical Interview Prep')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) {
+                                setDialogState(() => selectedStrategy = val);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Assigned Faculty / Advisor Lead
+                          _buildSupportFieldLabel(
+                              'Assigned Faculty / Advisor Lead *'),
+                          DropdownButtonFormField<String>(
+                            initialValue: selectedAdvisor,
+                            isDense: true,
+                            decoration: _supportInputDec(),
+                            style: GoogleFonts.poppins(
+                                fontSize: 12.5,
+                                color: const Color(0xFF0F172A)),
+                            items: const [
+                              DropdownMenuItem(
+                                  value: 'far', child: Text('far')),
+                              DropdownMenuItem(
+                                  value: 'Dr. Meena Raghavan',
+                                  child: Text('Dr. Meena Raghavan')),
+                              DropdownMenuItem(
+                                  value: 'Prof. R. Balaji',
+                                  child: Text('Prof. R. Balaji')),
+                              DropdownMenuItem(
+                                  value: 'Dr. Anand V.',
+                                  child: Text('Dr. Anand V.')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) {
+                                setDialogState(() => selectedAdvisor = val);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Target Review / Follow-up Date
+                          _buildSupportFieldLabel(
+                              'Target Review / Follow-up Date *'),
+                          TextField(
+                            controller: dateCtrl,
+                            readOnly: true,
+                            onTap: () async {
+                              final d = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime(2026, 11, 26),
+                                firstDate: DateTime(2020),
+                                lastDate: DateTime(2035),
+                              );
+                              if (d != null) {
+                                setDialogState(() {
+                                  dateCtrl.text =
+                                      "${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}/${d.year}";
+                                });
+                              }
+                            },
+                            style: GoogleFonts.poppins(fontSize: 12.5),
+                            decoration: _supportInputDec().copyWith(
+                              suffixIcon: const Icon(
+                                  Icons.calendar_today_outlined,
+                                  size: 16,
+                                  color: Color(0xFF64748B)),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Case Notes & Specific Instructions
+                          _buildSupportFieldLabel(
+                              'Case Notes & Specific Instructions'),
+                          TextField(
+                            controller: notesCtrl,
+                            maxLines: 3,
+                            style: GoogleFonts.poppins(fontSize: 12.5),
+                            decoration: _supportInputDec().copyWith(
+                              hintText:
+                                  'Document specific learning gaps, weekly checkpoints, or resources assigned to this student...',
+                              hintStyle: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: const Color(0xFF94A3B8)),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text('Intervention Type',
-                      style: GoogleFonts.poppins(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF475569))),
-                  const SizedBox(height: 6),
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedType,
-                    isDense: true,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                    ),
-                    items: [
-                      'Remedial Mentorship',
-                      'Skill Booster Track',
-                      'Academic Counselling',
-                      'Interview Prep Coaching',
-                    ]
-                        .map((e) => DropdownMenuItem(
-                            value: e,
-                            child: Text(e,
-                                style: GoogleFonts.poppins(fontSize: 12))))
-                        .toList(),
-                    onChanged: (v) => setDialogState(() => selectedType = v!),
-                  ),
-                  const SizedBox(height: 12),
-                  Text('Action Description',
-                      style: GoogleFonts.poppins(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF475569))),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: actionController,
-                    maxLines: 2,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text('Assigned Faculty / Mentor',
-                      style: GoogleFonts.poppins(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF475569))),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: mentorController,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                    ),
+                  const SizedBox(height: 16),
+
+                  // Actions
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    alignment: WrapAlignment.end,
+                    children: [
+                      OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF475569),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 11),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text('Cancel',
+                            style: GoogleFonts.poppins(
+                                fontSize: 12.5, fontWeight: FontWeight.w600)),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          final studentMap = _rosterStudents.firstWhere(
+                            (st) => st['name'] == selectedStudentKey,
+                            orElse: () => _rosterStudents.first,
+                          );
+                          Navigator.pop(ctx);
+                          setState(() {
+                            _loggedSupportPlans.insert(0, {
+                              'student': studentMap['name'],
+                              'roll': studentMap['roll'],
+                              'dept': studentMap['dept'],
+                              'title': selectedStrategy,
+                              'mentor': selectedAdvisor,
+                              'type': selectedStrategy,
+                              'date': dateCtrl.text.trim(),
+                              'status': 'Scheduled',
+                              'notes': notesCtrl.text.trim(),
+                            });
+                            studentMap['status'] = 'Support Active';
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Support Plan confirmed for ${studentMap['name']}!',
+                                style: GoogleFonts.poppins(),
+                              ),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2E2A72),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 18, vertical: 11),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text('Confirm Support Plan',
+                            style: GoogleFonts.poppins(
+                                fontSize: 12.5, fontWeight: FontWeight.w600)),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancel',
-                  style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                setState(() {
-                  _loggedSupportPlans.add({
-                    'student': 'Kavya Menon',
-                    'roll': '110121008',
-                    'title': actionController.text.trim(),
-                    'mentor': mentorController.text.trim(),
-                    'type': selectedType,
-                    'date': 'Today, 03:30 PM',
-                    'status': 'Scheduled',
-                  });
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Support action logged successfully!',
-                      style: GoogleFonts.poppins(),
-                    ),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E2865),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-              ),
-              child: Text('Save & Schedule',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-            ),
-          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSupportFieldLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text(
+        label,
+        style: GoogleFonts.poppins(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF334155),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _supportInputDec() {
+    return InputDecoration(
+      isDense: true,
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFF2E2A72), width: 1.5),
       ),
     );
   }

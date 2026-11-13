@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/certificate_pdf_service.dart';
 
 // =============================================================================
 // AI COURSE & CERTIFICATION: CERTIFICATE REQUESTS SCREEN
@@ -31,6 +33,9 @@ class _CertificateRequestsScreenState extends State<CertificateRequestsScreen> {
   int _recipientIndex = 0;
 
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _guestNameController = TextEditingController();
+  final TextEditingController _guestDesignationController =
+      TextEditingController();
   final TextEditingController _purposeController = TextEditingController(
     text:
         "in recognition of the outstanding contribution as a student coordinator of the National Level Technical Symposium.",
@@ -39,33 +44,23 @@ class _CertificateRequestsScreenState extends State<CertificateRequestsScreen> {
     text: "TECHNOVA 2026",
   );
   final TextEditingController _dateController = TextEditingController(
-    text: "10/14/2026",
+    text: "11/12/2026",
   );
 
   String _recipientName = "Recipient Name";
 
   final List<Map<String, dynamic>> _myRequests = [
     {
-      'id': 'REQ-2026-081',
-      'recipient': 'Karthik Raja',
-      'type': 'Participation',
-      'event': 'TECHNOVA 2026',
-      'date': '10/14/2026',
-      'purpose': 'in recognition of active participation in National Level Technical Symposium.',
-      'status': 'Pending Approval',
-      'statusColor': const Color(0xFFF59E0B),
-      'submittedOn': 'Today 11:20 AM',
-    },
-    {
-      'id': 'REQ-2026-079',
-      'recipient': 'Aditi Rao',
-      'type': 'Excellence',
-      'event': 'Hackathon Grand Finale',
-      'date': '10/08/2026',
-      'purpose': 'for securing 1st prize in AI Innovation Sprint.',
-      'status': 'Approved & Issued',
-      'statusColor': const Color(0xFF10B981),
-      'submittedOn': '12 Oct 2026',
+      'id': 'REQ-2026-088',
+      'recipient': 'Anand Kumar',
+      'type': 'Merit',
+      'event': 'Annual Academic Honors & Merit Awards 2026',
+      'date': '12 November 2026',
+      'purpose':
+          'in recognition of outstanding academic performance and merit in Annual Academic Honors.',
+      'status': 'Issued',
+      'statusColor': const Color(0xFF0369A1),
+      'submittedOn': 'Today',
     },
   ];
 
@@ -113,6 +108,8 @@ class _CertificateRequestsScreenState extends State<CertificateRequestsScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _guestNameController.dispose();
+    _guestDesignationController.dispose();
     _purposeController.dispose();
     _eventController.dispose();
     _dateController.dispose();
@@ -635,35 +632,127 @@ class _CertificateRequestsScreenState extends State<CertificateRequestsScreen> {
           ),
           const SizedBox(height: 12),
 
-          // Search input field
-          TextField(
-            controller: _searchController,
-            onChanged: (val) {
-              setState(() {
-                _recipientName = val.trim().isNotEmpty ? val : "Recipient Name";
-              });
-            },
-            style: GoogleFonts.poppins(fontSize: 13),
-            decoration: InputDecoration(
-              hintText: "Search by name or roll number...",
-              hintStyle: GoogleFonts.poppins(
-                fontSize: 12.5,
-                color: const Color(0xFF94A3B8),
+          if (_recipientIndex == 0)
+            TextField(
+              controller: _searchController,
+              onChanged: (val) {
+                setState(() {
+                  _recipientName =
+                      val.trim().isNotEmpty ? val : "Recipient Name";
+                });
+              },
+              style: GoogleFonts.poppins(fontSize: 13),
+              decoration: InputDecoration(
+                hintText: "Search by name or roll number...",
+                hintStyle: GoogleFonts.poppins(
+                  fontSize: 12.5,
+                  color: const Color(0xFF94A3B8),
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                filled: true,
+                fillColor: Colors.white,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFF4F46E5)),
+                ),
               ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              filled: true,
-              fillColor: Colors.white,
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFF4F46E5)),
-              ),
+            )
+          else
+            Row(
+              children: [
+                Expanded(
+                  flex: 5,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Full name",
+                        style: GoogleFonts.poppins(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: _guestNameController,
+                        onChanged: (val) {
+                          setState(() {
+                            _recipientName =
+                                val.trim().isNotEmpty ? val : "Recipient Name";
+                          });
+                        },
+                        style: GoogleFonts.poppins(fontSize: 13),
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
+                          filled: true,
+                          fillColor: Colors.white,
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFCBD5E1)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide:
+                                const BorderSide(color: Color(0xFF4F46E5)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 5,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Designation / institution (optional)",
+                        style: GoogleFonts.poppins(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: _guestDesignationController,
+                        style: GoogleFonts.poppins(fontSize: 13),
+                        decoration: InputDecoration(
+                          hintText: "e.g. Resource person, In...",
+                          hintStyle: GoogleFonts.poppins(
+                            fontSize: 12.5,
+                            color: const Color(0xFF94A3B8),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
+                          filled: true,
+                          fillColor: Colors.white,
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFCBD5E1)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide:
+                                const BorderSide(color: Color(0xFF4F46E5)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ),
           const SizedBox(height: 16),
 
           // What it is for
@@ -1039,7 +1128,7 @@ class _CertificateRequestsScreenState extends State<CertificateRequestsScreen> {
                                 textAlign: TextAlign.center,
                               ),
                               Text(
-                                "Anna Institute of Technology, Chennai, Tamil Nadu\nPhone 9888876285 · office@ait.edu.in",
+                                "Anna Institute of Technology, Chennai, Tamil Nadu\nPhone 9840012345 · office@ait.edu.in",
                                 style: GoogleFonts.poppins(
                                   fontSize: 8.5,
                                   color: const Color(0xFF64748B),
@@ -1052,7 +1141,7 @@ class _CertificateRequestsScreenState extends State<CertificateRequestsScreen> {
                         ),
                         const SizedBox(width: 8),
 
-                        // Right Badge: AICTE APPROVED
+                        // Right Badge: NAAC ACCREDITED
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 4),
@@ -1066,7 +1155,7 @@ class _CertificateRequestsScreenState extends State<CertificateRequestsScreen> {
                           child: Column(
                             children: [
                               Text(
-                                "AICTE",
+                                "NAAC",
                                 style: GoogleFonts.poppins(
                                   fontSize: 8,
                                   fontWeight: FontWeight.w800,
@@ -1074,7 +1163,7 @@ class _CertificateRequestsScreenState extends State<CertificateRequestsScreen> {
                                 ),
                               ),
                               Text(
-                                "APPROVED",
+                                "ACCREDITED",
                                 style: GoogleFonts.poppins(
                                   fontSize: 7,
                                   fontWeight: FontWeight.w700,
@@ -1471,170 +1560,867 @@ class _CertificateRequestsScreenState extends State<CertificateRequestsScreen> {
   }
 
   void _showPreviewRequestCertificateDialog(Map<String, dynamic> req) {
+    final String recipient = (req['recipient'] as String?) ?? "Anand Kumar";
+    final String type = (req['type'] as String?) ?? "Merit";
+    final String event = (req['event'] as String?) ?? "Annual Academic Honors & Merit Awards 2026";
+    final String date = (req['date'] as String?) ?? "8 October 2026";
+    final String certId = (req['id'] != null && (req['id'] as String).startsWith('CIQ'))
+        ? req['id'] as String
+        : "CIQ-2026-031207A0";
+
+    String ribbon = "OF MERIT";
+    for (final item in _certificateTypes) {
+      if (item['title'] == type) {
+        ribbon = item['ribbon'] ?? "OF MERIT";
+        break;
+      }
+    }
+
+    final String citation = (req['purpose'] != null &&
+            (req['purpose'] as String).trim().isNotEmpty &&
+            !(req['purpose'] as String).contains('recognition of outstanding'))
+        ? req['purpose'] as String
+        : "has secured the First Rank in the Department of Computer Science and Engineering for the academic year 2025–26.";
+
     showDialog(
       context: context,
       builder: (ctx) {
         return Dialog(
+          backgroundColor: const Color(0xFFFBFBFD),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 620),
-            child: Padding(
+            constraints: const BoxConstraints(maxWidth: 880),
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(22),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEEF2FF),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFF4338CA), size: 22),
-                          ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Certificate Preview',
-                                style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
-                              ),
-                              Text(
-                                '${req['id']} · ${req['type']}',
-                                style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF64748B)),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        icon: const Icon(Icons.close, size: 20, color: Color(0xFF94A3B8)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-
-                  // Parchment preview box
-                  Container(
-                    padding: const EdgeInsets.all(22),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEFDF9),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE2D9C8), width: 2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                  // Close Button Row
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: IconButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      icon: const Icon(Icons.close_rounded, size: 22, color: Color(0xFF64748B)),
+                      splashRadius: 18,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'ACHARYA INSTITUTE OF TECHNOLOGY',
-                          style: GoogleFonts.cinzel(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.2,
-                            color: const Color(0xFF1E293B),
-                          ),
-                          textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 6),
+
+                  // 1. TOP VERIFICATION HEADER & ACTIONS (Matching Screenshot 2)
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isNarrow = constraints.maxWidth < 700;
+
+                      final verifiedBanner = Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFA7F3D0)),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Accredited by NAAC with \'A+\' Grade · Approved by AICTE',
-                          style: GoogleFonts.poppins(fontSize: 9.5, color: const Color(0xFF64748B)),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 14),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEF3C7),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: const Color(0xFFFDE68A)),
-                          ),
-                          child: Text(
-                            'CERTIFICATE OF ${(req['type'] as String).toUpperCase()}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.0,
-                              color: const Color(0xFF92400E),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          'This certificate is proudly presented to',
-                          style: GoogleFonts.playfairDisplay(fontSize: 12, fontStyle: FontStyle.italic, color: const Color(0xFF64748B)),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          req['recipient'] as String,
-                          style: GoogleFonts.playfairDisplay(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFF0F172A),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(
-                            req['purpose'] as String,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF475569), height: 1.4),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Date: ${req['date']}', style: GoogleFonts.poppins(fontSize: 10, color: const Color(0xFF64748B))),
-                                Text('Event: ${req['event']}', style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w600, color: const Color(0xFF334155))),
-                              ],
+                            Container(
+                              width: 26,
+                              height: 26,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF047857),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.check, size: 16, color: Colors.white),
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text('Dr. Lakshmi Sundaram', style: GoogleFonts.greatVibes(fontSize: 16, color: const Color(0xFF1E293B))),
-                                Text('Principal & Certifying Authority', style: GoogleFonts.poppins(fontSize: 9, color: const Color(0xFF64748B))),
-                              ],
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Verified: this certificate is genuine",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF065F46),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  RichText(
+                                    text: TextSpan(
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 11,
+                                        color: const Color(0xFF064E3B),
+                                        height: 1.35,
+                                      ),
+                                      children: [
+                                        TextSpan(text: "Certificate of ${type.toLowerCase()} issued to "),
+                                        TextSpan(
+                                          text: recipient,
+                                          style: const TextStyle(fontWeight: FontWeight.w700),
+                                        ),
+                                        TextSpan(
+                                          text:
+                                              " by Anna Institute of Technology on $date. Signed under the authority of Dr. Lakshmi Sundaram, Principal.",
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "ID $certId · digital signature checked",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 10.5,
+                                      color: const Color(0xFF047857),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      );
+
+                      final actionButtons = Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        alignment: WrapAlignment.end,
+                        children: [
+                          // 1. Print / Save PDF (Opens native print preview)
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              try {
+                                await CertificatePdfService.printOrSavePdf(
+                                  recipient: recipient,
+                                  type: type,
+                                  event: event,
+                                  date: date,
+                                  certId: certId,
+                                  citation: citation,
+                                );
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Error opening print dialog: $e"),
+                                      backgroundColor: const Color(0xFFDC2626),
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            icon: const Icon(Icons.print_outlined, size: 15),
+                            label: const Text("Print / save PDF"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1E2865),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+
+                          // 2. Download PDF directly
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              try {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Generating certificate PDF for $recipient..."),
+                                    behavior: SnackBarBehavior.floating,
+                                    duration: const Duration(seconds: 1),
+                                  ),
+                                );
+                                await CertificatePdfService.downloadPdfDirectly(
+                                  recipient: recipient,
+                                  type: type,
+                                  event: event,
+                                  date: date,
+                                  certId: certId,
+                                  citation: citation,
+                                );
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Download error: $e"),
+                                      backgroundColor: const Color(0xFFDC2626),
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            icon: const Icon(Icons.download_rounded, size: 15),
+                            label: const Text("Download PDF"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0F766E),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+
+                          // 3. Copy Verification Link
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              final link = "https://colossus-iq-new.vercel.app/verify/$certId";
+                              Clipboard.setData(ClipboardData(text: link));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: [
+                                      const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          "Verification link copied to clipboard:\n$link",
+                                          style: GoogleFonts.poppins(fontSize: 12),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: const Color(0xFF1E2865),
+                                  duration: const Duration(seconds: 4),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.link_rounded, size: 15),
+                            label: const Text("Copy verification link"),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF1E293B),
+                              side: const BorderSide(color: Color(0xFFCBD5E1)),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+
+                          // 4. Add to LinkedIn Dialog
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              _showLinkedInDialog(
+                                context: context,
+                                recipient: recipient,
+                                type: type,
+                                certId: certId,
+                                event: event,
+                              );
+                            },
+                            icon: const Icon(Icons.share_outlined, size: 15),
+                            label: const Text("Add to LinkedIn"),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF0A66C2),
+                              side: const BorderSide(color: Color(0xFF0A66C2)),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                        ],
+                      );
+
+                      if (isNarrow) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            verifiedBanner,
+                            const SizedBox(height: 12),
+                            actionButtons,
+                          ],
+                        );
+                      }
+
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(flex: 11, child: verifiedBanner),
+                          const SizedBox(width: 14),
+                          Flexible(flex: 9, child: Align(alignment: Alignment.centerRight, child: actionButtons)),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 18),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4338CA),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  // 2. THE AUTHENTIC CERTIFICATE DOCUMENT (Matching Screenshot 2 & 3)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFDF8), // Ivory parchment
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFF1E2865), width: 2.2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 18,
+                          offset: const Offset(0, 6),
                         ),
-                        child: Text('Close Preview', style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFD4AF37), width: 1.2), // Gold inner border
                       ),
-                    ],
+                      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Top Header Row: Crest, Institute Name, NAAC Badge
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Left: AIT Gold Seal Crest
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
+                                ),
+                                child: Center(
+                                  child: Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: const Color(0xFFD4AF37), width: 0.8),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "AIT",
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w800,
+                                          color: const Color(0xFF1E2865),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // Center: Institute Details
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      "ANNA INSTITUTE OF TECHNOLOGY",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 15.5,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.2,
+                                        color: const Color(0xFF1E2865),
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      "Affiliated to Tamil Nadu Technical University",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF475569),
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    Text(
+                                      "Chennai, Tamil Nadu\nPhone 9840012345 · office@ait.edu.in",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 8,
+                                        color: const Color(0xFF64748B),
+                                        height: 1.25,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // Right: NAAC ACCREDITED Badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(color: const Color(0xFFD4AF37), width: 1),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      "NAAC",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w800,
+                                        color: const Color(0xFF1E293B),
+                                      ),
+                                    ),
+                                    Text(
+                                      "ACCREDITED",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 7,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFFD97706),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+
+                          // CERTIFICATE Main Title
+                          Text(
+                            "CERTIFICATE",
+                            style: GoogleFonts.poppins(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 4.0,
+                              color: const Color(0xFF1E2865),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Golden Ribbon Banner
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 5),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFCA8A04), Color(0xFFB45309)],
+                              ),
+                              borderRadius: BorderRadius.circular(4),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFB45309).withValues(alpha: 0.25),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              ribbon,
+                              style: GoogleFonts.poppins(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.8,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Subtitle
+                          Text(
+                            "This is to certify that",
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: 12.5,
+                              fontStyle: FontStyle.italic,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+
+                          // Recipient Name
+                          Text(
+                            recipient,
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w800,
+                              fontStyle: FontStyle.italic,
+                              color: const Color(0xFF78350F),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+
+                          // Roll & Department Line
+                          Text(
+                            "110124001 · Computer Science & Engineering",
+                            style: GoogleFonts.poppins(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Citation / Achievement Text
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              citation,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: const Color(0xFF334155),
+                                height: 1.45,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Three Info Pill Boxes: EVENT, HELD ON, DATE OF ISSUE
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 6,
+                            alignment: WrapAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                ),
+                                child: RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: "EVENT ",
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 8.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: const Color(0xFF92400E),
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: event,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                ),
+                                child: RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: "HELD ON ",
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 8.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: const Color(0xFF92400E),
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: date,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                ),
+                                child: RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: "DATE OF ISSUE ",
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 8.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: const Color(0xFF92400E),
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: date,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Bottom Signatures, Gold Seal & QR Code Row (Screenshot 3)
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.center,
+                            child: SizedBox(
+                              width: 650,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  // Left: QR Code Box + Verify URL
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        width: 50,
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          border: Border.all(color: const Color(0xFFCBD5E1)),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: const Icon(
+                                          Icons.qr_code_2_rounded,
+                                          size: 44,
+                                          color: Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "SCAN TO VERIFY",
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 8,
+                                              fontWeight: FontWeight.w800,
+                                              color: const Color(0xFF92400E),
+                                            ),
+                                          ),
+                                          Text(
+                                            certId,
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 8.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF0F172A),
+                                            ),
+                                          ),
+                                          Text(
+                                            "localhost:3000/verify",
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 7.5,
+                                              color: const Color(0xFF64748B),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+
+                                  // Center: Scalloped Embossed Gold Seal Medallion with Ribbon Tails
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 58,
+                                        height: 58,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: const RadialGradient(
+                                            colors: [
+                                              Color(0xFFFEF3C7),
+                                              Color(0xFFF59E0B),
+                                              Color(0xFFB45309),
+                                            ],
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: const Color(0xFFB45309).withValues(alpha: 0.35),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 3),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child: Container(
+                                            width: 44,
+                                            height: 44,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(color: const Color(0xFF78350F), width: 0.8),
+                                            ),
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                const Icon(
+                                                  Icons.check_rounded,
+                                                  size: 16,
+                                                  color: Color(0xFF78350F),
+                                                ),
+                                                Text(
+                                                  "VERIFIED",
+                                                  style: GoogleFonts.cinzel(
+                                                    fontSize: 6,
+                                                    fontWeight: FontWeight.w900,
+                                                    color: const Color(0xFF78350F),
+                                                    letterSpacing: 0.5,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      // Ribbon tails below seal
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Transform.rotate(
+                                            angle: -0.2,
+                                            child: Container(
+                                              width: 9,
+                                              height: 14,
+                                              color: const Color(0xFFB45309),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 3),
+                                          Transform.rotate(
+                                            angle: 0.2,
+                                            child: Container(
+                                              width: 9,
+                                              height: 14,
+                                              color: const Color(0xFFB45309),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+
+                                  // Right: Official Seal Stamp + Signature of Dr. Lakshmi Sundaram
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      // Circular AIT Seal Stamp
+                                      Container(
+                                        width: 44,
+                                        height: 44,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: const Color(0xFF334155), width: 1.2),
+                                        ),
+                                        child: Center(
+                                          child: Container(
+                                            width: 36,
+                                            height: 36,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(color: const Color(0xFF334155), width: 0.6),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                "AIT\nSEAL",
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 7.5,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: const Color(0xFF334155),
+                                                  height: 1.1,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+
+                                      // Signature Column
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            "Dr. Lakshmi Sundaram",
+                                            style: GoogleFonts.greatVibes(
+                                              fontSize: 22,
+                                              color: const Color(0xFF1E2865),
+                                            ),
+                                          ),
+                                          Container(
+                                            width: 130,
+                                            height: 1,
+                                            color: const Color(0xFFCBD5E1),
+                                            margin: const EdgeInsets.symmetric(vertical: 2),
+                                          ),
+                                          Text(
+                                            "Dr. Lakshmi Sundaram",
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF0F172A),
+                                            ),
+                                          ),
+                                          Text(
+                                            "Principal, Anna Institute of Technology",
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 8,
+                                              color: const Color(0xFF64748B),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 3. EXPLANATORY FOOTER NOTE (Screenshot 3)
+                  Text(
+                    "Scan the QR code on a printed copy, or open this page, to confirm a certificate at any time. Anyone presenting an altered copy will see it fail here.",
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 10.5,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    "Certificates are signed by the university and can be checked here at any time.",
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 10,
+                      color: const Color(0xFF94A3B8),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Bottom Close Button
+                  Align(
+                    alignment: Alignment.center,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF1E2865),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: Text(
+                        "Close",
+                        style: GoogleFonts.poppins(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -1642,6 +2428,115 @@ class _CertificateRequestsScreenState extends State<CertificateRequestsScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _showLinkedInDialog({
+    required BuildContext context,
+    required String recipient,
+    required String type,
+    required String certId,
+    required String event,
+  }) {
+    final certName = "Certificate of $type · $event";
+    const org = "Anna Institute of Technology";
+    final url = "https://colossus-iq-new.vercel.app/verify/$certId";
+    final linkedInAddUrl =
+        "https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${Uri.encodeComponent(certName)}&organizationName=${Uri.encodeComponent(org)}&issueYear=2026&issueMonth=10&certUrl=${Uri.encodeComponent(url)}&certId=$certId";
+
+    showDialog(
+      context: context,
+      builder: (lCtx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0A66C2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(Icons.share, color: Colors.white, size: 18),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              "Add to LinkedIn Profile",
+              style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "The following verified credential details are ready for $recipient's LinkedIn profile:",
+                style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF475569)),
+              ),
+              const SizedBox(height: 14),
+              _buildLinkedInField("Certification Name", certName),
+              const SizedBox(height: 8),
+              _buildLinkedInField("Issuing Organization", org),
+              const SizedBox(height: 8),
+              _buildLinkedInField("Issue Date", "October 2026"),
+              const SizedBox(height: 8),
+              _buildLinkedInField("Credential ID", certId),
+              const SizedBox(height: 8),
+              _buildLinkedInField("Credential URL", url),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(lCtx),
+            child: Text("Close", style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: linkedInAddUrl));
+              Navigator.pop(lCtx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("LinkedIn 1-Click certification link copied to clipboard!"),
+                  backgroundColor: Color(0xFF0A66C2),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            icon: const Icon(Icons.copy_rounded, size: 15),
+            label: const Text("Copy LinkedIn 1-Click Link"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0A66C2),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLinkedInField(String label, String value) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: GoogleFonts.poppins(
+                  fontSize: 10, color: const Color(0xFF64748B), fontWeight: FontWeight.w600)),
+          Text(value,
+              style: GoogleFonts.poppins(
+                  fontSize: 12, color: const Color(0xFF0F172A), fontWeight: FontWeight.w600)),
+        ],
+      ),
     );
   }
 
@@ -1875,129 +2770,109 @@ class _CertificateRequestsScreenState extends State<CertificateRequestsScreen> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _myRequests.length,
-              separatorBuilder: (_, index) => const SizedBox(height: 12),
+              separatorBuilder: (context, index) => const SizedBox(height: 10),
               itemBuilder: (context, i) {
                 final req = _myRequests[i];
-                final isPending = req['status'] == 'Pending Approval';
+                final isIssued = req['status'] == 'Issued';
 
                 return Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Wrap(
-                        alignment: WrapAlignment.spaceBetween,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 8,
-                        runSpacing: 6,
-                        children: [
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 4,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFEEF2FF),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  req['id'] as String,
-                                  style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF4338CA)),
-                                ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              req['recipient'] as String,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFEF3C7),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  req['type'] as String,
-                                  style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF92400E)),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: (req['statusColor'] as Color).withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(6),
                             ),
-                            child: Text(
-                              req['status'] as String,
-                              style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: req['statusColor'] as Color),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${req['type']} · ${req['event']}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: const Color(0xFF64748B),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isIssued ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          req['status'] as String,
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isIssued ? const Color(0xFF15803D) : const Color(0xFFB45309),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      InkWell(
+                        onTap: () => _showPreviewRequestCertificateDialog(req),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          child: Text(
+                            'View',
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF4338CA),
+                            ),
+                          ),
+                        ),
+                      ),
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_vert_rounded, size: 18, color: Color(0xFF64748B)),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        tooltip: 'More actions',
+                        onSelected: (val) {
+                          if (val == 'edit') {
+                            _showEditRequestDialog(req);
+                          } else if (val == 'withdraw') {
+                            _withdrawRequest(req);
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit_outlined, size: 16, color: Color(0xFF334155)),
+                                SizedBox(width: 8),
+                                Text('Edit request'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'withdraw',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete_outline_rounded, size: 16, color: Color(0xFFEF4444)),
+                                SizedBox(width: 8),
+                                Text('Withdraw', style: TextStyle(color: Color(0xFFEF4444))),
+                              ],
                             ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 10),
-
-                      Text(
-                        req['recipient'] as String,
-                        style: GoogleFonts.poppins(fontSize: 14.5, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Event: ${req['event']} · Date: ${req['date']} · Submitted: ${req['submittedOn']}',
-                        style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF64748B)),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        req['purpose'] as String,
-                        style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF475569), height: 1.35),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Actions
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Wrap(
-                          alignment: WrapAlignment.end,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            OutlinedButton.icon(
-                              onPressed: () => _showPreviewRequestCertificateDialog(req),
-                              icon: const Icon(Icons.visibility_outlined, size: 14),
-                              label: Text('Preview Certificate', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600)),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF4338CA),
-                                side: const BorderSide(color: Color(0xFFC7D2FE)),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                              ),
-                            ),
-                            if (isPending) ...[
-                              OutlinedButton.icon(
-                                onPressed: () => _showEditRequestDialog(req),
-                                icon: const Icon(Icons.edit_outlined, size: 14),
-                                label: Text('Edit', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600)),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: const Color(0xFF334155),
-                                  side: const BorderSide(color: Color(0xFFCBD5E1)),
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                                ),
-                              ),
-                              TextButton.icon(
-                                onPressed: () => _withdrawRequest(req),
-                                icon: const Icon(Icons.delete_outline_rounded, size: 14, color: Color(0xFFEF4444)),
-                                label: Text('Withdraw', style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600, color: const Color(0xFFEF4444))),
-                              ),
-                            ],
-                          ],
-                        ),
                       ),
                     ],
                   ),

@@ -2,10 +2,76 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // =============================================================================
+// DATA MODELS: QUESTION SET & STUDY NOTES
+// =============================================================================
+class QuestionItem {
+  String questionText;
+  List<String> options;
+  int correctOptionIndex;
+  String explanation;
+
+  QuestionItem({
+    this.questionText = '',
+    List<String>? options,
+    this.correctOptionIndex = 0,
+    this.explanation = '',
+  }) : options = options ?? ['', '', '', ''];
+}
+
+class QuestionSetItem {
+  String id;
+  String title;
+  String topic;
+  int questionsCount;
+  String? exam;
+  String author;
+  String status;
+  List<QuestionItem> questions;
+
+  QuestionSetItem({
+    required this.id,
+    required this.title,
+    required this.topic,
+    required this.questionsCount,
+    this.exam,
+    this.author = 'Dr. Lakshmi Sundaram',
+    this.status = 'Published',
+    this.questions = const [],
+  });
+}
+
+class StudyNoteItem {
+  String id;
+  String title;
+  bool isAiGenerated;
+  bool isReviewed;
+  String status;
+  int keyPointsCount;
+  String? author;
+  String description;
+
+  StudyNoteItem({
+    required this.id,
+    required this.title,
+    this.isAiGenerated = false,
+    this.isReviewed = true,
+    this.status = 'Published',
+    required this.keyPointsCount,
+    this.author,
+    required this.description,
+  });
+}
+
+// =============================================================================
 // ASSESSMENT: EXAM PREP STUDIO SCREEN
-// Matches screenshot: Blueprint grid hero banner, AI disclaimer alert banner,
-// 3 metric cards (Published question sets / Topic notes / AI notes to review),
-// tabs (Question sets / Study notes), and graph paper empty/populated state.
+// Matches Screenshot 1, 2, 3:
+// 1. Hero blueprint banner with ASSESSMENT & MVP badges
+// 2. Amber disclaimer alert banner
+// 3. 3 KPI metric tiles (Published question sets 7, Topic notes 4, AI notes to review 1)
+// 4. Pill segmented tabs (Question sets / Study notes)
+// 5. Question sets tab with "+ New set" action & list of published sets
+// 6. "New question set" editor view with topic, exam chips, AI draft generator & interactive questions
+// 7. Study notes tab with "Write notes for a topic" and faculty/AI review cards
 // =============================================================================
 class FacultyExamPrepScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -17,195 +83,536 @@ class FacultyExamPrepScreen extends StatefulWidget {
 
 class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   int _activeTab = 0; // 0 = Question sets, 1 = Study notes
+  bool _isCreatingQuestionSet = false;
 
-  final List<Map<String, dynamic>> _questionSets = [];
-  final List<Map<String, dynamic>> _studyNotes = [];
+  // New Question Set Form State
+  String? _selectedTopic;
+  final TextEditingController _setTitleController = TextEditingController();
+  String? _selectedExamSection;
+  final Set<String> _selectedExams = {"SSC CGL"};
+  final TextEditingController _draftCountController = TextEditingController(text: "10");
+  bool _publishToStudents = true;
+  final List<QuestionItem> _formQuestions = [];
 
-  void _openCreateSetDialog() {
-    final titleController = TextEditingController();
-    final examController = TextEditingController(text: "GATE CS / IT");
-    final countController = TextEditingController(text: "15");
+  // Study Notes Form State
+  String? _selectedStudyNoteTopic;
 
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(
-            "Create New Question Set",
-            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Set Title / Subject",
-                  style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: titleController,
-                  decoration: InputDecoration(
-                    hintText: "e.g. Relational Algebra & Normalization 2026",
-                    hintStyle: GoogleFonts.poppins(fontSize: 12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "Target Exam",
-                  style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: examController,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "Question Count",
-                  style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: countController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (titleController.text.trim().isNotEmpty) {
-                  setState(() {
-                    _questionSets.insert(0, {
-                      "title": titleController.text.trim(),
-                      "exam": examController.text.trim(),
-                      "count": countController.text.trim(),
-                      "status": "Published",
-                      "date": "Just now",
-                    });
-                  });
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Question set published to students' Prep Hub!"),
-                      backgroundColor: Color(0xFF15803D),
-                    ),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF141938),
-                foregroundColor: Colors.white,
-              ),
-              child: const Text("Publish Set"),
-            ),
+  final List<String> _topicsList = [
+    "Civil engineering core",
+    "Letter & number series",
+    "Number series",
+    "Time & work",
+    "Data Structures & Asymptotic Analysis",
+    "Indian Polity & Constitution",
+    "Operating Systems & Deadlocks",
+    "Direction sense",
+    "Coding-decoding",
+    "Simple & compound interest",
+    "Ranking & order",
+    "Computer Networks",
+    "Database Management Systems",
+  ];
+
+  final List<String> _examSections = [
+    "Pick an exam first",
+    "General Awareness",
+    "Quantitative Aptitude",
+    "Reasoning & General Intelligence",
+    "Core Engineering & Technical",
+    "English Language & Comprehension",
+  ];
+
+  final List<String> _availableExams = [
+    "JEE Main", "GATE", "UPSC CSE", "SSC CGL", "SSC CHSL", "SSC MTS",
+    "TNPSC Group 1", "TNPSC Group 2", "TNPSC Group 4", "IBPS PO", "IBPS Clerk",
+    "SBI PO", "RBI Grade B", "RRB NTPC", "RRB Group D", "NDA", "CDS",
+    "AFCAT", "CTET", "TNTET", "UGC-NET", "TN SET", "NEET-UG", "CUET-UG",
+    "CLAT UG", "CAT", "CUET-PG", "TANCET", "NEET-PG", "INI-CET", "FMGE",
+    "NExT Step 1", "IIT JAM",
+  ];
+
+  // Pre-populated Question Sets matching Screenshot 1 (Total: 7 sets, 63 questions)
+  final List<QuestionSetItem> _questionSets = [
+    QuestionSetItem(
+      id: "qs_1",
+      title: "Civil engineering core — Mock Test & Solutions",
+      topic: "Civil engineering core",
+      questionsCount: 3,
+      author: "Dr. Lakshmi Sundaram",
+      status: "Published",
+      questions: [
+        QuestionItem(
+          questionText: "What is the primary factor influencing the workability of fresh concrete?",
+          options: ["Water-cement ratio", "Type of cement", "Size of aggregate", "Method of curing"],
+          correctOptionIndex: 0,
+          explanation: "The water-cement ratio is the most significant factor affecting workability and compressive strength.",
+        ),
+        QuestionItem(
+          questionText: "In soil mechanics, Darcy's law is valid for which type of flow?",
+          options: ["Laminar flow", "Turbulent flow", "Both laminar and turbulent", "Unsteady flow only"],
+          correctOptionIndex: 0,
+          explanation: "Darcy's law is applicable strictly to laminar flow conditions in saturated soils with low Reynolds numbers.",
+        ),
+        QuestionItem(
+          questionText: "Which test is conducted to determine the consistency of standard cement paste?",
+          options: ["Vicat apparatus test", "Slump test", "Le Chatelier test", "Soundness test"],
+          correctOptionIndex: 0,
+          explanation: "Vicat apparatus test measures standard consistency using a 10mm diameter plunger.",
+        ),
+      ],
+    ),
+    QuestionSetItem(
+      id: "qs_2",
+      title: "Letter & number series — Mock Test & Solutions",
+      topic: "Letter & number series",
+      questionsCount: 10,
+      exam: "SSC CGL",
+      author: "Dr. Lakshmi Sundaram",
+      status: "Published",
+    ),
+    QuestionSetItem(
+      id: "qs_3",
+      title: "TNPSC Group 4 · Number series Practice",
+      topic: "Number series",
+      questionsCount: 10,
+      exam: "TNPSC Group 4",
+      author: "Dr. Lakshmi Sundaram",
+      status: "Published",
+    ),
+    QuestionSetItem(
+      id: "qs_4",
+      title: "IBPS PO · Time & work Practice",
+      topic: "Time & work",
+      questionsCount: 10,
+      exam: "IBPS PO",
+      author: "Dr. Lakshmi Sundaram",
+      status: "Published",
+    ),
+    QuestionSetItem(
+      id: "qs_5",
+      title: "UPSC CSE · Indian Polity & Constitution Drill",
+      topic: "Indian Polity & Constitution",
+      questionsCount: 10,
+      exam: "UPSC CSE",
+      author: "Dr. Meena Raghavan",
+      status: "Published",
+    ),
+    QuestionSetItem(
+      id: "qs_6",
+      title: "GATE CSE · Operating Systems & Deadlocks Practice",
+      topic: "Operating Systems & Deadlocks",
+      questionsCount: 10,
+      exam: "GATE",
+      author: "Dr. Lakshmi Sundaram",
+      status: "Published",
+    ),
+    QuestionSetItem(
+      id: "qs_7",
+      title: "Reasoning Ability · Coding-Decoding Mock",
+      topic: "Coding-decoding",
+      questionsCount: 10,
+      exam: "SBI PO",
+      author: "Dr. Meena Raghavan",
+      status: "Published",
+    ),
+  ];
+
+  // Pre-populated Study Notes matching Screenshot 3 (Total: 4 faculty + 1 AI = 5 notes)
+  final List<StudyNoteItem> _studyNotes = [
+    StudyNoteItem(
+      id: "sn_1",
+      title: "Data Structures & Asymptotic Analysis",
+      isAiGenerated: false,
+      isReviewed: true,
+      status: "Published",
+      keyPointsCount: 15,
+      author: "Dr. Lakshmi Sundaram",
+      description: "Your faculty added Data Structures & Asymptotic Analysis to the syllabus. These key facts come from their questions.",
+    ),
+    StudyNoteItem(
+      id: "sn_2",
+      title: "Direction sense",
+      isAiGenerated: true,
+      isReviewed: false,
+      status: "Published",
+      keyPointsCount: 8,
+      description: "Direction sense is a reasoning topic that tests a candidate's ability to determine the final position and direction of a person or object relative to a starting point after a series of movements. Problems typically involve cardinal and intermediate directions, distances, and turns. Exams assess spatial reasoning and the ability...",
+    ),
+    StudyNoteItem(
+      id: "sn_3",
+      title: "Coding-decoding",
+      isAiGenerated: false,
+      isReviewed: true,
+      status: "Published",
+      keyPointsCount: 8,
+      author: "Dr. Meena Raghavan",
+      description: "Coding-decoding is a reasoning topic where words, numbers, or symbols are transformed into a coded form based on a specific rule or pattern. Students need to identify this underlying logic from a given example and then apply it to decode or encode new inputs. Exams test observation skills, logical reasoning, and familiarity...",
+    ),
+    StudyNoteItem(
+      id: "sn_4",
+      title: "Simple & compound interest",
+      isAiGenerated: false,
+      isReviewed: true,
+      status: "Published",
+      keyPointsCount: 8,
+      author: "Dr. Lakshmi Sundaram",
+      description: "Simple Interest (SI) is calculated solely on the initial principal amount, remaining constant over the investment period. Compound Interest (CI), however, is calculated on the principal plus any accumulated interest from previous periods, leading to exponential growth. Competitive exams frequently test the calculation of principal...",
+    ),
+    StudyNoteItem(
+      id: "sn_5",
+      title: "Ranking & order",
+      isAiGenerated: false,
+      isReviewed: true,
+      status: "Published",
+      keyPointsCount: 6,
+      author: "Dr. Meena Raghavan",
+      description: "Ranking and order arrangements test the sequential placement of entities based on position, height, marks, or age. Quick deduction formulas determine total elements from known ranks.",
+    ),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _resetNewQuestionSetForm();
+  }
+
+  void _resetNewQuestionSetForm() {
+    _selectedTopic = null;
+    _setTitleController.clear();
+    _selectedExamSection = _examSections.first;
+    _selectedExams.clear();
+    _selectedExams.add("SSC CGL");
+    _draftCountController.text = "10";
+    _publishToStudents = true;
+    _formQuestions.clear();
+    _formQuestions.add(QuestionItem());
+  }
+
+  @override
+  void dispose() {
+    _setTitleController.dispose();
+    _draftCountController.dispose();
+    super.dispose();
+  }
+
+  // ===========================================================================
+  // AI DRAFT GENERATOR FOR NEW QUESTION SET
+  // ===========================================================================
+  void _draftWithAi() {
+    final topic = _selectedTopic ?? "General Aptitude";
+    setState(() {
+      _formQuestions.clear();
+      _formQuestions.addAll([
+        QuestionItem(
+          questionText: "What is the standard formula or principle governing $topic?",
+          options: [
+            "Core theoretical axiom with verified boundary conditions",
+            "Empirical approximation without secondary constraints",
+            "Static scalar formulation",
+            "Alternative null hypothesis",
           ],
-        );
-      },
+          correctOptionIndex: 0,
+          explanation: "Governed by first principles and standard textbook derivations.",
+        ),
+        QuestionItem(
+          questionText: "Which of the following statements is TRUE regarding $topic applications?",
+          options: [
+            "Linear proportionality holds under nominal operating conditions",
+            "Invariance is violated when ambient variables change",
+            "Non-convergence occurs in deterministic systems",
+            "None of the standard criteria are satisfied",
+          ],
+          correctOptionIndex: 0,
+          explanation: "Standard operational models preserve linearity within defined thresholds.",
+        ),
+        QuestionItem(
+          questionText: "In competitive exam problem sets, $topic problems typically evaluate:",
+          options: [
+            "Analytical reasoning, derivation precision, and time management",
+            "Rote memorization of incidental dates",
+            "Subjective speculative interpretation",
+            "Unconstrained guesswork",
+          ],
+          correctOptionIndex: 0,
+          explanation: "Evaluates conceptual depth, speed, and analytical accuracy under standardized constraints.",
+        ),
+      ]);
+      if (_setTitleController.text.trim().isEmpty) {
+        _setTitleController.text = "$topic — Practice Set";
+      }
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("AI generated 3 draft questions for $topic! Check and edit."),
+        backgroundColor: const Color(0xFF1E2865),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 
-  void _openCreateNoteDialog() {
-    final titleController = TextEditingController();
-    final topicController = TextEditingController(text: "Operating Systems");
+  // ===========================================================================
+  // PUBLISH NEW QUESTION SET
+  // ===========================================================================
+  void _publishQuestionSet() {
+    if (_selectedTopic == null || _selectedTopic!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please choose a topic."),
+          backgroundColor: Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
 
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(
-            "Add Topic Notes",
-            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Note Title",
-                  style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: titleController,
-                  decoration: InputDecoration(
-                    hintText: "e.g. Banker's Algorithm & Resource Allocation Graph",
-                    hintStyle: GoogleFonts.poppins(fontSize: 12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "Subject / Topic",
-                  style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: topicController,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (titleController.text.trim().isNotEmpty) {
-                  setState(() {
-                    _studyNotes.insert(0, {
-                      "title": titleController.text.trim(),
-                      "topic": topicController.text.trim(),
-                      "date": "Just now",
-                    });
-                  });
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Topic note added!"),
-                      backgroundColor: Color(0xFF15803D),
-                    ),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF141938),
-                foregroundColor: Colors.white,
-              ),
-              child: const Text("Save Note"),
-            ),
-          ],
-        );
-      },
+    final title = _setTitleController.text.trim().isNotEmpty
+        ? _setTitleController.text.trim()
+        : "$_selectedTopic — Practice Set";
+
+    final newSet = QuestionSetItem(
+      id: "qs_${DateTime.now().millisecondsSinceEpoch}",
+      title: title,
+      topic: _selectedTopic!,
+      questionsCount: _formQuestions.length,
+      exam: _selectedExams.isNotEmpty ? _selectedExams.first : null,
+      author: "Dr. Lakshmi Sundaram",
+      status: _publishToStudents ? "Published" : "Draft",
+      questions: List.from(_formQuestions),
+    );
+
+    setState(() {
+      _questionSets.insert(0, newSet);
+      _isCreatingQuestionSet = false;
+      _resetNewQuestionSetForm();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("'$title' published to students' Prep Hub!"),
+        backgroundColor: const Color(0xFF15803D),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 
+  // ===========================================================================
+  // AI STUDY NOTE GENERATOR
+  // ===========================================================================
+  void _generateAiStudyNote() {
+    if (_selectedStudyNoteTopic == null || _selectedStudyNoteTopic!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please select a topic to start an AI study note draft."),
+          backgroundColor: Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final topic = _selectedStudyNoteTopic!;
+    final newNote = StudyNoteItem(
+      id: "sn_${DateTime.now().millisecondsSinceEpoch}",
+      title: topic,
+      isAiGenerated: true,
+      isReviewed: false,
+      status: "Published",
+      keyPointsCount: 10,
+      description: "$topic comprehensive overview synthesized with key definitions, standard problem archetypes, derivation steps, and exam shortcuts.",
+    );
+
+    setState(() {
+      _studyNotes.insert(0, newNote);
+      _selectedStudyNoteTopic = null;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("AI draft generated for '$topic'. Review and approve below."),
+        backgroundColor: const Color(0xFF1E2865),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // DELETE CONFIRMATION MODALS
+  // ===========================================================================
+  void _showDeleteQuestionSetDialog(QuestionSetItem item) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          "Delete Question Set?",
+          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
+        ),
+        content: Text(
+          "Are you sure you want to remove '${item.title}'? This will withdraw the practice questions from students' Prep Hub.",
+          style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF64748B), height: 1.4),
+        ),
+        actions: [
+          OutlinedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFFCBD5E1)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text("Cancel", style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF475569))),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() => _questionSets.remove(item));
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Question set deleted"), behavior: SnackBarBehavior.floating),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text("Delete", style: GoogleFonts.poppins(fontSize: 12.5, color: Colors.white, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteStudyNoteDialog(StudyNoteItem item) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          "Delete Topic Note?",
+          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
+        ),
+        content: Text(
+          "Are you sure you want to remove '${item.title}' notes? Students will revert to standard repository notes.",
+          style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF64748B), height: 1.4),
+        ),
+        actions: [
+          OutlinedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFFCBD5E1)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text("Cancel", style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF475569))),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() => _studyNotes.remove(item));
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Topic note deleted"), behavior: SnackBarBehavior.floating),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text("Delete", style: GoogleFonts.poppins(fontSize: 12.5, color: Colors.white, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReviewNoteDialog(StudyNoteItem item) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.rate_review_outlined, color: Color(0xFF1E2865), size: 20),
+            const SizedBox(width: 8),
+            Text(
+              "Review AI Note: ${item.title}",
+              style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: 500,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Text(
+                  item.description,
+                  style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF334155), height: 1.5),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                "Approving this note will tag it as a verified Faculty Note and publish it permanently to students.",
+                style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF64748B)),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          OutlinedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFFCBD5E1)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text("Dismiss", style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF475569))),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                item.isAiGenerated = false;
+                item.isReviewed = true;
+                item.author = "Dr. Lakshmi Sundaram";
+              });
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Approved '${item.title}' as verified faculty notes!"),
+                  backgroundColor: const Color(0xFF15803D),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1E2865),
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(
+              "Approve as Faculty Note",
+              style: GoogleFonts.poppins(fontSize: 12.5, color: Colors.white, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // MAIN BUILD
+  // ===========================================================================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -213,6 +620,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isNarrow = constraints.maxWidth < 750;
+
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 90),
             children: [
@@ -220,68 +628,27 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
               _buildHeroBanner(),
               const SizedBox(height: 14),
 
-              // 2. Info Alert Banner
+              // 2. Info Alert Banner (Matching Screenshot 1)
               _buildDisclaimerAlert(),
               const SizedBox(height: 16),
 
-              // 3. Metric Tiles (3 Cards)
-              if (isNarrow)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildMetricCard(
-                      value: "${_questionSets.length}",
-                      title: "Published question sets",
-                      subtitle: "${_questionSets.length * 15} questions reaching students",
-                    ),
-                    const SizedBox(height: 12),
-                    _buildMetricCard(
-                      value: "${_studyNotes.length}",
-                      title: "Topic notes by faculty",
-                    ),
-                    const SizedBox(height: 12),
-                    _buildMetricCard(
-                      value: "0",
-                      title: "AI notes to review",
-                      subtitle: "AI drafting is off: built-in drafts are used",
-                    ),
-                  ],
-                )
-              else
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildMetricCard(
-                        value: "${_questionSets.length}",
-                        title: "Published question sets",
-                        subtitle: "${_questionSets.length * 15} questions reaching students",
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: _buildMetricCard(
-                        value: "${_studyNotes.length}",
-                        title: "Topic notes by faculty",
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: _buildMetricCard(
-                        value: "0",
-                        title: "AI notes to review",
-                        subtitle: "AI drafting is off: built-in drafts are used",
-                      ),
-                    ),
-                  ],
-                ),
+              // 3. Metric Tiles (3 Cards: 7 / 4 / 1)
+              _buildKpiMetricsRow(isNarrow),
               const SizedBox(height: 18),
 
-              // 4. Tabs: Question sets / Study notes
+              // 4. Pill Segmented Tabs (Question sets / Study notes)
               _buildSegmentedTabs(),
               const SizedBox(height: 16),
 
-              // 5. Main Card
-              _buildMainCard(),
+              // 5. Main Content Area
+              if (_activeTab == 0) ...[
+                if (_isCreatingQuestionSet)
+                  _buildNewQuestionSetForm(constraints)
+                else
+                  _buildQuestionSetsCard(constraints),
+              ] else ...[
+                _buildStudyNotesTab(constraints),
+              ],
             ],
           );
         },
@@ -327,7 +694,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
               ),
             ),
 
-            // Large decorative watermark on the right
+            // Large decorative four-point star watermark on the right
             Positioned(
               right: 20,
               top: -15,
@@ -348,7 +715,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Breadcrumb row (Home clickable without leading arrow)
+                  // Breadcrumb row (Home > Assessment > Exam Prep Studio)
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -483,7 +850,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   }
 
   // ===========================================================================
-  // 2. DISCLAIMER ALERT
+  // 2. DISCLAIMER ALERT (Matching Screenshot 1)
   // ===========================================================================
   Widget _buildDisclaimerAlert() {
     return Container(
@@ -505,7 +872,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              "AI drafts are suggestions. Check every fact, question and answer before you publish.",
+              "AI drafts are suggestions. Nothing reaches students until you verify and publish it; every publish is audit-logged and can be withdrawn.",
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 color: const Color(0xFF92400E),
@@ -519,8 +886,54 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   }
 
   // ===========================================================================
-  // 3. METRIC CARDS
+  // 3. METRIC TILES ROW (7, 4, 1)
   // ===========================================================================
+  Widget _buildKpiMetricsRow(bool isNarrow) {
+    final publishedSetsCount = _questionSets.length;
+    final totalQuestionsCount = _questionSets.fold<int>(0, (sum, set) => sum + set.questionsCount);
+    final facultyNotesCount = _studyNotes.where((note) => !note.isAiGenerated || note.isReviewed).length;
+    final aiNotesToReviewCount = _studyNotes.where((note) => note.isAiGenerated && !note.isReviewed).length;
+
+    final card1 = _buildMetricCard(
+      value: "$publishedSetsCount",
+      title: "Published question sets",
+      subtitle: "$totalQuestionsCount questions reaching students",
+    );
+
+    final card2 = _buildMetricCard(
+      value: "$facultyNotesCount",
+      title: "Topic notes by faculty",
+    );
+
+    final card3 = _buildMetricCard(
+      value: "$aiNotesToReviewCount",
+      title: "AI notes to review",
+      subtitle: "AI drafting is on",
+    );
+
+    if (isNarrow) {
+      return Column(
+        children: [
+          card1,
+          const SizedBox(height: 12),
+          card2,
+          const SizedBox(height: 12),
+          card3,
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        Expanded(child: card1),
+        const SizedBox(width: 14),
+        Expanded(child: card2),
+        const SizedBox(width: 14),
+        Expanded(child: card3),
+      ],
+    );
+  }
+
   Widget _buildMetricCard({
     required String value,
     required String title,
@@ -528,7 +941,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -550,6 +963,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
               fontSize: 26,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
+              height: 1.15,
             ),
           ),
           const SizedBox(height: 4),
@@ -577,7 +991,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   }
 
   // ===========================================================================
-  // 4. SEGMENTED TABS
+  // 4. SEGMENTED PILL TABS
   // ===========================================================================
   Widget _buildSegmentedTabs() {
     return Align(
@@ -594,12 +1008,18 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
             _buildSegmentButton(
               title: "Question sets",
               isSelected: _activeTab == 0,
-              onTap: () => setState(() => _activeTab = 0),
+              onTap: () => setState(() {
+                _activeTab = 0;
+                _isCreatingQuestionSet = false;
+              }),
             ),
             _buildSegmentButton(
               title: "Study notes",
               isSelected: _activeTab == 1,
-              onTap: () => setState(() => _activeTab = 1),
+              onTap: () => setState(() {
+                _activeTab = 1;
+                _isCreatingQuestionSet = false;
+              }),
             ),
           ],
         ),
@@ -643,12 +1063,9 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   }
 
   // ===========================================================================
-  // 5. MAIN CARD (QUESTION SETS OR STUDY NOTES)
+  // 5. TAB 0: QUESTION SETS LIST CARD (Matching Screenshot 1)
   // ===========================================================================
-  Widget _buildMainCard() {
-    final isQuestionTab = _activeTab == 0;
-    final hasItems = isQuestionTab ? _questionSets.isNotEmpty : _studyNotes.isNotEmpty;
-
+  Widget _buildQuestionSetsCard(BoxConstraints constraints) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -656,7 +1073,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -675,7 +1092,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isQuestionTab ? "Question sets" : "Study notes",
+                      "Question sets",
                       style: GoogleFonts.poppins(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -684,9 +1101,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      isQuestionTab
-                          ? "Exam-style questions for any syllabus topic, or a new topic your college teaches. Published questions appear in drills and mocks."
-                          : "Curated key concepts, quick formulas and revision cheatsheets published for student access.",
+                      "Exam-style questions for any syllabus topic, or a new topic your college teaches. Published questions appear in drills and mocks.",
                       style: GoogleFonts.poppins(
                         fontSize: 11.5,
                         color: const Color(0xFF64748B),
@@ -697,19 +1112,24 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
               ),
               const SizedBox(width: 14),
               ElevatedButton.icon(
-                onPressed: isQuestionTab ? _openCreateSetDialog : _openCreateNoteDialog,
+                onPressed: () {
+                  setState(() {
+                    _resetNewQuestionSetForm();
+                    _isCreatingQuestionSet = true;
+                  });
+                },
                 icon: const Icon(Icons.add, size: 16),
                 label: Text(
-                  isQuestionTab ? "New set" : "New note",
+                  "New set",
                   style: GoogleFonts.poppins(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF141938),
+                  backgroundColor: const Color(0xFF1E2865),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -718,140 +1138,1124 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
 
-          // Content Area
-          if (!hasItems)
-            // Empty State (Matches screenshot blueprint grid paper container)
-            Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(minHeight: 280),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFAFAFD),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: Stack(
-                  alignment: Alignment.center,
+          // List of Question Sets
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _questionSets.length,
+            separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+            itemBuilder: (context, index) {
+              final set = _questionSets[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Positioned.fill(
-                      child: CustomPaint(
-                        painter: _GridPaperPainter(
-                          gridColor: const Color(0xFFE2E8F0).withValues(alpha: 0.7),
-                          step: 24.0,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                    Expanded(
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isQuestionTab ? "No question sets yet" : "No study notes yet",
+                            set.title,
                             style: GoogleFonts.poppins(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF1E293B),
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF0F172A),
                             ),
                           ),
                           const SizedBox(height: 6),
-                          Text(
-                            isQuestionTab
-                                ? "Add previous-year-style questions for an exam, or a set for a topic your students find hard."
-                                : "Add topic summaries, formula sheets or quick-revision mindmaps.",
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: const Color(0xFF64748B),
-                              height: 1.4,
-                            ),
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 4,
+                            children: [
+                              // Published badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFDCFCE7),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  set.status,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF15803D),
+                                  ),
+                                ),
+                              ),
+
+                              // Topic Badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEEF2FF),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  set.topic,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: const Color(0xFF4338CA),
+                                  ),
+                                ),
+                              ),
+
+                              // Questions count
+                              Text(
+                                "${set.questionsCount} questions",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11.5,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+
+                              // Exam badge if available
+                              if (set.exam != null)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF1F5F9),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    set.exam!,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF475569),
+                                    ),
+                                  ),
+                                ),
+
+                              // Author
+                              Text(
+                                "· by ${set.author}",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11.5,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
+                    const SizedBox(width: 12),
+
+                    // Actions: Edit pencil & Delete trash
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined, size: 17, color: Color(0xFF64748B)),
+                          onPressed: () {
+                            setState(() {
+                              _selectedTopic = set.topic;
+                              _setTitleController.text = set.title;
+                              if (set.exam != null) {
+                                _selectedExams.clear();
+                                _selectedExams.add(set.exam!);
+                              }
+                              _formQuestions.clear();
+                              if (set.questions.isNotEmpty) {
+                                _formQuestions.addAll(set.questions);
+                              } else {
+                                _formQuestions.add(QuestionItem());
+                              }
+                              _isCreatingQuestionSet = true;
+                            });
+                          },
+                          splashRadius: 18,
+                          tooltip: "Edit set",
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline_rounded, size: 17, color: Color(0xFFDC2626)),
+                          onPressed: () => _showDeleteQuestionSetDialog(set),
+                          splashRadius: 18,
+                          tooltip: "Delete set",
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-              ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // 6. NEW QUESTION SET FORM VIEW (Matching Screenshot 2)
+  // ===========================================================================
+  Widget _buildNewQuestionSetForm(BoxConstraints constraints) {
+    final isDesktop = constraints.maxWidth >= 800;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Text(
+            "New question set",
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            "Every question needs four different options and one correct answer. Check AI drafts before publishing.",
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Row 1: Topic Dropdown & Set Title Input
+          if (isDesktop)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _buildTopicDropdownField()),
+                const SizedBox(width: 18),
+                Expanded(child: _buildSetTitleField()),
+              ],
             )
-          else
-            // Populated State
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: isQuestionTab ? _questionSets.length : _studyNotes.length,
-              separatorBuilder: (context, index) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                if (isQuestionTab) {
-                  final item = _questionSets[index];
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                    leading: Container(
-                      width: 40,
-                      height: 40,
+          else ...[
+            _buildTopicDropdownField(),
+            const SizedBox(height: 14),
+            _buildSetTitleField(),
+          ],
+          const SizedBox(height: 16),
+
+          // Row 2: Exam Section Dropdown
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Exam section (optional)",
+                style: GoogleFonts.poppins(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1E293B),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Container(
+                height: 44,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedExamSection ?? _examSections.first,
+                    isExpanded: true,
+                    icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Color(0xFF64748B)),
+                    style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF0F172A)),
+                    onChanged: (val) => setState(() => _selectedExamSection = val),
+                    items: _examSections.map((sec) {
+                      return DropdownMenuItem<String>(
+                        value: sec,
+                        child: Text(sec),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+
+          // Row 3: Exams (up to 10) Chips
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Exams (up to 10)",
+                style: GoogleFonts.poppins(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1E293B),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _availableExams.map((exam) {
+                  final isSelected = _selectedExams.contains(exam);
+                  return InkWell(
+                    onTap: () {
+                      setState(() {
+                        if (isSelected) {
+                          _selectedExams.remove(exam);
+                        } else {
+                          if (_selectedExams.length < 10) {
+                            _selectedExams.add(exam);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Maximum 10 exams can be selected"),
+                                behavior: SnackBarBehavior.floating,
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                          }
+                        }
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEEF2FF),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.quiz_rounded, color: Color(0xFF4F46E5), size: 20),
-                      ),
-                    ),
-                    title: Text(
-                      item["title"],
-                      style: GoogleFonts.poppins(fontSize: 13.5, fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(
-                      "${item["exam"]} · ${item["count"]} Questions · ${item["date"]}",
-                      style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF64748B)),
-                    ),
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFDCFCE7),
-                        borderRadius: BorderRadius.circular(6),
+                        color: isSelected ? const Color(0xFF1E2865) : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected ? const Color(0xFF1E2865) : const Color(0xFFE2E8F0),
+                        ),
                       ),
                       child: Text(
-                        item["status"],
+                        exam,
                         style: GoogleFonts.poppins(
                           fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF15803D),
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          color: isSelected ? Colors.white : const Color(0xFF334155),
                         ),
                       ),
                     ),
                   );
-                } else {
-                  final item = _studyNotes[index];
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                    leading: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEF3C7),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.menu_book_rounded, color: Color(0xFFD97706), size: 20),
-                      ),
-                    ),
-                    title: Text(
-                      item["title"],
-                      style: GoogleFonts.poppins(fontSize: 13.5, fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(
-                      "${item["topic"]} · ${item["date"]}",
-                      style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF64748B)),
-                    ),
-                  );
-                }
-              },
+                }).toList(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // AI Draft Box Banner (Soft cream background)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFBF8F2),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFF1ECE1)),
             ),
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 10,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "How many to draft",
+                      style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 60,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFCBD5E1)),
+                      ),
+                      child: TextField(
+                        controller: _draftCountController,
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600),
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(vertical: 8),
+                          isDense: true,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                OutlinedButton.icon(
+                  onPressed: _draftWithAi,
+                  icon: const Icon(Icons.auto_awesome_rounded, size: 14, color: Color(0xFF1E2865)),
+                  label: Text(
+                    "Draft with AI",
+                    style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF1E2865)),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    side: const BorderSide(color: Color(0xFFCBD5E1)),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+                Text(
+                  "The AI writes a draft for you to check and edit.",
+                  style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF64748B)),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Question Cards List
+          ..._formQuestions.asMap().entries.map((entry) {
+            final qIndex = entry.key;
+            final q = entry.value;
+            return _buildQuestionEditorCard(qIndex, q);
+          }),
+          const SizedBox(height: 12),
+
+          // "+ Add a question" Button
+          OutlinedButton.icon(
+            onPressed: () {
+              setState(() {
+                _formQuestions.add(QuestionItem());
+              });
+            },
+            icon: const Icon(Icons.add, size: 15, color: Color(0xFF1E2865)),
+            label: Text(
+              "+ Add a question",
+              style: GoogleFonts.poppins(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF1E2865),
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              backgroundColor: Colors.white,
+              side: const BorderSide(color: Color(0xFFCBD5E1)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          const SizedBox(height: 16),
+
+          // Footer: Checkbox + Cancel & Publish Buttons
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 10,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Checkbox(
+                    value: _publishToStudents,
+                    activeColor: const Color(0xFF1E2865),
+                    onChanged: (val) => setState(() => _publishToStudents = val ?? true),
+                  ),
+                  Text(
+                    "Publish to students",
+                    style: GoogleFonts.poppins(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF1E293B),
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  OutlinedButton(
+                    onPressed: () {
+                      setState(() {
+                        _isCreatingQuestionSet = false;
+                        _resetNewQuestionSetForm();
+                      });
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFCBD5E1)),
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: Text(
+                      "Cancel",
+                      style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF475569)),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: _publishQuestionSet,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E2865),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: Text(
+                      "Publish",
+                      style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTopicDropdownField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              "Topic",
+              style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
+            ),
+            const SizedBox(width: 2),
+            const Text("*", style: TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.bold)),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Container(
+          height: 44,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFCBD5E1)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedTopic,
+              hint: Text("Choose a topic...", style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF94A3B8))),
+              isExpanded: true,
+              icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Color(0xFF64748B)),
+              style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF0F172A)),
+              onChanged: (val) {
+                setState(() {
+                  _selectedTopic = val;
+                  if (_setTitleController.text.trim().isEmpty && val != null) {
+                    _setTitleController.text = "$val — Practice Set";
+                  }
+                });
+              },
+              items: _topicsList.map((top) {
+                return DropdownMenuItem<String>(
+                  value: top,
+                  child: Text(top),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          "Choose a syllabus topic or add a custom one",
+          style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF64748B)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSetTitleField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              "Set title",
+              style: GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
+            ),
+            const SizedBox(width: 2),
+            const Text("*", style: TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.bold)),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Container(
+          height: 44,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFCBD5E1)),
+          ),
+          child: TextField(
+            controller: _setTitleController,
+            style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF0F172A)),
+            decoration: InputDecoration(
+              hintText: "e.g. Indian Polity & Constitution — Practice Set",
+              hintStyle: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF94A3B8)),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              isDense: true,
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          "Title displayed to students in their Prep Hub",
+          style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF64748B)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuestionEditorCard(int index, QuestionItem q) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Question Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Question ${index + 1}",
+                style: GoogleFonts.poppins(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1E293B),
+                ),
+              ),
+              if (_formQuestions.length > 1)
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      _formQuestions.removeAt(index);
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(14),
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(Icons.close_rounded, size: 16, color: Color(0xFF94A3B8)),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Question text field
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFCBD5E1)),
+            ),
+            child: TextField(
+              controller: TextEditingController(text: q.questionText)
+                ..selection = TextSelection.fromPosition(TextPosition(offset: q.questionText.length)),
+              onChanged: (val) => q.questionText = val,
+              maxLines: 3,
+              style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF0F172A)),
+              decoration: InputDecoration(
+                hintText: "Question text",
+                hintStyle: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF94A3B8)),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // 4 Options (A, B, C, D) with Radio Selection
+          LayoutBuilder(
+            builder: (context, box) {
+              final isWide = box.maxWidth >= 600;
+
+              final optionA = _buildOptionRow(q, 0, "A");
+              final optionB = _buildOptionRow(q, 1, "B");
+              final optionC = _buildOptionRow(q, 2, "C");
+              final optionD = _buildOptionRow(q, 3, "D");
+
+              if (isWide) {
+                return Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: optionA),
+                        const SizedBox(width: 12),
+                        Expanded(child: optionB),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(child: optionC),
+                        const SizedBox(width: 12),
+                        Expanded(child: optionD),
+                      ],
+                    ),
+                  ],
+                );
+              }
+
+              return Column(
+                children: [
+                  optionA,
+                  const SizedBox(height: 8),
+                  optionB,
+                  const SizedBox(height: 8),
+                  optionC,
+                  const SizedBox(height: 8),
+                  optionD,
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+
+          // Explanation field
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFCBD5E1)),
+            ),
+            child: TextField(
+              controller: TextEditingController(text: q.explanation)
+                ..selection = TextSelection.fromPosition(TextPosition(offset: q.explanation.length)),
+              onChanged: (val) => q.explanation = val,
+              style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF0F172A)),
+              decoration: InputDecoration(
+                hintText: "Explanation shown after the test (recommended)",
+                hintStyle: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF94A3B8)),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 4),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionRow(QuestionItem q, int optionIndex, String letter) {
+    final isSelected = q.correctOptionIndex == optionIndex;
+    return Container(
+      height: 42,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isSelected ? const Color(0xFF1E2865) : const Color(0xFFCBD5E1),
+          width: isSelected ? 1.5 : 1.0,
+        ),
+      ),
+      child: Row(
+        children: [
+          InkWell(
+            onTap: () => setState(() => q.correctOptionIndex = optionIndex),
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? const Color(0xFF1E2865) : const Color(0xFF94A3B8),
+                  width: isSelected ? 5.0 : 1.5,
+                ),
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            letter,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: isSelected ? const Color(0xFF1E2865) : const Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: TextEditingController(text: q.options[optionIndex])
+                ..selection = TextSelection.fromPosition(TextPosition(offset: q.options[optionIndex].length)),
+              onChanged: (val) => q.options[optionIndex] = val,
+              style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF0F172A)),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // 7. TAB 1: STUDY NOTES VIEW (Matching Screenshot 3)
+  // ===========================================================================
+  Widget _buildStudyNotesTab(BoxConstraints constraints) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 1. Top Card: Write notes for a topic
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Write notes for a topic",
+                style: GoogleFonts.poppins(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1E293B),
+                ),
+              ),
+              const SizedBox(height: 10),
+              LayoutBuilder(
+                builder: (context, box) {
+                  final isWide = box.maxWidth >= 600;
+
+                  final topicDropdown = Container(
+                    height: 44,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFCBD5E1)),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedStudyNoteTopic,
+                        hint: Text("Choose a topic...", style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF94A3B8))),
+                        isExpanded: true,
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Color(0xFF64748B)),
+                        style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF0F172A)),
+                        onChanged: (val) => setState(() => _selectedStudyNoteTopic = val),
+                        items: _topicsList.map((top) {
+                          return DropdownMenuItem<String>(
+                            value: top,
+                            child: Text(top),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  );
+
+                  final draftButton = ElevatedButton.icon(
+                    onPressed: _generateAiStudyNote,
+                    icon: const Icon(Icons.auto_awesome_rounded, size: 15, color: Colors.white),
+                    label: Text(
+                      "Start from an AI draft",
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6366F1),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  );
+
+                  if (isWide) {
+                    return Row(
+                      children: [
+                        Expanded(child: topicDropdown),
+                        const SizedBox(width: 14),
+                        draftButton,
+                      ],
+                    );
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      topicDropdown,
+                      const SizedBox(height: 10),
+                      draftButton,
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+
+        // 2. Notes in your college Card
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Notes in your college",
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1E293B),
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                "Faculty notes replace the built-in or AI notes for their topic. AI notes were written when a student first opened a topic; review and approve them here.",
+                style: GoogleFonts.poppins(
+                  fontSize: 11.5,
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+
+              // List of Study Notes
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _studyNotes.length,
+                separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                itemBuilder: (context, index) {
+                  final note = _studyNotes[index];
+                  final isAiPendingReview = note.isAiGenerated && !note.isReviewed;
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                note.title,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF0F172A),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Wrap(
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                spacing: 8,
+                                runSpacing: 4,
+                                children: [
+                                  // Faculty or AI badge
+                                  if (isAiPendingReview)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFEF3C7),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.warning_amber_rounded, size: 12, color: Color(0xFFD97706)),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            "AI, not yet reviewed",
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              color: const Color(0xFFD97706),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  else
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFCCFBF1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        "Faculty",
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF0F766E),
+                                        ),
+                                      ),
+                                    ),
+
+                                  // Published badge
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFDCFCE7),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      note.status,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF15803D),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Key points count
+                                  Text(
+                                    "${note.keyPointsCount} key points",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11.5,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+
+                                  // Author if available
+                                  if (note.author != null)
+                                    Text(
+                                      "· by ${note.author}",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 11.5,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                note.description,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: const Color(0xFF64748B),
+                                  height: 1.45,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+
+                        // Actions on right
+                        if (isAiPendingReview) ...[
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () => _showReviewNoteDialog(note),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF1E2865),
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                child: Text(
+                                  "Review",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline_rounded, size: 17, color: Color(0xFFDC2626)),
+                                onPressed: () => _showDeleteStudyNoteDialog(note),
+                                splashRadius: 18,
+                                tooltip: "Delete note",
+                              ),
+                            ],
+                          ),
+                        ] else ...[
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined, size: 17, color: Color(0xFF64748B)),
+                                onPressed: () => _showReviewNoteDialog(note),
+                                splashRadius: 18,
+                                tooltip: "Edit note",
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline_rounded, size: 17, color: Color(0xFFDC2626)),
+                                onPressed: () => _showDeleteStudyNoteDialog(note),
+                                splashRadius: 18,
+                                tooltip: "Delete note",
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

@@ -1200,85 +1200,68 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
               padding: EdgeInsets.fromLTRB(n.hasAmberBorder ? 20 : 18, 16, 18, 14),
               child: LayoutBuilder(
                 builder: (context, cardConstraints) {
-                  final isCompact = cardConstraints.maxWidth < 560;
+                  final isNarrow = cardConstraints.maxWidth < 620;
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Top Row: Icon + Title + Badges (Responsive)
-                      if (isCompact) ...[
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: n.iconBg,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Center(
-                                child: Icon(n.icon, size: 17, color: n.iconColor),
-                              ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: n.iconBg,
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                n.hasBullet ? "• ${n.title}" : n.title,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF0F172A),
-                                  height: 1.35,
+                            child: Center(
+                              child: Icon(n.icon, size: 17, color: n.iconColor),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        n.hasBullet ? "• ${n.title}" : n.title,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF0F172A),
+                                          height: 1.35,
+                                        ),
+                                      ),
+                                    ),
+                                    if (!isNarrow && n.tags.isNotEmpty) ...[
+                                      const SizedBox(width: 10),
+                                      Wrap(
+                                        spacing: 6,
+                                        runSpacing: 4,
+                                        children: n.tags.map((tag) => _buildBadgeChip(tag)).toList(),
+                                      ),
+                                    ],
+                                  ],
                                 ),
-                              ),
+                                if (isNarrow && n.tags.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 5,
+                                    children: n.tags.map((tag) => _buildBadgeChip(tag)).toList(),
+                                  ),
+                                ],
+                              ],
                             ),
-                          ],
-                        ),
-                        if (n.tags.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 5,
-                            children: n.tags.map((tag) => _buildBadgeChip(tag)).toList(),
                           ),
                         ],
-                      ] else ...[
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: n.iconBg,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Center(
-                                child: Icon(n.icon, size: 17, color: n.iconColor),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                n.hasBullet ? "• ${n.title}" : n.title,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF0F172A),
-                                  height: 1.35,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Wrap(
-                              spacing: 6,
-                              runSpacing: 4,
-                              children: n.tags.map((tag) => _buildBadgeChip(tag)).toList(),
-                            ),
-                          ],
-                        ),
-                      ],
+                      ),
                       const SizedBox(height: 6),
 
                       // Subtitle: Role · Name · Date · Audience
@@ -1313,181 +1296,158 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                         spacing: 12,
                         runSpacing: 8,
                         children: [
-                          // Left Details Group
-                          Wrap(
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            spacing: 12,
-                            runSpacing: 6,
-                            children: [
-                              // "Mark as read" Link if unread
-                              if (n.showMarkAsRead && n.isUnread) ...[
-                                InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      n.isUnread = false;
-                                      n.hasBullet = false;
-                                    });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text("Marked as read"),
-                                        behavior: SnackBarBehavior.floating,
-                                        duration: Duration(seconds: 1),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    "Mark as read",
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: const Color(0xFF0F172A),
-                                      decoration: TextDecoration.underline,
-                                    ),
+                          // "Mark as read" Link if unread
+                          if (n.showMarkAsRead && n.isUnread)
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  n.isUnread = false;
+                                  n.hasBullet = false;
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Marked as read"),
+                                    behavior: SnackBarBehavior.floating,
+                                    duration: Duration(seconds: 1),
                                   ),
+                                );
+                              },
+                              child: Text(
+                                "Mark as read",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF0F172A),
+                                  decoration: TextDecoration.underline,
                                 ),
-                              ],
+                              ),
+                            ),
 
-                              // Expander toggle "Show less" / "Show more"
-                              if (n.hasOpenLink) ...[
-                                InkWell(
-                                  onTap: () => setState(() => n.isExpanded = !n.isExpanded),
-                                  child: Text(
-                                    n.isExpanded ? "Show less" : "Show more",
+                          // Expander toggle "Show less" / "Show more"
+                          if (n.hasOpenLink)
+                            InkWell(
+                              onTap: () => setState(() => n.isExpanded = !n.isExpanded),
+                              child: Text(
+                                n.isExpanded ? "Show less" : "Show more",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF475569),
+                                ),
+                              ),
+                            ),
+
+                          // Open Link Icon
+                          if (n.hasOpenLink)
+                            InkWell(
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Opening attached document link..."),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.link_rounded, size: 14, color: Color(0xFF475569)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    "Open link",
                                     style: GoogleFonts.poppins(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                       color: const Color(0xFF475569),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
+                            ),
 
-                              // Open Link Icon
-                              if (n.hasOpenLink) ...[
-                                InkWell(
-                                  onTap: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text("Opening attached document link..."),
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                  },
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(Icons.link_rounded, size: 14, color: Color(0xFF475569)),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        "Open link",
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                          color: const Color(0xFF475569),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                          // Validity
+                          if (n.validity != null)
+                            Text(
+                              n.validity!,
+                              style: GoogleFonts.poppins(
+                                fontSize: 11.5,
+                                color: const Color(0xFF64748B),
+                              ),
+                            ),
 
-                              // Validity
-                              if (n.validity != null) ...[
+                          // Read stats
+                          if (n.readCount > 0 || n.ackCount > 0)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.remove_red_eye_outlined, size: 13, color: Color(0xFF64748B)),
+                                const SizedBox(width: 4),
                                 Text(
-                                  n.validity!,
+                                  "Read by ${n.readCount} · ${n.ackCount} acknowledged",
                                   style: GoogleFonts.poppins(
                                     fontSize: 11.5,
                                     color: const Color(0xFF64748B),
                                   ),
                                 ),
                               ],
+                            ),
 
-                              // Read stats
-                              if (n.readCount > 0 || n.ackCount > 0) ...[
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.remove_red_eye_outlined, size: 13, color: Color(0xFF64748B)),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      "Read by ${n.readCount} · ${n.ackCount} acknowledged",
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 11.5,
-                                        color: const Color(0xFF64748B),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ],
-                          ),
-
-                          // Right Action Group
-                          Wrap(
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            spacing: 10,
-                            runSpacing: 6,
-                            children: [
-                              // Action: "I have read this" Button
-                              if (n.showIHaveReadThisButton) ...[
-                                ElevatedButton.icon(
-                                  onPressed: () {
-                                    setState(() {
-                                      n.isAcknowledged = !n.isAcknowledged;
-                                    });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(n.isAcknowledged
-                                            ? "Acknowledgment recorded"
-                                            : "Acknowledgment revoked"),
-                                        backgroundColor: n.isAcknowledged
-                                            ? const Color(0xFF15803D)
-                                            : const Color(0xFF1E2865),
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                  },
-                                  icon: Icon(
-                                    n.isAcknowledged ? Icons.check_circle_rounded : Icons.check_rounded,
-                                    size: 14,
-                                    color: Colors.white,
-                                  ),
-                                  label: Text(
-                                    n.isAcknowledged ? "Acknowledged" : "I have read this",
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
+                          // Action: "I have read this" Button
+                          if (n.showIHaveReadThisButton)
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  n.isAcknowledged = !n.isAcknowledged;
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(n.isAcknowledged
+                                        ? "Acknowledgment recorded"
+                                        : "Acknowledgment revoked"),
                                     backgroundColor: n.isAcknowledged
                                         ? const Color(0xFF15803D)
                                         : const Color(0xFF1E2865),
-                                    elevation: 0,
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    behavior: SnackBarBehavior.floating,
                                   ),
+                                );
+                              },
+                              icon: Icon(
+                                n.isAcknowledged ? Icons.check_circle_rounded : Icons.check_rounded,
+                                size: 14,
+                                color: Colors.white,
+                              ),
+                              label: Text(
+                                n.isAcknowledged ? "Acknowledged" : "I have read this",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
                                 ),
-                              ],
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: n.isAcknowledged
+                                    ? const Color(0xFF15803D)
+                                    : const Color(0xFF1E2865),
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                            ),
 
-                              // Trash Icon Button for Deletion
-                              if (n.hasDelete) ...[
-                                InkWell(
-                                  onTap: () => _deleteNotice(n),
-                                  borderRadius: BorderRadius.circular(6),
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(4),
-                                    child: Icon(
-                                      Icons.delete_outline_rounded,
-                                      size: 16,
-                                      color: Color(0xFF94A3B8),
-                                    ),
-                                  ),
+                          // Trash Icon Button for Deletion
+                          if (n.hasDelete)
+                            InkWell(
+                              onTap: () => _deleteNotice(n),
+                              borderRadius: BorderRadius.circular(6),
+                              child: const Padding(
+                                padding: EdgeInsets.all(4),
+                                child: Icon(
+                                  Icons.delete_outline_rounded,
+                                  size: 16,
+                                  color: Color(0xFF94A3B8),
                                 ),
-                              ],
-                            ],
-                          ),
+                              ),
+                            ),
                         ],
                       ),
                     ],
