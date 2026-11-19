@@ -26,6 +26,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _userName = "Anand R";
   String _userDesignation = "Semester 5 · B.E.";
   String _userCollege = "Anna Institute of Technology";
+  bool _isMfaEnabled = true;
+  bool _isAlertsActive = true;
 
   @override
   void initState() {
@@ -1466,20 +1468,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 12),
 
-          _buildSettingRow(
+          _buildToggleSettingRow(
             icon: Icons.security_rounded,
             title: "Security & MFA",
-            subtitle: "Two-factor authentication active",
-            badge: "Enabled",
-            badgeColor: const Color(0xFF059669),
+            subtitle: _isMfaEnabled
+                ? "Two-factor authentication active"
+                : "Two-factor authentication disabled",
+            value: _isMfaEnabled,
+            activeBadgeText: "Enabled",
+            inactiveBadgeText: "Disabled",
+            activeColor: const Color(0xFF059669),
+            onChanged: (val) {
+              setState(() {
+                _isMfaEnabled = val;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    _isMfaEnabled
+                        ? "Two-factor authentication (MFA) enabled"
+                        : "Two-factor authentication (MFA) disabled",
+                  ),
+                  duration: const Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
           ),
           const Divider(color: Color(0xFFF1F5F9), height: 16),
-          _buildSettingRow(
+          _buildToggleSettingRow(
             icon: Icons.notifications_active_outlined,
             title: "Student Alerts & Deadlines",
-            subtitle: "Daily timetable & IA exam alerts",
-            badge: "Active",
-            badgeColor: const Color(0xFF2563EB),
+            subtitle: _isAlertsActive
+                ? "Daily timetable & IA exam alerts"
+                : "Daily timetable & IA exam alerts disabled",
+            value: _isAlertsActive,
+            activeBadgeText: "Active",
+            inactiveBadgeText: "Off",
+            activeColor: const Color(0xFF2563EB),
+            onChanged: (val) {
+              setState(() {
+                _isAlertsActive = val;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    _isAlertsActive
+                        ? "Student alerts activated"
+                        : "Student alerts turned off",
+                  ),
+                  duration: const Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
           ),
           const Divider(color: Color(0xFFF1F5F9), height: 16),
           _buildSettingRow(
@@ -1490,6 +1532,105 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onTap: _confirmSignOut,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildToggleSettingRow({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required String activeBadgeText,
+    required String inactiveBadgeText,
+    required Color activeColor,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return InkWell(
+      onTap: () => onChanged(!value),
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: value
+                    ? activeColor.withValues(alpha: 0.10)
+                    : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                size: 18,
+                color: value ? activeColor : const Color(0xFF64748B),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6),
+            // Dynamic Badge: Shows "Enabled" / "Disabled" or "Active" / "Off"
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: value
+                    ? activeColor.withValues(alpha: 0.12)
+                    : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: value
+                      ? activeColor.withValues(alpha: 0.3)
+                      : const Color(0xFFE2E8F0),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                value ? activeBadgeText : inactiveBadgeText,
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: value ? activeColor : const Color(0xFF64748B),
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            // On/Off Switch Toggle
+            Transform.scale(
+              scale: 0.78,
+              child: Switch(
+                value: value,
+                onChanged: onChanged,
+                activeThumbColor: Colors.white,
+                activeTrackColor: activeColor,
+                inactiveThumbColor: Colors.white,
+                inactiveTrackColor: const Color(0xFFCBD5E1),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

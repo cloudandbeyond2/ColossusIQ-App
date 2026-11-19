@@ -26,7 +26,6 @@ class _CourseReaderScreenState extends State<CourseReaderScreen> {
   late Set<String> _completedLessonIds;
   int _currentLessonIndex = 0;
   final ScrollController _scrollController = ScrollController();
-  final Map<String, bool> _revealedAnswers = {};
 
   @override
   void initState() {
@@ -678,9 +677,10 @@ class _CourseReaderScreenState extends State<CourseReaderScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // 1. Practice & Recap Layout (Images 4 & 5)
+  // 1. Practice & Recap Layout
   // ---------------------------------------------------------------------------
   Widget _buildPracticeAndRecapContent(Lesson cur) {
+    final isRevision = cur.layoutKind == 'revision';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -689,44 +689,55 @@ class _CourseReaderScreenState extends State<CourseReaderScreen> {
         _buildObjectivesBox(cur),
         const SizedBox(height: 22),
         Text(
-          "Recap",
+          isRevision
+              ? "Comprehensive Review & Assessment"
+              : "Practical Implementation & Lab Guide",
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w700,
             color: const Color(0xFF0F172A),
           ),
         ),
-        const SizedBox(height: 6),
-        Text(
-          "Before moving on, make sure you can explain every item in the checklist without looking back.",
-          style: GoogleFonts.poppins(
-            fontSize: 12.5,
-            color: const Color(0xFF475569),
-            height: 1.45,
-          ),
-        ),
+        const SizedBox(height: 10),
+        _buildFormattedBody(cur.body),
         const SizedBox(height: 22),
-        Text(
-          "Practice",
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
+        if (cur.keyPoints.isNotEmpty) ...[
+          Text(
+            isRevision ? "Certification Checklist" : "Key Takeaways & Checklist",
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+            ),
           ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          "Write or say your answer first, then reveal the model answer and compare. If you missed something, reopen the concepts lesson of this chapter.",
-          style: GoogleFonts.poppins(
-            fontSize: 12.5,
-            color: const Color(0xFF475569),
-            height: 1.45,
-          ),
-        ),
-        const SizedBox(height: 22),
-        _buildRecallSection(cur),
-        const SizedBox(height: 20),
-        _buildPracticeQuestionsSection(cur),
+          const SizedBox(height: 10),
+          for (final kp in cur.keyPoints)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(top: 3),
+                    child: Icon(Icons.check_circle_rounded,
+                        size: 14, color: Color(0xFF0F766E)),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      kp,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.5,
+                        color: const Color(0xFF334155),
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 16),
+        ],
       ],
     );
   }
@@ -751,14 +762,7 @@ class _CourseReaderScreenState extends State<CourseReaderScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        Text(
-          cur.body,
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            color: const Color(0xFF334155),
-            height: 1.5,
-          ),
-        ),
+        _buildFormattedBody(cur.body),
         const SizedBox(height: 22),
         if (cur.keyPoints.isNotEmpty) ...[
           Text(
@@ -1093,281 +1097,159 @@ class _CourseReaderScreenState extends State<CourseReaderScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // YOU SHOULD NOW BE ABLE TO RECALL matching Image 5
+  // Rich Formatted Content Renderer for Lesson Body
   // ---------------------------------------------------------------------------
-  Widget _buildRecallSection(Lesson cur) {
-    final title = cur.chapterTitle.isNotEmpty ? cur.chapterTitle : cur.title;
+  Widget _buildFormattedBody(String body) {
+    if (body.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.notes_rounded,
-                  size: 15, color: Color(0xFFD97706)),
-              const SizedBox(width: 8),
-              Text(
-                "YOU SHOULD NOW BE ABLE TO RECALL",
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
-                  color: const Color(0xFF64748B),
-                ),
+    final lines = body.split('\n');
+    final widgets = <Widget>[];
+    var inCodeBlock = false;
+    final codeBuffer = StringBuffer();
+
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
+
+      if (line.trim().startsWith('```')) {
+        if (inCodeBlock) {
+          final code = codeBuffer.toString().trimRight();
+          widgets.add(
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFF1E293B)),
               ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 520;
-              if (isWide) {
-                return Row(
-                  children: [
-                    Expanded(
-                      child: _buildRecallCard(
-                        1,
-                        "Explain $title in your own words",
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: _buildRecallCard(
-                        2,
-                        "Give an example of $title from ${widget.course.department}",
-                      ),
-                    ),
-                  ],
-                );
-              }
-              return Column(
-                children: [
-                  _buildRecallCard(
-                    1,
-                    "Explain $title in your own words",
-                  ),
-                  const SizedBox(height: 10),
-                  _buildRecallCard(
-                    2,
-                    "Give an example of $title from ${widget.course.department}",
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecallCard(int num, String text) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF0FDF4),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFDCFCE7)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF0F766E), width: 1.5),
-            ),
-            child: Center(
-              child: Text(
-                "$num",
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0F766E),
+              child: SelectableText(
+                code,
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 11.5,
+                  color: const Color(0xFFE2E8F0),
+                  height: 1.45,
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            text,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF1E293B),
-              height: 1.4,
+          );
+          codeBuffer.clear();
+          inCodeBlock = false;
+        } else {
+          inCodeBlock = true;
+          codeBuffer.clear();
+        }
+        continue;
+      }
+
+      if (inCodeBlock) {
+        codeBuffer.writeln(line);
+        continue;
+      }
+
+      final trimmed = line.trim();
+      if (trimmed.isEmpty) {
+        widgets.add(const SizedBox(height: 6));
+      } else if (trimmed.startsWith('### ')) {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(top: 12, bottom: 6),
+            child: Text(
+              trimmed.substring(4),
+              style: GoogleFonts.poppins(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF0F172A),
+              ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // PRACTICE QUESTIONS with Interactive Reveal matching Image 5
-  // ---------------------------------------------------------------------------
-  Widget _buildPracticeQuestionsSection(Lesson cur) {
-    final title = cur.chapterTitle.isNotEmpty ? cur.chapterTitle : cur.title;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.help_outline_rounded,
-                  size: 15, color: Color(0xFFD97706)),
-              const SizedBox(width: 8),
-              Text(
-                "PRACTICE QUESTIONS",
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
-                  color: const Color(0xFF64748B),
-                ),
+        );
+      } else if (trimmed.startsWith('## ')) {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(top: 14, bottom: 6),
+            child: Text(
+              trimmed.substring(3),
+              style: GoogleFonts.poppins(
+                fontSize: 14.5,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF0F172A),
               ),
-            ],
+            ),
           ),
-          const SizedBox(height: 14),
-
-          _buildQuestionTile(
-            qNum: "Q1",
-            question:
-                "In two or three sentences, explain $title to a first-year student.",
-            answer:
-                "$title introduces the essential foundational models, design principles, and syntax used to build scalable modern computing solutions. It establishes the bridge between abstract data manipulation and practical real-world execution.",
-          ),
-          const SizedBox(height: 12),
-
-          _buildQuestionTile(
-            qNum: "Q2",
-            question:
-                "Where is $title used in ${widget.course.department}?",
-            answer:
-                "It serves as a core competency in software engineering, distributed systems, RESTful API design, database backends, and cloud deployment pipelines across curriculum projects and industry applications.",
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuestionTile({
-    required String qNum,
-    required String question,
-    required String answer,
-  }) {
-    final isRevealed = _revealedAnswers[qNum] ?? false;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: TextSpan(
+        );
+      } else if (trimmed.startsWith('- ') ||
+          trimmed.startsWith('• ') ||
+          trimmed.startsWith('* ')) {
+        final bulletText = trimmed.substring(2);
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6, left: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextSpan(
-                  text: "$qNum  ",
-                  style: GoogleFonts.poppins(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFFD97706),
-                  ),
+                const Padding(
+                  padding: EdgeInsets.only(top: 6),
+                  child: Icon(Icons.circle, size: 6, color: Color(0xFF64748B)),
                 ),
-                TextSpan(
-                  text: question,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF0F172A),
-                    height: 1.4,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    bulletText,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12.5,
+                      color: const Color(0xFF334155),
+                      height: 1.45,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 10),
-
-          InkWell(
-            onTap: () {
-              setState(() {
-                _revealedAnswers[qNum] = !isRevealed;
-              });
-            },
-            borderRadius: BorderRadius.circular(6),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    isRevealed
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    size: 15,
-                    color: const Color(0xFF2E3A94),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    isRevealed ? "Hide model answer" : "Show model answer",
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF2E3A94),
-                    ),
-                  ),
-                ],
+        );
+      } else {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Text(
+              trimmed,
+              style: GoogleFonts.poppins(
+                fontSize: 12.5,
+                color: const Color(0xFF334155),
+                height: 1.45,
               ),
             ),
           ),
+        );
+      }
+    }
 
-          if (isRevealed) ...[
-            const SizedBox(height: 10),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0FDF4),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFDCFCE7)),
-              ),
-              child: Text(
-                answer,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: const Color(0xFF166534),
-                  height: 1.45,
-                ),
-              ),
+    if (inCodeBlock && codeBuffer.isNotEmpty) {
+      widgets.add(
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFF1E293B)),
+          ),
+          child: SelectableText(
+            codeBuffer.toString().trimRight(),
+            style: GoogleFonts.jetBrainsMono(
+              fontSize: 11.5,
+              color: const Color(0xFFE2E8F0),
+              height: 1.45,
             ),
-          ],
-        ],
-      ),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgets,
     );
   }
 }

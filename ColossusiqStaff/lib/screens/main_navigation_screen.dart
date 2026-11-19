@@ -27,7 +27,6 @@ import 'innovation/innovation_modules.dart';
 import 'campus_modules/campus_modules.dart';
 import 'package:flutter/services.dart';
 import 'department/department_portal_screen.dart';
-import 'placement_modules/job_matching_screen.dart';
 import 'auth/login_screen.dart';
 import 'faculty/faculty_screens.dart';
 import 'hod/hod_screens.dart';
@@ -1437,7 +1436,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                     title: "Job Matching",
                     isActive: _activeSubScreenTitle == "Job Matching",
                     onTap: () => _openSubScreen(
-                      JobMatchingScreen(onBack: _closeSubScreen),
+                      PlacementJobMatchingScreen(onBack: _closeSubScreen),
                       title: "Job Matching",
                     ),
                   ),

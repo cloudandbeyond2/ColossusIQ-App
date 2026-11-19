@@ -52,7 +52,13 @@ class CurrentAffairsItem {
 // =============================================================================
 class CurrentAffairsDeskScreen extends StatefulWidget {
   final VoidCallback? onBack;
-  const CurrentAffairsDeskScreen({super.key, this.onBack});
+  final String portalRole;
+
+  const CurrentAffairsDeskScreen({
+    super.key,
+    this.onBack,
+    this.portalRole = 'Faculty',
+  });
 
   @override
   State<CurrentAffairsDeskScreen> createState() =>
@@ -372,7 +378,11 @@ class _CurrentAffairsDeskScreenState extends State<CurrentAffairsDeskScreen> {
         summary: summary,
         sourceName: sourceName.isNotEmpty ? sourceName : "PIB",
         sourceLink: _sourceLinkController.text.trim(),
-        author: "By Dr. Meena Raghavan",
+        author: widget.portalRole == 'Principal'
+            ? "By Dr. K. S. Ramanathan, Principal"
+            : (widget.portalRole == 'HOD'
+                ? "By Dr. Meena Raghavan, HOD"
+                : "By Dr. Meena Raghavan"),
         status: status,
         usefulFor: _selectedExams.toList(),
         hasQuiz: _hasQuizQuestion,
@@ -843,35 +853,33 @@ class _CurrentAffairsDeskScreenState extends State<CurrentAffairsDeskScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Row with Title + Subtitle & Action Button
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Items",
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1E293B),
-                      ),
+          // Header Row with Title + Subtitle & Action Button (Responsive)
+          LayoutBuilder(
+            builder: (context, box) {
+              final isCompact = box.maxWidth < 450;
+              final titleCol = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Items",
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1E293B),
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      "Newest first. Students see published items dated today or earlier.",
-                      style: GoogleFonts.poppins(
-                        fontSize: 11.5,
-                        color: const Color(0xFF64748B),
-                      ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    "Newest first. Students see published items dated today or earlier.",
+                    style: GoogleFonts.poppins(
+                      fontSize: 11.5,
+                      color: const Color(0xFF64748B),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 14),
-              ElevatedButton.icon(
+                  ),
+                ],
+              );
+
+              final newBtn = ElevatedButton.icon(
                 onPressed: () {
                   setState(() {
                     _resetForm();
@@ -895,21 +903,44 @@ class _CurrentAffairsDeskScreenState extends State<CurrentAffairsDeskScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-              ),
-            ],
+              );
+
+              if (isCompact) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    titleCol,
+                    const SizedBox(height: 12),
+                    newBtn,
+                  ],
+                );
+              }
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: titleCol),
+                  const SizedBox(width: 14),
+                  newBtn,
+                ],
+              );
+            },
           ),
           const SizedBox(height: 12),
 
           // Filter Pills (All / Published / Drafts)
-          Row(
-            children: [
-              _buildFilterPill("All", _activeFilter == "All", () => setState(() => _activeFilter = "All")),
-              const SizedBox(width: 8),
-              _buildFilterPill(
-                  "Published", _activeFilter == "Published", () => setState(() => _activeFilter = "Published")),
-              const SizedBox(width: 8),
-              _buildFilterPill("Drafts", _activeFilter == "Drafts", () => setState(() => _activeFilter = "Drafts")),
-            ],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildFilterPill("All", _activeFilter == "All", () => setState(() => _activeFilter = "All")),
+                const SizedBox(width: 8),
+                _buildFilterPill(
+                    "Published", _activeFilter == "Published", () => setState(() => _activeFilter = "Published")),
+                const SizedBox(width: 8),
+                _buildFilterPill("Drafts", _activeFilter == "Drafts", () => setState(() => _activeFilter = "Drafts")),
+              ],
+            ),
           ),
           const SizedBox(height: 16),
           const Divider(height: 1, color: Color(0xFFF1F5F9)),

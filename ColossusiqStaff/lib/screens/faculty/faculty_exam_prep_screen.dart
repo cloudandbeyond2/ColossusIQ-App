@@ -10,12 +10,49 @@ class QuestionItem {
   int correctOptionIndex;
   String explanation;
 
+  late final TextEditingController questionCtrl;
+  late final List<TextEditingController> optionCtrls;
+  late final TextEditingController explanationCtrl;
+
   QuestionItem({
     this.questionText = '',
     List<String>? options,
     this.correctOptionIndex = 0,
     this.explanation = '',
-  }) : options = options ?? ['', '', '', ''];
+  }) : options = options ?? ['', '', '', ''] {
+    questionCtrl = TextEditingController(text: questionText);
+    optionCtrls = List.generate(4, (i) => TextEditingController(text: this.options[i]));
+    explanationCtrl = TextEditingController(text: explanation);
+
+    questionCtrl.addListener(() => questionText = questionCtrl.text);
+    for (int i = 0; i < 4; i++) {
+      final idx = i;
+      optionCtrls[idx].addListener(() => this.options[idx] = optionCtrls[idx].text);
+    }
+    explanationCtrl.addListener(() => explanation = explanationCtrl.text);
+  }
+
+  void syncControllers() {
+    if (questionCtrl.text != questionText) {
+      questionCtrl.text = questionText;
+    }
+    for (int i = 0; i < 4; i++) {
+      if (optionCtrls[i].text != options[i]) {
+        optionCtrls[i].text = options[i];
+      }
+    }
+    if (explanationCtrl.text != explanation) {
+      explanationCtrl.text = explanation;
+    }
+  }
+
+  void dispose() {
+    questionCtrl.dispose();
+    for (final c in optionCtrls) {
+      c.dispose();
+    }
+    explanationCtrl.dispose();
+  }
 }
 
 class QuestionSetItem {
@@ -89,7 +126,15 @@ class StudyNoteItem {
 // =============================================================================
 class FacultyExamPrepScreen extends StatefulWidget {
   final VoidCallback? onBack;
-  const FacultyExamPrepScreen({super.key, this.onBack});
+  final String portalRole;
+  final bool startEmpty;
+
+  const FacultyExamPrepScreen({
+    super.key,
+    this.onBack,
+    this.portalRole = 'Faculty',
+    this.startEmpty = false,
+  });
 
   @override
   State<FacultyExamPrepScreen> createState() => _FacultyExamPrepScreenState();
@@ -156,8 +201,11 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
     "NExT Step 1", "IIT JAM",
   ];
 
-  // Pre-populated Question Sets matching Screenshot 1 (Total: 7 sets, 63 questions)
-  final List<QuestionSetItem> _questionSets = [
+  // Question Sets & Study Notes State
+  late List<QuestionSetItem> _questionSets;
+  late List<StudyNoteItem> _studyNotes;
+
+  List<QuestionSetItem> _getInitialQuestionSets() => [
     QuestionSetItem(
       id: "qs_1",
       title: "Civil engineering core — Mock Test & Solutions",
@@ -242,8 +290,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
     ),
   ];
 
-  // Pre-populated Study Notes matching Screenshot 3 (Total: 4 faculty + 1 AI = 5 notes)
-  final List<StudyNoteItem> _studyNotes = [
+  List<StudyNoteItem> _getInitialStudyNotes() => [
     StudyNoteItem(
       id: "sn_1",
       title: "Data Structures & Asymptotic Analysis",
@@ -305,10 +352,41 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.startEmpty) {
+      _questionSets = [];
+      _studyNotes = [];
+    } else {
+      _questionSets = _getInitialQuestionSets();
+      _studyNotes = _getInitialStudyNotes();
+    }
     _resetNewQuestionSetForm();
     _noteOverviewCtrl.addListener(() {
       if (mounted) setState(() {});
     });
+  }
+
+  void _loadSampleQuestionSets() {
+    setState(() {
+      _questionSets = _getInitialQuestionSets();
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Loaded 7 sample question sets (63 questions)"),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _loadSampleStudyNotes() {
+    setState(() {
+      _studyNotes = _getInitialStudyNotes();
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Loaded sample faculty and AI study notes"),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   void _resetNewQuestionSetForm() {
@@ -341,44 +419,165 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   // AI DRAFT GENERATOR FOR NEW QUESTION SET
   // ===========================================================================
   void _draftWithAi() {
-    final topic = _selectedTopic ?? "General Aptitude";
+    final topic = _selectedTopic ?? "Indian Polity & Constitution";
+    final count = int.tryParse(_draftCountController.text.trim()) ?? 10;
+    final targetCount = count.clamp(1, 20);
+
+    List<QuestionItem> generated = [];
+
+    if (topic.contains("Polity") || topic.contains("Constitution")) {
+      final bank = [
+        QuestionItem(
+          questionText: "Which Article of the Indian Constitution empowers the Supreme Court to issue writs for the enforcement of Fundamental Rights?",
+          options: ["Article 32", "Article 226", "Article 131", "Article 143"],
+          correctOptionIndex: 0,
+          explanation: "Article 32 confers the right to move the Supreme Court for enforcement of Fundamental Rights. Dr. B.R. Ambedkar called it the 'Heart and Soul' of the Constitution.",
+        ),
+        QuestionItem(
+          questionText: "The landmark doctrine of 'Basic Structure' of the Constitution was propounded by the Supreme Court in:",
+          options: ["Kesavananda Bharati v. State of Kerala (1973)", "Golaknath v. State of Punjab (1967)", "Minerva Mills v. Union of India (1980)", "Maneka Gandhi v. Union of India (1978)"],
+          correctOptionIndex: 0,
+          explanation: "In the 1973 Kesavananda Bharati case, a 13-judge bench held that Parliament's constituent power does not permit altering the basic structure.",
+        ),
+        QuestionItem(
+          questionText: "The 73rd Constitutional Amendment Act, 1992 added which Schedule to the Constitution of India?",
+          options: ["Eleventh Schedule", "Twelfth Schedule", "Ninth Schedule", "Tenth Schedule"],
+          correctOptionIndex: 0,
+          explanation: "The 11th Schedule contains 29 functional items pertaining to the powers and responsibilities of Panchayats.",
+        ),
+        QuestionItem(
+          questionText: "Under which Article can the President of India proclaim National Emergency on grounds of war, external aggression, or armed rebellion?",
+          options: ["Article 352", "Article 356", "Article 360", "Article 365"],
+          correctOptionIndex: 0,
+          explanation: "Article 352 deals with proclamation of National Emergency upon written advice of the Union Cabinet.",
+        ),
+        QuestionItem(
+          questionText: "Which constitutional body is constituted under Article 280 to recommend the distribution of net tax proceeds between Union and States?",
+          options: ["Finance Commission", "NITI Aayog", "GST Council", "Inter-State Council"],
+          correctOptionIndex: 0,
+          explanation: "Article 280 mandates the President to constitute a Finance Commission every 5 years.",
+        ),
+        QuestionItem(
+          questionText: "The Anti-Defection Law was introduced in the Indian Constitution by which Amendment Act?",
+          options: ["52nd Amendment Act, 1985", "42nd Amendment Act, 1976", "44th Amendment Act, 1978", "61st Amendment Act, 1989"],
+          correctOptionIndex: 0,
+          explanation: "The 52nd Amendment Act added the Tenth Schedule laying down criteria for disqualification on grounds of defection.",
+        ),
+        QuestionItem(
+          questionText: "Who acts as the ex-officio Chairman of the Council of States (Rajya Sabha)?",
+          options: ["Vice-President of India", "Prime Minister", "Speaker of Lok Sabha", "Chief Justice of India"],
+          correctOptionIndex: 0,
+          explanation: "Article 64 states that the Vice-President of India shall be ex-officio Chairman of the Rajya Sabha.",
+        ),
+        QuestionItem(
+          questionText: "Which Fundamental Right is suspended automatically during a National Emergency proclaimed on grounds of war or external aggression?",
+          options: ["Six freedoms under Article 19", "Right to Life under Article 21", "Right to Equality under Article 14", "Freedom of Religion under Article 25"],
+          correctOptionIndex: 0,
+          explanation: "Under Article 358, the freedoms guaranteed by Article 19 are suspended automatically during an external emergency.",
+        ),
+        QuestionItem(
+          questionText: "The Comptroller and Auditor General of India (CAG) is appointed by the President under which Article?",
+          options: ["Article 148", "Article 149", "Article 76", "Article 124"],
+          correctOptionIndex: 0,
+          explanation: "Article 148 establishes the office of the Comptroller and Auditor General of India.",
+        ),
+        QuestionItem(
+          questionText: "Which prerogative writ translates to 'We Command' and is issued to compel a public authority to perform an obligatory public duty?",
+          options: ["Mandamus", "Habeas Corpus", "Quo-Warranto", "Certiorari"],
+          correctOptionIndex: 0,
+          explanation: "Mandamus is issued by high courts or the Supreme Court to command a public officer or body to perform an act falling under their duty.",
+        ),
+      ];
+      generated = bank.take(targetCount).toList();
+    } else if (topic.contains("Data Structures")) {
+      final bank = [
+        QuestionItem(
+          questionText: "What is the worst-case time complexity of searching an element in a balanced Binary Search Tree (AVL / Red-Black)?",
+          options: ["O(log n)", "O(n)", "O(1)", "O(n log n)"],
+          correctOptionIndex: 0,
+          explanation: "Due to height balance invariants, maximum tree depth is bounded by O(log n).",
+        ),
+        QuestionItem(
+          questionText: "Which data structure is naturally utilized in Breadth-First Search (BFS) graph traversal?",
+          options: ["Queue", "Stack", "Priority Queue", "Deque"],
+          correctOptionIndex: 0,
+          explanation: "BFS explores vertex frontiers in FIFO order using a Queue.",
+        ),
+        QuestionItem(
+          questionText: "What is the average time complexity of insertion in a Hash Table with good hash distribution?",
+          options: ["O(1)", "O(log n)", "O(n)", "O(n^2)"],
+          correctOptionIndex: 0,
+          explanation: "Under uniform hashing assumption, expected collision chain length is constant O(1).",
+        ),
+        QuestionItem(
+          questionText: "In a min-heap of size n, extracting the minimum element takes:",
+          options: ["O(log n)", "O(1)", "O(n)", "O(n log n)"],
+          correctOptionIndex: 0,
+          explanation: "Extracting the root and restoring heap property via sift-down takes logarithmic time O(log n).",
+        ),
+        QuestionItem(
+          questionText: "Which of the following sorting algorithms has worst-case time complexity of O(n log n) and is stable?",
+          options: ["Merge Sort", "Quick Sort", "Heap Sort", "Selection Sort"],
+          correctOptionIndex: 0,
+          explanation: "Merge Sort guarantees O(n log n) across all cases and maintains relative order of equal keys.",
+        ),
+        QuestionItem(
+          questionText: "Which data structure is optimal for implementing Undo/Redo operations in an editor?",
+          options: ["Two Stacks", "Single Queue", "Circular Array", "Binary Heap"],
+          correctOptionIndex: 0,
+          explanation: "LIFO semantics of two stacks (Undo stack & Redo stack) perfectly support state reversibility.",
+        ),
+        QuestionItem(
+          questionText: "What is the minimum number of queues required to implement a stack?",
+          options: ["Two", "One", "Three", "Four"],
+          correctOptionIndex: 0,
+          explanation: "Two queues can implement a stack by shifting elements during push or pop operations.",
+        ),
+        QuestionItem(
+          questionText: "Dijkstra's single source shortest path algorithm on non-negative weights runs in O((V + E) log V) using:",
+          options: ["Min-Priority Queue / Binary Heap", "Unsorted Array", "Stack", "FIFO Queue"],
+          correctOptionIndex: 0,
+          explanation: "Using a min-heap priority queue achieves optimal O((V + E) log V) complexity.",
+        ),
+        QuestionItem(
+          questionText: "In a circular queue implemented with array size N, the full condition with one empty slot is:",
+          options: ["(rear + 1) % N == front", "rear == front", "(front + 1) % N == rear", "rear == N - 1"],
+          correctOptionIndex: 0,
+          explanation: "The condition (rear + 1) % N == front distinguishes a full queue from an empty queue.",
+        ),
+        QuestionItem(
+          questionText: "Which tree traversal of a Binary Search Tree produces keys in ascending sorted order?",
+          options: ["In-order traversal", "Pre-order traversal", "Post-order traversal", "Level-order traversal"],
+          correctOptionIndex: 0,
+          explanation: "Left-Root-Right in-order traversal naturally yields elements in non-decreasing order for BSTs.",
+        ),
+      ];
+      generated = bank.take(targetCount).toList();
+    } else {
+      for (int i = 1; i <= targetCount; i++) {
+        generated.add(
+          QuestionItem(
+            questionText: "Exam Question $i: In the study of $topic, which core principle holds under standard conditions?",
+            options: [
+              "Verified primary formulation with established boundary limits",
+              "Secondary empirical approximation without constraints",
+              "Invariable static constant regardless of parameters",
+              "Arbitrary stochastic variance",
+            ],
+            correctOptionIndex: 0,
+            explanation: "Core principle derived from standardized textbook definitions and entrance exam syllabi for $topic.",
+          ),
+        );
+      }
+    }
+
     setState(() {
+      _selectedTopic = topic;
       _formQuestions.clear();
-      _formQuestions.addAll([
-        QuestionItem(
-          questionText: "What is the standard formula or principle governing $topic?",
-          options: [
-            "Core theoretical axiom with verified boundary conditions",
-            "Empirical approximation without secondary constraints",
-            "Static scalar formulation",
-            "Alternative null hypothesis",
-          ],
-          correctOptionIndex: 0,
-          explanation: "Governed by first principles and standard textbook derivations.",
-        ),
-        QuestionItem(
-          questionText: "Which of the following statements is TRUE regarding $topic applications?",
-          options: [
-            "Linear proportionality holds under nominal operating conditions",
-            "Invariance is violated when ambient variables change",
-            "Non-convergence occurs in deterministic systems",
-            "None of the standard criteria are satisfied",
-          ],
-          correctOptionIndex: 0,
-          explanation: "Standard operational models preserve linearity within defined thresholds.",
-        ),
-        QuestionItem(
-          questionText: "In competitive exam problem sets, $topic problems typically evaluate:",
-          options: [
-            "Analytical reasoning, derivation precision, and time management",
-            "Rote memorization of incidental dates",
-            "Subjective speculative interpretation",
-            "Unconstrained guesswork",
-          ],
-          correctOptionIndex: 0,
-          explanation: "Evaluates conceptual depth, speed, and analytical accuracy under standardized constraints.",
-        ),
-      ]);
+      _formQuestions.addAll(generated);
+      for (final q in _formQuestions) {
+        q.syncControllers();
+      }
       if (_setTitleController.text.trim().isEmpty) {
         _setTitleController.text = "$topic — Practice Set";
       }
@@ -386,10 +585,10 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text("AI generated 3 draft questions for $topic! Check and edit."),
+        content: Text("AI drafted ${_formQuestions.length} questions for '$topic'! Review and edit."),
         backgroundColor: const Color(0xFF1E2865),
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -413,13 +612,17 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
         ? _setTitleController.text.trim()
         : "$_selectedTopic — Practice Set";
 
+    final author = widget.portalRole == 'Principal'
+        ? "Dr. K. S. Ramanathan, Principal"
+        : (widget.portalRole == 'HOD' ? "HOD Desk" : "Dr. Lakshmi Sundaram");
+
     final newSet = QuestionSetItem(
       id: "qs_${DateTime.now().millisecondsSinceEpoch}",
       title: title,
       topic: _selectedTopic!,
       questionsCount: _formQuestions.length,
       exam: _selectedExams.isNotEmpty ? _selectedExams.first : null,
-      author: "Dr. Lakshmi Sundaram",
+      author: author,
       status: _publishToStudents ? "Published" : "Draft",
       questions: List.from(_formQuestions),
     );
@@ -1098,8 +1301,8 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
   // 4. SEGMENTED PILL TABS
   // ===========================================================================
   Widget _buildSegmentedTabs() {
-    return Align(
-      alignment: Alignment.centerLeft,
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
@@ -1188,35 +1391,33 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Row
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Question sets",
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1E293B),
-                      ),
+          // Header Row (Responsive)
+          LayoutBuilder(
+            builder: (context, box) {
+              final isCompact = box.maxWidth < 450;
+              final titleCol = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Question sets",
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1E293B),
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      "Exam-style questions for any syllabus topic, or a new topic your college teaches. Published questions appear in drills and mocks.",
-                      style: GoogleFonts.poppins(
-                        fontSize: 11.5,
-                        color: const Color(0xFF64748B),
-                      ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    "Exam-style questions for any syllabus topic, or a new topic your college teaches. Published questions appear in drills and mocks.",
+                    style: GoogleFonts.poppins(
+                      fontSize: 11.5,
+                      color: const Color(0xFF64748B),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 14),
-              ElevatedButton.icon(
+                  ),
+                ],
+              );
+
+              final newSetBtn = ElevatedButton.icon(
                 onPressed: () {
                   setState(() {
                     _resetNewQuestionSetForm();
@@ -1240,20 +1441,120 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-              ),
-            ],
+              );
+
+              if (isCompact) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    titleCol,
+                    const SizedBox(height: 12),
+                    newSetBtn,
+                  ],
+                );
+              }
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: titleCol),
+                  const SizedBox(width: 14),
+                  newSetBtn,
+                ],
+              );
+            },
           ),
           const SizedBox(height: 18),
           const Divider(height: 1, color: Color(0xFFF1F5F9)),
 
-          // List of Question Sets
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _questionSets.length,
-            separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
-            itemBuilder: (context, index) {
-              final set = _questionSets[index];
+          // Empty State or List of Question Sets
+          if (_questionSets.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 14),
+              child: Container(
+                constraints: const BoxConstraints(minHeight: 180),
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: const Color(0xFFCBD5E1).withValues(alpha: 0.6),
+                    width: 1,
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Stack(
+                    children: [
+                      // Blueprint Grid Lines
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _GridPaperPainter(
+                            gridColor: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+                            step: 26.0,
+                          ),
+                        ),
+                      ),
+
+                      // Centered Message (Matches Screenshot 3)
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "No question sets yet",
+                              style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: Text(
+                                "Add previous-year-style questions for an exam, or a set for a topic your students find hard.",
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12.5,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            OutlinedButton.icon(
+                              onPressed: _loadSampleQuestionSets,
+                              icon: const Icon(Icons.file_download_outlined, size: 13, color: Color(0xFF1E2865)),
+                              label: Text(
+                                "Load sample question sets",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1E2865),
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Color(0xFFCBD5E1)),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _questionSets.length,
+              separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+              itemBuilder: (context, index) {
+                final set = _questionSets[index];
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 child: Row(
@@ -1576,16 +1877,17 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
               spacing: 12,
               runSpacing: 10,
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 6,
                   children: [
                     Text(
                       "How many to draft",
                       style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
                     ),
-                    const SizedBox(width: 8),
                     Container(
-                      width: 60,
+                      width: 52,
                       height: 36,
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -1882,9 +2184,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
               border: Border.all(color: const Color(0xFFCBD5E1)),
             ),
             child: TextField(
-              controller: TextEditingController(text: q.questionText)
-                ..selection = TextSelection.fromPosition(TextPosition(offset: q.questionText.length)),
-              onChanged: (val) => q.questionText = val,
+              controller: q.questionCtrl,
               maxLines: 3,
               style: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF0F172A)),
               decoration: InputDecoration(
@@ -1954,9 +2254,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
               border: Border.all(color: const Color(0xFFCBD5E1)),
             ),
             child: TextField(
-              controller: TextEditingController(text: q.explanation)
-                ..selection = TextSelection.fromPosition(TextPosition(offset: q.explanation.length)),
-              onChanged: (val) => q.explanation = val,
+              controller: q.explanationCtrl,
               style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF0F172A)),
               decoration: InputDecoration(
                 hintText: "Explanation shown after the test (recommended)",
@@ -2015,9 +2313,7 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
-              controller: TextEditingController(text: q.options[optionIndex])
-                ..selection = TextSelection.fromPosition(TextPosition(offset: q.options[optionIndex].length)),
-              onChanged: (val) => q.options[optionIndex] = val,
+              controller: q.optionCtrls[optionIndex],
               style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF0F172A)),
               decoration: const InputDecoration(
                 border: InputBorder.none,
@@ -2191,13 +2487,90 @@ class _FacultyExamPrepScreenState extends State<FacultyExamPrepScreen> {
               const SizedBox(height: 18),
               const Divider(height: 1, color: Color(0xFFF1F5F9)),
 
-              // List of Study Notes
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _studyNotes.length,
-                separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                itemBuilder: (context, index) {
+              // Empty State or List of Study Notes
+              if (_studyNotes.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 14),
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: 180),
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: const Color(0xFFCBD5E1).withValues(alpha: 0.6),
+                        width: 1,
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: CustomPaint(
+                              painter: _GridPaperPainter(
+                                gridColor: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+                                step: 26.0,
+                              ),
+                            ),
+                          ),
+                          Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "No study notes yet",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  child: Text(
+                                    "Publish department-curated study material and reference guides for students.",
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12.5,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                OutlinedButton.icon(
+                                  onPressed: _loadSampleStudyNotes,
+                                  icon: const Icon(Icons.file_download_outlined, size: 13, color: Color(0xFF1E2865)),
+                                  label: Text(
+                                    "Load sample study notes",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF1E2865),
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: Color(0xFFCBD5E1)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              else
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _studyNotes.length,
+                  separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  itemBuilder: (context, index) {
                   final note = _studyNotes[index];
                   final isAiPendingReview = note.isAiGenerated && !note.isReviewed;
 

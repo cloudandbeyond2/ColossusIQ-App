@@ -109,7 +109,13 @@ class BankQuestionItem {
 // =============================================================================
 class QuestionBankScreen extends StatefulWidget {
   final VoidCallback? onBack;
-  const QuestionBankScreen({super.key, this.onBack});
+  final String portalRole;
+
+  const QuestionBankScreen({
+    super.key,
+    this.onBack,
+    this.portalRole = 'Faculty',
+  });
 
   @override
   State<QuestionBankScreen> createState() => _QuestionBankScreenState();
@@ -126,7 +132,9 @@ class _QuestionBankScreenState extends State<QuestionBankScreen> {
   String _selectedDifficulty = "All Difficulties";
   String _selectedBloom = "All Bloom Levels";
   String _selectedStatus = "All Statuses";
+  String _selectedSort = "Newest First";
   int _viewMode = 0; // 0: Folders, 1: Expandable
+  final Set<String> _expandedFolders = {};
 
   // Controllers for full-page edit form
   final TextEditingController _editStmtController = TextEditingController();
@@ -159,6 +167,13 @@ class _QuestionBankScreenState extends State<QuestionBankScreen> {
     "All Statuses",
     "Active",
     "Draft",
+  ];
+
+  final List<String> _sortOptions = [
+    "Newest First",
+    "Oldest First",
+    "Most Questions",
+    "Highest Marks",
   ];
 
   // Primary dataset matching images 1, 2, 3 exactly
@@ -244,250 +259,22 @@ class _QuestionBankScreenState extends State<QuestionBankScreen> {
 
   void _initDefaultQuestions() {
     _questions = [
-      // 1. ACID Properties & Two-Phase Locking (2 questions · 13 marks · 0 active · 2 draft)
-      BankQuestionItem(
-        id: "Q-1148",
-        topic: "ACID Properties & Two-Phase Locking",
-        statement:
-            "Explain the concept of Two-Phase Locking (2PL) and state its primary goal. What are the two phases?",
-        difficulty: "Medium",
-        bloom: "Understand",
-        marks: 8,
-        co: "CO4",
-        status: "Draft",
-        modelAnswer:
-            "Two-Phase Locking (2PL) is a concurrency control protocol that guarantees serializability.\n\nTwo phases:\n1. Growing Phase: A transaction may acquire locks, but cannot release any lock.\n2. Shrinking Phase: A transaction may release locks, but cannot acquire any new locks.\n\nPrimary Goal: To ensure conflict serializability and avoid race conditions during concurrent transaction execution.",
-      ),
-      BankQuestionItem(
-        id: "Q-1147",
-        topic: "ACID Properties & Two-Phase Locking",
-        statement:
-            "Define the four ACID properties in DBMS and discuss how atomicity is achieved during failure recovery.",
-        difficulty: "Medium",
-        bloom: "Remember",
-        marks: 5,
-        co: "CO4",
-        status: "Draft",
-        modelAnswer:
-            "ACID properties:\n- Atomicity: All operations in transaction succeed or none.\n- Consistency: DB transitions from one valid state to another.\n- Isolation: Concurrent transactions do not interfere.\n- Durability: Committed updates persist permanently.\n\nAtomicity is maintained via Write-Ahead Logging (WAL) and undo logs during rollbacks.",
-      ),
-
-      // 2. gk (1 question · 2 marks · 1 active · 0 draft)
+      // 1. operating system (1 question · 2 marks · 1 active · 0 draft) - Matches Screenshot 5
       BankQuestionItem(
         id: "Q-1146",
-        topic: "gk",
-        statement: "tallest building in the world",
+        topic: "operating system",
+        statement:
+            "Explain the fundamental role of an Operating System and the core responsibilities of the kernel in process management and memory allocation.",
         difficulty: "Medium",
         bloom: "Understand",
         marks: 2,
         co: "CO1",
         status: "Active",
         modelAnswer:
-            "The Burj Khalifa in Dubai, United Arab Emirates, is currently the tallest building in the world, standing at a total height of 829.8 meters (2,722 ft).",
+            "An Operating System (OS) is system software that manages computer hardware, software resources, and provides common services for computer programs. The kernel facilitates process scheduling, virtual memory management, interrupt handling, device driver abstraction, and inter-process communication (IPC).",
       ),
 
-      // 3. Normalization (3 questions · 17 marks · 0 active · 3 draft) - Image 3
-      BankQuestionItem(
-        id: "Q-1144",
-        topic: "Normalization",
-        statement:
-            "How does BCNF (Boyce-Codd Normal Form) differ from 3NF? Provide an example of a relation that is in 3NF but not in BCNF.",
-        difficulty: "Hard",
-        bloom: "Analyse",
-        marks: 10,
-        co: "CO1",
-        status: "Draft",
-        modelAnswer:
-            "BCNF is a stricter form of 3NF. For every non-trivial functional dependency X -> Y, X must be a superkey. In 3NF, Y can also be a prime attribute.\n\nExample relation:\nR(Student, Course, Instructor) where:\n- (Student, Course) -> Instructor\n- Instructor -> Course\nCandidate keys: {Student, Course}, {Student, Instructor}\nHere, Instructor -> Course has Course as prime attribute (in 3NF), but Instructor is not a superkey (violates BCNF).",
-      ),
-      BankQuestionItem(
-        id: "Q-1140",
-        topic: "Normalization",
-        statement:
-            "What is a transitive dependency? How does it violate 3NF, and how is it typically resolved during normalization?",
-        difficulty: "Medium",
-        bloom: "Understand",
-        marks: 5,
-        co: "CO1",
-        status: "Draft",
-        modelAnswer:
-            "A transitive dependency occurs when A -> B and B -> C, where C is a non-prime attribute and B is not a candidate key. This violates 3NF because a non-prime attribute is determined by another non-prime attribute.\n\nResolution: Decompose relation R into R1(A, B) and R2(B, C).",
-      ),
-      BankQuestionItem(
-        id: "Q-1136",
-        topic: "Normalization",
-        statement:
-            "Define the Third Normal Form (3NF) and explain its primary goal in database design.",
-        difficulty: "Easy",
-        bloom: "Remember",
-        marks: 2,
-        co: "CO1",
-        status: "Draft",
-        modelAnswer:
-            "A relation schema R is in 3NF if it is in 2NF and for every non-trivial functional dependency X -> Y, either X is a superkey or Y is a prime attribute.\n\nGoal: Eliminate transitive dependencies and reduce data redundancy while preserving all functional dependencies.",
-      ),
-
-      // 4. SQL joins (2 questions · 8 marks · 0 active · 2 draft)
-      BankQuestionItem(
-        id: "Q-1135",
-        topic: "SQL joins",
-        statement:
-            "Consider two tables: `Employees` (EmpID, EmpName, DeptID) and `Departments` (DeptID, DeptName). Write an SQL query to list all employees along with their department names.",
-        difficulty: "Medium",
-        bloom: "Apply",
-        marks: 5,
-        co: "CO3",
-        status: "Draft",
-        modelAnswer:
-            "SELECT e.EmpID, e.EmpName, d.DeptName\nFROM Employees e\nINNER JOIN Departments d ON e.DeptID = d.DeptID;",
-      ),
-      BankQuestionItem(
-        id: "Q-1134",
-        topic: "SQL joins",
-        statement:
-            "Differentiate between INNER JOIN, LEFT OUTER JOIN, and FULL OUTER JOIN with concise output table representations.",
-        difficulty: "Easy",
-        bloom: "Understand",
-        marks: 3,
-        co: "CO3",
-        status: "Draft",
-        modelAnswer:
-            "- INNER JOIN: Returns rows when matching keys exist in both tables.\n- LEFT JOIN: Returns all rows from left table, with NULLs for unmatched right rows.\n- FULL OUTER JOIN: Returns all rows when match exists in either left or right.",
-      ),
-
-      // 5. SQL JOINS (10 questions · 66 marks · 1 active · 9 draft)
-      BankQuestionItem(
-        id: "Q-1133",
-        topic: "SQL JOINS",
-        statement:
-            "Write an SQL query to find employees who earn more than their direct managers. Assume `Employees` table has `EmployeeID`, `EmployeeName`, `ManagerID`, `Salary`.",
-        difficulty: "Hard",
-        bloom: "Apply",
-        marks: 10,
-        co: "CO3",
-        status: "Active",
-        modelAnswer:
-            "SELECT e.EmployeeName AS Employee, e.Salary AS EmpSalary, m.EmployeeName AS Manager, m.Salary AS MgrSalary\nFROM Employees e\nJOIN Employees m ON e.ManagerID = m.EmployeeID\nWHERE e.Salary > m.Salary;",
-      ),
-      BankQuestionItem(
-        id: "Q-1132",
-        topic: "SQL JOINS",
-        statement:
-            "Explain CROSS JOIN and demonstrate a scenario where Cartesian products are intentionally used.",
-        difficulty: "Medium",
-        bloom: "Understand",
-        marks: 6,
-        co: "CO3",
-        status: "Draft",
-        modelAnswer:
-            "CROSS JOIN produces Cartesian product (every row of table A paired with every row of B). Useful when generating all combinations, such as Color x Size product variants.",
-      ),
-      BankQuestionItem(
-        id: "Q-1131",
-        topic: "SQL JOINS",
-        statement:
-            "Formulate an SQL query using self-join to locate duplicate email addresses in a `Users` table.",
-        difficulty: "Medium",
-        bloom: "Apply",
-        marks: 6,
-        co: "CO3",
-        status: "Draft",
-        modelAnswer:
-            "SELECT u1.email\nFROM Users u1\nJOIN Users u2 ON u1.email = u2.email AND u1.id <> u2.id\nGROUP BY u1.email;",
-      ),
-      BankQuestionItem(
-        id: "Q-1130",
-        topic: "SQL JOINS",
-        statement:
-            "Define Natural Join and discuss why explicit `INNER JOIN ... ON` is preferred in enterprise development.",
-        difficulty: "Easy",
-        bloom: "Remember",
-        marks: 4,
-        co: "CO3",
-        status: "Draft",
-        modelAnswer:
-            "Natural Join implicitly matches columns having identical names in both tables. Explicit INNER JOIN with ON is safer because schema modifications (e.g. adding common audit column like 'created_at') won't unintentionally break queries.",
-      ),
-      BankQuestionItem(
-        id: "Q-1129",
-        topic: "SQL JOINS",
-        statement:
-            "Write an SQL query to retrieve departments with zero assigned employees using a LEFT JOIN and NULL check.",
-        difficulty: "Easy",
-        bloom: "Apply",
-        marks: 4,
-        co: "CO3",
-        status: "Draft",
-        modelAnswer:
-            "SELECT d.DeptID, d.DeptName\nFROM Departments d\nLEFT JOIN Employees e ON d.DeptID = e.DeptID\nWHERE e.EmpID IS NULL;",
-      ),
-      BankQuestionItem(
-        id: "Q-1128",
-        topic: "SQL JOINS",
-        statement:
-            "Evaluate performance implications of nested loop joins versus hash joins for large data tables.",
-        difficulty: "Medium",
-        bloom: "Apply",
-        marks: 8,
-        co: "CO3",
-        status: "Draft",
-        modelAnswer:
-            "Nested loop joins are optimal when one dataset is very small and inner relation has an index on join attribute. Hash joins are superior for large unsorted datasets requiring memory for hash table creation.",
-      ),
-      BankQuestionItem(
-        id: "Q-1127",
-        topic: "SQL JOINS",
-        statement:
-            "Construct a query joining Orders, OrderItems, Products, and Customers to calculate customer total spending.",
-        difficulty: "Medium",
-        bloom: "Apply",
-        marks: 8,
-        co: "CO3",
-        status: "Draft",
-        modelAnswer:
-            "SELECT c.CustomerName, SUM(oi.Quantity * p.Price) AS TotalSpent\nFROM Customers c\nJOIN Orders o ON c.CustomerID = o.CustomerID\nJOIN OrderItems oi ON o.OrderID = oi.OrderID\nJOIN Products p ON oi.ProductID = p.ProductID\nGROUP BY c.CustomerID, c.CustomerName;",
-      ),
-      BankQuestionItem(
-        id: "Q-1126",
-        topic: "SQL JOINS",
-        statement:
-            "State the difference between WHERE clause filtering and ON condition filtering in outer joins.",
-        difficulty: "Medium",
-        bloom: "Understand",
-        marks: 6,
-        co: "CO3",
-        status: "Draft",
-        modelAnswer:
-            "ON conditions determine which rows join before preserving outer rows; WHERE filters the joined result set and will discard preserved NULL rows if evaluated against outer-side columns.",
-      ),
-      BankQuestionItem(
-        id: "Q-1125",
-        topic: "SQL JOINS",
-        statement:
-            "Define Semi-Join and Anti-Join patterns and give examples using `EXISTS` and `NOT EXISTS`.",
-        difficulty: "Easy",
-        bloom: "Remember",
-        marks: 4,
-        co: "CO3",
-        status: "Draft",
-        modelAnswer:
-            "Semi-join returns rows from first table where match exists in second table without duplicating rows. Anti-join returns rows where no match exists in second table.",
-      ),
-      BankQuestionItem(
-        id: "Q-1124",
-        topic: "SQL JOINS",
-        statement:
-            "Provide an optimized query using lateral join / cross apply to fetch top 3 orders for each customer.",
-        difficulty: "Hard",
-        bloom: "Apply",
-        marks: 10,
-        co: "CO3",
-        status: "Draft",
-        modelAnswer:
-            "SELECT c.CustomerID, c.CustomerName, o.OrderID, o.OrderDate, o.TotalAmount\nFROM Customers c\nCROSS JOIN LATERAL (\n  SELECT OrderID, OrderDate, TotalAmount\n  FROM Orders ord\n  WHERE ord.CustomerID = c.CustomerID\n  ORDER BY ord.OrderDate DESC\n  LIMIT 3\n) o;",
-      ),
-
-      // 6. Transactions and concurrency control (3 questions · 21 marks · 1 active · 2 draft)
+      // 2. Transactions and concurrency control (3 questions · 21 marks · 1 active · 2 draft) - Matches Screenshot 5
       BankQuestionItem(
         id: "Q-1123",
         topic: "Transactions and concurrency control",
@@ -528,7 +315,236 @@ class _QuestionBankScreenState extends State<QuestionBankScreen> {
             "Deadlock is a condition where two or more transactions are waiting for locks held by each other, creating circular wait.\nProtocols: Wait-Die (non-preemptive) and Wound-Wait (preemptive) based on transaction timestamps.",
       ),
 
-      // 7. Web Development (1 question · 2 marks · 1 active · 0 draft)
+      // 3. Normalization (3 questions · 17 marks · 0 active · 3 draft) - Matches Screenshot 2 & 5
+      BankQuestionItem(
+        id: "Q-1144",
+        topic: "Normalization",
+        statement:
+            "How does BCNF (Boyce-Codd Normal Form) differ from 3NF? Provide an example of a relation that is in 3NF but not in BCNF.",
+        difficulty: "Hard",
+        bloom: "Analyse",
+        marks: 10,
+        co: "CO1",
+        status: "Draft",
+        modelAnswer:
+            "BCNF is a stricter form of 3NF. For every non-trivial functional dependency X -> Y, X must be a superkey. In 3NF, Y can also be a prime attribute.\n\nExample relation:\nR(Student, Course, Instructor) where:\n- (Student, Course) -> Instructor\n- Instructor -> Course\nCandidate keys: {Student, Course}, {Student, Instructor}\nHere, Instructor -> Course has Course as prime attribute (in 3NF), but Instructor is not a superkey (violates BCNF).",
+      ),
+      BankQuestionItem(
+        id: "Q-1140",
+        topic: "Normalization",
+        statement:
+            "What is a transitive dependency? How does it violate 3NF, and how is it typically resolved during normalization?",
+        difficulty: "Medium",
+        bloom: "Understand",
+        marks: 5,
+        co: "CO1",
+        status: "Draft",
+        modelAnswer:
+            "A transitive dependency occurs when A -> B and B -> C, where C is a non-prime attribute and B is not a candidate key. This violates 3NF because a non-prime attribute is determined by another non-prime attribute.\n\nResolution: Decompose relation R into R1(A, B) and R2(B, C).",
+      ),
+      BankQuestionItem(
+        id: "Q-1136",
+        topic: "Normalization",
+        statement:
+            "Define the Third Normal Form (3NF) and explain its primary goal in database design.",
+        difficulty: "Easy",
+        bloom: "Remember",
+        marks: 2,
+        co: "CO1",
+        status: "Draft",
+        modelAnswer:
+            "A relation schema R is in 3NF if it is in 2NF and for every non-trivial functional dependency X -> Y, either X is a superkey or Y is a prime attribute.\n\nGoal: Eliminate transitive dependencies and reduce data redundancy while preserving all functional dependencies.",
+      ),
+
+      // 4. SQL joins (2 questions · 8 marks · 0 active · 2 draft) - Matches Screenshot 5
+      BankQuestionItem(
+        id: "Q-1135",
+        topic: "SQL joins",
+        statement:
+            "Consider two tables: `Employees` (EmpID, EmpName, DeptID) and `Departments` (DeptID, DeptName). Write an SQL query to list all employees along with their department names.",
+        difficulty: "Medium",
+        bloom: "Apply",
+        marks: 5,
+        co: "CO3",
+        status: "Draft",
+        modelAnswer:
+            "SELECT e.EmpID, e.EmpName, d.DeptName\nFROM Employees e\nINNER JOIN Departments d ON e.DeptID = d.DeptID;",
+      ),
+      BankQuestionItem(
+        id: "Q-1134",
+        topic: "SQL joins",
+        statement:
+            "Differentiate between INNER JOIN, LEFT OUTER JOIN, and FULL OUTER JOIN with concise output table representations.",
+        difficulty: "Easy",
+        bloom: "Understand",
+        marks: 3,
+        co: "CO3",
+        status: "Draft",
+        modelAnswer:
+            "INNER JOIN returns matching rows from both tables. LEFT OUTER JOIN returns all rows from left table and matched rows from right (NULL if unmatched). FULL OUTER JOIN returns rows when there is a match in either table.",
+      ),
+
+      // 5. ACID Properties & Two-Phase Locking (2 questions · 13 marks · 0 active · 2 draft) - Matches Screenshot 5
+      BankQuestionItem(
+        id: "Q-1148",
+        topic: "ACID Properties & Two-Phase Locking",
+        statement:
+            "Explain the concept of Two-Phase Locking (2PL) and state its primary goal. What are the two phases?",
+        difficulty: "Medium",
+        bloom: "Understand",
+        marks: 8,
+        co: "CO4",
+        status: "Draft",
+        modelAnswer:
+            "Two-Phase Locking (2PL) is a concurrency control protocol that guarantees serializability.\n\nTwo phases:\n1. Growing Phase: A transaction may acquire locks, but cannot release any lock.\n2. Shrinking Phase: A transaction may release locks, but cannot acquire any new locks.\n\nPrimary Goal: To ensure conflict serializability and avoid race conditions during concurrent transaction execution.",
+      ),
+      BankQuestionItem(
+        id: "Q-1147",
+        topic: "ACID Properties & Two-Phase Locking",
+        statement:
+            "Define the four ACID properties in DBMS and discuss how atomicity is achieved during failure recovery.",
+        difficulty: "Medium",
+        bloom: "Remember",
+        marks: 5,
+        co: "CO4",
+        status: "Draft",
+        modelAnswer:
+            "ACID properties:\n- Atomicity: All operations in transaction succeed or none.\n- Consistency: DB transitions from one valid state to another.\n- Isolation: Concurrent transactions do not interfere.\n- Durability: Committed updates persist permanently.\n\nAtomicity is maintained via Write-Ahead Logging (WAL) and undo logs during rollbacks.",
+      ),
+
+      // 6. SQL JOINS (10 questions · 66 marks · 1 active · 9 draft) - Matches Screenshot 5
+      BankQuestionItem(
+        id: "Q-1133",
+        topic: "SQL JOINS",
+        statement:
+            "Explain the architectural distinction between Hash Join, Merge Join, and Nested Loops Join, including Big-O time and space complexity.",
+        difficulty: "Hard",
+        bloom: "Understand",
+        marks: 8,
+        co: "CO3",
+        status: "Draft",
+        modelAnswer:
+            "1. Nested Loop Join: O(M*N) time, O(1) space. Best for small outer table with indexed inner table.\n2. Merge Join: O(M log M + N log N) time, O(1) space if presorted. Optimal for large pre-sorted relations.\n3. Hash Join: O(M+N) time, O(min(M,N)) space. Builds hash table for smaller table and probes with larger.",
+      ),
+      BankQuestionItem(
+        id: "Q-1132",
+        topic: "SQL JOINS",
+        statement:
+            "Write a recursive Common Table Expression (CTE) to find all reporting managers for an employee up to the CEO in an organizational hierarchy.",
+        difficulty: "Hard",
+        bloom: "Apply",
+        marks: 10,
+        co: "CO3",
+        status: "Draft",
+        modelAnswer:
+            "WITH RECURSIVE MgrHierarchy AS (\n  SELECT EmpID, EmpName, ManagerID, 1 AS Level\n  FROM Employees\n  WHERE EmpID = @TargetEmpID\n  UNION ALL\n  SELECT e.EmpID, e.EmpName, e.ManagerID, mh.Level + 1\n  FROM Employees e\n  INNER JOIN MgrHierarchy mh ON e.EmpID = mh.ManagerID\n)\nSELECT * FROM MgrHierarchy ORDER BY Level;",
+      ),
+      BankQuestionItem(
+        id: "Q-1131",
+        topic: "SQL JOINS",
+        statement:
+            "Given two tables Customers and Orders, write an optimized query to find customers who placed orders in 2025 and 2026 without using subqueries.",
+        difficulty: "Medium",
+        bloom: "Apply",
+        marks: 6,
+        co: "CO3",
+        status: "Active",
+        modelAnswer:
+            "SELECT c.CustomerID, c.CustomerName\nFROM Customers c\nJOIN Orders o1 ON c.CustomerID = o1.CustomerID AND YEAR(o1.OrderDate) = 2025\nJOIN Orders o2 ON c.CustomerID = o2.CustomerID AND YEAR(o2.OrderDate) = 2026\nGROUP BY c.CustomerID, c.CustomerName;",
+      ),
+      BankQuestionItem(
+        id: "Q-1130",
+        topic: "SQL JOINS",
+        statement:
+            "Explain the difference between CROSS JOIN and Cartesian product with WHERE clause. Are query execution plans identical?",
+        difficulty: "Easy",
+        bloom: "Remember",
+        marks: 4,
+        co: "CO3",
+        status: "Draft",
+        modelAnswer:
+            "CROSS JOIN explicitly denotes Cartesian product. When WHERE conditions are applied, modern optimizers generate equivalent execution plans converting them to INNER JOINs where applicable.",
+      ),
+      BankQuestionItem(
+        id: "Q-1129",
+        topic: "SQL JOINS",
+        statement:
+            "Illustrate the use of self-join on an Employees table to find pairs of employees working in the same department.",
+        difficulty: "Medium",
+        bloom: "Apply",
+        marks: 6,
+        co: "CO3",
+        status: "Draft",
+        modelAnswer:
+            "SELECT e1.EmpName AS Employee1, e2.EmpName AS Employee2, e1.DeptID\nFROM Employees e1\nJOIN Employees e2 ON e1.DeptID = e2.DeptID AND e1.EmpID < e2.EmpID;",
+      ),
+      BankQuestionItem(
+        id: "Q-1128",
+        topic: "SQL JOINS",
+        statement:
+            "Explain how NULL values behave in FULL OUTER JOIN and demonstrate COALESCE to handle NULL keys in reporting.",
+        difficulty: "Medium",
+        bloom: "Understand",
+        marks: 6,
+        co: "CO3",
+        status: "Draft",
+        modelAnswer:
+            "In FULL OUTER JOIN, non-matching rows contain NULLs for absent attributes. COALESCE(t1.ID, t2.ID) ensures non-null consolidated key in combined projection.",
+      ),
+      BankQuestionItem(
+        id: "Q-1127",
+        topic: "SQL JOINS",
+        statement:
+            "What is a non-equi join? Give an example use case in calculating progressive tax brackets for employee payroll.",
+        difficulty: "Hard",
+        bloom: "Apply",
+        marks: 8,
+        co: "CO3",
+        status: "Draft",
+        modelAnswer:
+            "A non-equi join joins tables based on inequality operators (<, >, BETWEEN). Example:\nSELECT e.Name, e.Salary, t.Rate\nFROM Employees e\nJOIN TaxBrackets t ON e.Salary BETWEEN t.MinSalary AND t.MaxSalary;",
+      ),
+      BankQuestionItem(
+        id: "Q-1126",
+        topic: "SQL JOINS",
+        statement:
+            "Discuss indexing strategies for foreign keys to optimize multi-table join performance on transactional databases.",
+        difficulty: "Medium",
+        bloom: "Understand",
+        marks: 6,
+        co: "CO3",
+        status: "Draft",
+        modelAnswer:
+            "Indexing foreign key columns prevents full table scans on child tables during parent lookups or cascading deletes. B-tree indexes are ideal for equality join conditions.",
+      ),
+      BankQuestionItem(
+        id: "Q-1125",
+        topic: "SQL JOINS",
+        statement:
+            "Differentiate between LEFT SEMI JOIN and LEFT ANTI JOIN and provide SQL equivalents using EXISTS / NOT EXISTS.",
+        difficulty: "Easy",
+        bloom: "Remember",
+        marks: 4,
+        co: "CO3",
+        status: "Draft",
+        modelAnswer:
+            "SEMI JOIN returns rows from left table where a match exists in right (without duplicate left rows). ANTI JOIN returns rows where no match exists. Implemented via WHERE EXISTS / WHERE NOT EXISTS.",
+      ),
+      BankQuestionItem(
+        id: "Q-1124",
+        topic: "SQL JOINS",
+        statement:
+            "Provide an optimized query using lateral join / cross apply to fetch top 3 orders for each customer.",
+        difficulty: "Hard",
+        bloom: "Apply",
+        marks: 10,
+        co: "CO3",
+        status: "Draft",
+        modelAnswer:
+            "SELECT c.CustomerID, c.CustomerName, o.OrderID, o.OrderDate, o.TotalAmount\nFROM Customers c\nCROSS JOIN LATERAL (\n  SELECT OrderID, OrderDate, TotalAmount\n  FROM Orders ord\n  WHERE ord.CustomerID = c.CustomerID\n  ORDER BY ord.OrderDate DESC\n  LIMIT 3\n) o;",
+      ),
+
+      // 7. Web Development (1 question · 2 marks · 1 active · 0 draft) - Matches Screenshot 5
       BankQuestionItem(
         id: "Q-1120",
         topic: "Web Development",
@@ -549,8 +565,12 @@ class _QuestionBankScreenState extends State<QuestionBankScreen> {
   // COMPUTED TOPICS & METRICS
   // ===========================================================================
   List<String> get _topicNames {
-    final list = _questions.map((q) => q.topic).toSet().toList();
-    list.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    final list = <String>[];
+    for (final q in _questions) {
+      if (!list.contains(q.topic)) {
+        list.add(q.topic);
+      }
+    }
     return list;
   }
 
@@ -737,61 +757,64 @@ class _QuestionBankScreenState extends State<QuestionBankScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Breadcrumb row
-                  Row(
-                    children: [
-                      if (widget.onBack != null) ...[
-                        InkWell(
-                          onTap: widget.onBack,
-                          borderRadius: BorderRadius.circular(6),
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        if (widget.onBack != null) ...[
+                          InkWell(
+                            onTap: widget.onBack,
+                            borderRadius: BorderRadius.circular(6),
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Icon(Icons.arrow_back_rounded,
+                                  size: 14, color: Colors.white),
                             ),
-                            child: const Icon(Icons.arrow_back_rounded,
-                                size: 14, color: Colors.white),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        Text(
+                          'Home',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: Icon(Icons.chevron_right_rounded,
+                              size: 14,
+                              color: Colors.white.withValues(alpha: 0.5)),
+                        ),
+                        Text(
+                          'Assessment',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: Icon(Icons.chevron_right_rounded,
+                              size: 14,
+                              color: Colors.white.withValues(alpha: 0.5)),
+                        ),
+                        Text(
+                          'Question Bank',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
-                      Text(
-                        'Home',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.7),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: Icon(Icons.chevron_right_rounded,
-                            size: 14,
-                            color: Colors.white.withValues(alpha: 0.5)),
-                      ),
-                      Text(
-                        'Assessment',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.7),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: Icon(Icons.chevron_right_rounded,
-                            size: 14,
-                            color: Colors.white.withValues(alpha: 0.5)),
-                      ),
-                      Text(
-                        'Question Bank',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                   const SizedBox(height: 14),
 
@@ -1196,7 +1219,7 @@ class _QuestionBankScreenState extends State<QuestionBankScreen> {
   Widget _buildFilterSearchBar() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isNarrow = constraints.maxWidth < 820;
+        final isNarrow = constraints.maxWidth < 1280;
 
         // Search input
         final searchInput = Container(
@@ -1269,6 +1292,15 @@ class _QuestionBankScreenState extends State<QuestionBankScreen> {
               items: _statusOptions,
               onChanged: (val) {
                 if (val != null) setState(() => _selectedStatus = val);
+              },
+            ),
+
+            // Sort Dropdown (Matches Screenshot 5)
+            _buildDropdown(
+              value: _selectedSort,
+              items: _sortOptions,
+              onChanged: (val) {
+                if (val != null) setState(() => _selectedSort = val);
               },
             ),
 
@@ -1960,6 +1992,30 @@ class _QuestionBankScreenState extends State<QuestionBankScreen> {
                       ),
                     ),
                   ),
+
+                  // Delete Topic Folder Button (Matches Screenshot 2)
+                  OutlinedButton.icon(
+                    onPressed: () => _showDeleteFolderDialog(topic),
+                    icon: const Icon(Icons.delete_outline_rounded,
+                        size: 15, color: Color(0xFFDC2626)),
+                    label: Text(
+                      'Delete Folder',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFDC2626),
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      side: const BorderSide(color: Color(0xFFFCA5A5)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 11),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
                 ],
               );
 
@@ -2528,69 +2584,392 @@ class _QuestionBankScreenState extends State<QuestionBankScreen> {
   }
 
   // ===========================================================================
-  // 7. EXPANDABLE ALL QUESTIONS SECTION (VIEW MODE 1)
+  // 7. EXPANDABLE TOPIC FOLDERS LIST (MATCHES SCREENSHOT 5)
   // ===========================================================================
   Widget _buildExpandableQuestionsSection() {
-    final list = _filteredQuestions;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Wrap(
-          alignment: WrapAlignment.spaceBetween,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          spacing: 12,
-          runSpacing: 6,
-          children: [
-            Text(
-              'ALL QUESTIONS (${list.length})',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF4B5563),
-                letterSpacing: 0.4,
-              ),
-            ),
-            Text(
-              'Showing all questions across all topics',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 12,
-                color: const Color(0xFF9CA3AF),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
+    final filteredTopics = _topicNames.where((topic) {
+      final questionsInTopic =
+          _filteredQuestions.where((q) => q.topic == topic);
+      return questionsInTopic.isNotEmpty;
+    }).toList();
 
-        if (list.isEmpty) ...[
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(40),
+    if (filteredTopics.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(40),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          'No topic folders match the current filters.',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            color: const Color(0xFF6B7280),
+          ),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: filteredTopics.length,
+      separatorBuilder: (_, i) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final topic = filteredTopics[index];
+        final topicQuestions =
+            _filteredQuestions.where((q) => q.topic == topic).toList();
+        final count = topicQuestions.length;
+        final totalMarks =
+            topicQuestions.fold<int>(0, (sum, q) => sum + q.marks);
+        final activeCount =
+            topicQuestions.where((q) => q.status == 'Active').length;
+        final draftCount =
+            topicQuestions.where((q) => q.status == 'Draft').length;
+        final isExpanded = _expandedFolders.contains(topic);
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF3C7),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.folder_outlined,
+                      size: 20,
+                      color: Color(0xFFD97706),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                topic,
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF1E2865),
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEEF2F6),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                '$count questions',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF475569),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          '$totalMarks total marks · $activeCount active · $draftCount draft',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11.5,
+                            color: const Color(0xFF94A3B8),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => setState(() => _openedFolderTopic = topic),
+                    borderRadius: BorderRadius.circular(6),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 6),
+                      child: Text(
+                        'Open Folder Page →',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1E2865),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        if (isExpanded) {
+                          _expandedFolders.remove(topic);
+                        } else {
+                          _expandedFolders.add(topic);
+                        }
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        isExpanded
+                            ? Icons.keyboard_arrow_up_rounded
+                            : Icons.keyboard_arrow_down_rounded,
+                        size: 20,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (isExpanded) ...[
+                const SizedBox(height: 14),
+                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                const SizedBox(height: 14),
+                ...topicQuestions.map((q) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child:
+                          _buildQuestionCard(q, topicQuestions.indexOf(q) + 1),
+                    )),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ===========================================================================
+  // 8. DIALOG: DELETE TOPIC FOLDER (MATCHES SCREENSHOT 4)
+  // ===========================================================================
+  void _showDeleteFolderDialog(String topic) {
+    final topicQuestions = _questions.where((q) => q.topic == topic).toList();
+    final count = topicQuestions.length;
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: Container(
+            width: 480,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
-            alignment: Alignment.center,
-            child: Text(
-              'No questions match the current filters.',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 14,
-                color: const Color(0xFF6B7280),
-              ),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header with red trash icon
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.delete_outline_rounded,
+                        size: 24,
+                        color: Color(0xFFDC2626),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 6),
+                          Text(
+                            'Delete Topic Folder?',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1E2865),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Subtitle description
+                RichText(
+                  text: TextSpan(
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13.5,
+                      color: const Color(0xFF4B5563),
+                      height: 1.45,
+                    ),
+                    children: [
+                      const TextSpan(
+                          text: 'Are you sure you want to permanently delete the folder '),
+                      TextSpan(
+                        text: '"$topic"',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1E2865),
+                        ),
+                      ),
+                      const TextSpan(text: ' and all of its '),
+                      TextSpan(
+                        text: '$count question(s)',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1E2865),
+                        ),
+                      ),
+                      const TextSpan(text: '?'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Callout alert box
+                Container(
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF1F2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFFECDD3)),
+                  ),
+                  child: Text(
+                    'This action cannot be undone. All questions filed under this topic heading will be removed from the bank.',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      color: const Color(0xFFE11D48),
+                      fontWeight: FontWeight.w500,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Actions: Cancel & Delete Folder
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFFE5E7EB)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 11),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF4B5563),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _questions.removeWhere((q) => q.topic == topic);
+                          if (_openedFolderTopic == topic) {
+                            _openedFolderTopic = null;
+                          }
+                          _expandedFolders.remove(topic);
+                        });
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Folder "$topic" and all questions permanently deleted.',
+                              style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor: const Color(0xFFDC2626),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.delete_outline_rounded,
+                          size: 16, color: Colors.white),
+                      label: Text(
+                        'Delete Folder',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFB91C1C),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 11),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-        ] else ...[
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: list.length,
-            separatorBuilder: (_, index) => const SizedBox(height: 14),
-            itemBuilder: (context, index) {
-              return _buildQuestionCard(list[index], index + 1);
-            },
-          ),
-        ],
-      ],
+        );
+      },
     );
   }
 
@@ -2610,7 +2989,7 @@ class _QuestionBankScreenState extends State<QuestionBankScreen> {
     final stmtCtrl =
         TextEditingController(text: existingQuestion?.statement ?? '');
     final marksCtrl =
-        TextEditingController(text: '${existingQuestion?.marks ?? 5}');
+        TextEditingController(text: '${existingQuestion?.marks ?? 2}');
     final modelAnsCtrl =
         TextEditingController(text: existingQuestion?.modelAnswer ?? '');
 
@@ -2701,7 +3080,7 @@ class _QuestionBankScreenState extends State<QuestionBankScreen> {
                         TextField(
                           controller: topicCtrl,
                           style: GoogleFonts.plusJakartaSans(fontSize: 13.5),
-                          decoration: _inputDeco(hint: 'e.g. Normalization'),
+                          decoration: _inputDeco(hint: 'e.g. Relational Normalization & BCNF'),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -4458,7 +4837,7 @@ class _QuestionBankScreenState extends State<QuestionBankScreen> {
         // 3. 2-Column Content: Left 3-Step Form Cards, Right Sidebar Card
         LayoutBuilder(
           builder: (context, constraints) {
-            final isNarrow = constraints.maxWidth < 820;
+            final isNarrow = constraints.maxWidth < 1280;
 
             final leftForm = Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -87,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen>
     ),
     RoleProfile(
       role: "Placement Officer",
-      name: "Ms. Priya Nair",
+      name: "Mr. R. Karthikeyan",
       designation: "Training & Placement Officer",
       email: "placement@ait.edu.in",
       password: "password123",

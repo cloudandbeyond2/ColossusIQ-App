@@ -13,7 +13,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AiCourseStudioScreen extends StatefulWidget {
   final VoidCallback? onBack;
-  const AiCourseStudioScreen({super.key, this.onBack});
+  final String portalRole;
+  const AiCourseStudioScreen({
+    super.key,
+    this.onBack,
+    this.portalRole = 'Faculty',
+  });
 
   @override
   State<AiCourseStudioScreen> createState() => _AiCourseStudioScreenState();
@@ -81,7 +86,11 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
         title: "Emerging Technologies",
         code: "CSE107 · Computer Science & Engineering · Term 5",
         department: "Computer Science & Engineering",
-        faculty: "Dr. Lakshmi Sundaram",
+        faculty: widget.portalRole == 'Principal'
+          ? 'Dr. K. S. Ramanathan, Principal'
+          : (widget.portalRole == 'HOD'
+              ? 'Dr. Meena Raghavan, HOD'
+              : 'Dr. Lakshmi Sundaram'),
         level: "Intermediate (UG Year 2–3)",
         term: "5",
         credits: "3",
@@ -100,7 +109,11 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
         title: "Web Technologies",
         code: "CSE106 · Computer Science & Engineering · Term 1",
         department: "Computer Science & Engineering",
-        faculty: "Dr. Lakshmi Sundaram",
+        faculty: widget.portalRole == 'Principal'
+          ? 'Dr. K. S. Ramanathan, Principal'
+          : (widget.portalRole == 'HOD'
+              ? 'Dr. Meena Raghavan, HOD'
+              : 'Dr. Lakshmi Sundaram'),
         level: "Intermediate (UG Year 2–3)",
         term: "1",
         credits: "3",
@@ -119,7 +132,11 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
         title: "Data base System Applications",
         code: "CSE105 · Computer Science & Engineering · Term 1",
         department: "Computer Science & Engineering",
-        faculty: "Dr. Lakshmi Sundaram",
+        faculty: widget.portalRole == 'Principal'
+          ? 'Dr. K. S. Ramanathan, Principal'
+          : (widget.portalRole == 'HOD'
+              ? 'Dr. Meena Raghavan, HOD'
+              : 'Dr. Lakshmi Sundaram'),
         level: "Intermediate (UG Year 2–3)",
         term: "1",
         credits: "4",
@@ -138,7 +155,11 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
         title: "DBMS",
         code: "CSE104 · Computer Science & Engineering · Term 1",
         department: "Computer Science & Engineering",
-        faculty: "Dr. Lakshmi Sundaram",
+        faculty: widget.portalRole == 'Principal'
+          ? 'Dr. K. S. Ramanathan, Principal'
+          : (widget.portalRole == 'HOD'
+              ? 'Dr. Meena Raghavan, HOD'
+              : 'Dr. Lakshmi Sundaram'),
         level: "Intermediate (UG Year 2–3)",
         term: "1",
         credits: "3",
@@ -157,7 +178,11 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
         title: "DBMS",
         code: "CSE103 · Computer Science & Engineering · Term 1",
         department: "Computer Science & Engineering",
-        faculty: "Dr. Lakshmi Sundaram",
+        faculty: widget.portalRole == 'Principal'
+          ? 'Dr. K. S. Ramanathan, Principal'
+          : (widget.portalRole == 'HOD'
+              ? 'Dr. Meena Raghavan, HOD'
+              : 'Dr. Lakshmi Sundaram'),
         level: "Intermediate (UG Year 2–3)",
         term: "1",
         credits: "3",
@@ -176,7 +201,11 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
         title: "Machine Learning",
         code: "CSE201 · Computer Science & Engineering · Term 4",
         department: "Computer Science & Engineering",
-        faculty: "Dr. Lakshmi Sundaram",
+        faculty: widget.portalRole == 'Principal'
+          ? 'Dr. K. S. Ramanathan, Principal'
+          : (widget.portalRole == 'HOD'
+              ? 'Dr. Meena Raghavan, HOD'
+              : 'Dr. Lakshmi Sundaram'),
         level: "Intermediate (UG Year 2–3)",
         term: "4",
         credits: "3",
@@ -195,7 +224,11 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
         title: "Operating Systems",
         code: "CSE102 · Computer Science & Engineering · Term 3",
         department: "Computer Science & Engineering",
-        faculty: "Dr. Lakshmi Sundaram",
+        faculty: widget.portalRole == 'Principal'
+          ? 'Dr. K. S. Ramanathan, Principal'
+          : (widget.portalRole == 'HOD'
+              ? 'Dr. Meena Raghavan, HOD'
+              : 'Dr. Lakshmi Sundaram'),
         level: "Intermediate (UG Year 2–3)",
         term: "3",
         credits: "3",
@@ -399,7 +432,11 @@ class _AiCourseStudioScreenState extends State<AiCourseStudioScreen> {
       title: "",
       code: "CSE · Computer Science & Engineering · Term 1",
       department: "Computer Science & Engineering",
-      faculty: "Dr. Lakshmi Sundaram",
+      faculty: widget.portalRole == 'Principal'
+          ? 'Dr. K. S. Ramanathan, Principal'
+          : (widget.portalRole == 'HOD'
+              ? 'Dr. Meena Raghavan, HOD'
+              : 'Dr. Lakshmi Sundaram'),
       level: "Intermediate (UG Year 2–3)",
       term: "1",
       credits: "3",

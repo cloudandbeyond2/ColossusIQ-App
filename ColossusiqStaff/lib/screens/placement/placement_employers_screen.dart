@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 // =============================================================================
 // PLACEMENT: EMPLOYERS SCREEN
-// Exactly matches Screenshot 1:
+// Matches Screenshots 1, 2, 3, 4 & 5:
 // - Blueprint grid hero banner with building watermark, PLACEMENT and MVP badges
 // - 5 Metric KPI Cards:
 //   1. Total Employers: 8, Registered corporate partners
@@ -13,15 +13,27 @@ import 'package:google_fonts/google_fonts.dart';
 //   5. Average CTC: ₹14.6 LPA, Across hiring partners
 // - Filter & Search Bar:
 //   * Search input: "Search by company, contact person or location..."
-//   * Dropdowns: All Sectors, All Tiers, All MoUs
+//   * Dropdowns (Images 3, 4 & 5):
+//       - All Sectors: IT & Software, Product & Tech, BFSI & Fintech, Consulting & Services,
+//                      Core Engineering, Healthcare & Biotech, Manufacturing & Automotive
+//       - All Tiers: Tier-1 Partner, Preferred Recruiter, Active, Prospect, Inactive
+//       - All MoUs: Active MoU, Under Renewal, In Discussion, None
 //   * Actions: Export CSV, + Add employer
 // - Employer Cards (TCS, Zoho, Amazon, Google, Microsoft, Cisco, Cognizant, Infosys):
-//   * Company name, Preferred Recruiter & Sector badges
+//   * Company name, Recruiter Tier & Sector badges
 //   * Details button, Edit & Delete icons
-//   * Location & Website row
-//   * SPOC box with person, role, email, phone, LinkedIn
+//   * Location & Careers URL
+//   * SPOC box with contact person, role, email, phone, LinkedIn
 //   * 3-Yr Hires, Avg Package, Highest CTC stats
-//   * Active MoU badge with valid date and Last drive date
+//   * MoU Status badge with valid date and Last/Next drive date
+// - Add / Edit Corporate Recruiter Modal (Images 1 & 2):
+//   * Header: Add Corporate Recruiter with close (✕)
+//   * Company Name, Sector/Industry dropdown, Relationship Tier dropdown, Location/HQ
+//   * Careers URL, MoU Status dropdown, MoU Validity datepicker, Next Scheduled Drive datepicker
+//   * University Relations Contact beige card: Contact Person, Designation, Email, Phone, LinkedIn
+//   * Historical Placement Statistics card: 3-Yr Total Hires, Average Package, Highest Package
+//   * Relationship Notes & Feedback textarea
+//   * Cancel and Add employer / Save changes buttons
 // =============================================================================
 
 class EmployersScreen extends StatefulWidget {
@@ -38,25 +50,33 @@ class _EmployersScreenState extends State<EmployersScreen> {
   String _selectedTier = 'All Tiers';
   String _selectedMou = 'All MoUs';
 
+  // Dropdown options matching Images 3, 4 & 5
   final List<String> _sectors = [
     'All Sectors',
     'IT & Software',
-    'Enterprise SaaS',
-    'Cloud & AI',
-    'Networking & Security',
+    'Product & Tech',
+    'BFSI & Fintech',
+    'Consulting & Services',
+    'Core Engineering',
+    'Healthcare & Biotech',
+    'Manufacturing & Automotive',
   ];
 
   final List<String> _tiers = [
     'All Tiers',
-    'Preferred Recruiter',
     'Tier-1 Partner',
-    'Dream Recruiter',
+    'Preferred Recruiter',
+    'Active',
+    'Prospect',
+    'Inactive',
   ];
 
   final List<String> _mous = [
     'All MoUs',
     'Active MoU',
-    'Pending Renewal',
+    'Under Renewal',
+    'In Discussion',
+    'None',
   ];
 
   late List<Map<String, dynamic>> _employers;
@@ -71,18 +91,20 @@ class _EmployersScreenState extends State<EmployersScreen> {
         'recruiterType': 'Preferred Recruiter',
         'sector': 'IT & Software',
         'location': 'Chennai, Tamil Nadu',
-        'website': 'Website',
+        'website': 'https://tcs.com/careers',
         'spocName': 'Suresh Raman',
         'spocRole': 'Regional Head - Campus Hiring',
         'spocEmail': 'suresh.raman@tcs.com',
         'spocPhone': '+91 94440 98765',
-        'linkedIn': 'LinkedIn',
+        'linkedIn': 'https://linkedin.com/in/suresh-raman',
         'threeYrHires': '142',
         'avgPackage': '₹8.2 LPA',
-        'highestCtc': '₹11 LPA',
+        'highestCtc': '₹11.0 LPA',
         'mouStatus': 'Active MoU',
-        'mouValidTill': 'Valid till 31 Aug 2028',
+        'mouValidTill': '08/31/2028',
         'lastDrive': 'Last drive: 15 Sept 2026',
+        'nextDrive': '10/24/2026',
+        'notes': 'Strong affinity for CSE and ECE students. Consistently hires in large numbers across Digital and Prime tracks.',
       },
       {
         'id': 'zoho',
@@ -90,113 +112,125 @@ class _EmployersScreenState extends State<EmployersScreen> {
         'recruiterType': 'Preferred Recruiter',
         'sector': 'IT & Software',
         'location': 'Chennai, Tamil Nadu',
-        'website': 'Website',
+        'website': 'https://zoho.com/careers',
         'spocName': 'Priyadarshini K.',
         'spocRole': 'University Relations Specialist',
         'spocEmail': 'priyadarshini.k@zohocorp.com',
         'spocPhone': '+91 97910 23456',
-        'linkedIn': 'LinkedIn',
+        'linkedIn': 'https://linkedin.com/in/priyadarshini-k',
         'threeYrHires': '68',
         'avgPackage': '₹7.8 LPA',
         'highestCtc': '₹9.5 LPA',
         'mouStatus': 'Active MoU',
-        'mouValidTill': 'Valid till 31 Mar 2028',
+        'mouValidTill': '03/31/2028',
         'lastDrive': 'Last drive: 28 Sept 2026',
+        'nextDrive': '11/15/2026',
+        'notes': 'High focus on hands-on coding and problem solving in C/Java. Product-first mindset required.',
       },
       {
         'id': 'amazon',
         'name': 'Amazon AWS India',
         'recruiterType': 'Tier-1 Partner',
-        'sector': 'Cloud & AI',
+        'sector': 'Product & Tech',
         'location': 'Bengaluru, Karnataka',
-        'website': 'Website',
+        'website': 'https://amazon.jobs',
         'spocName': 'Pooja V. Nair',
         'spocRole': 'Campus Talent Acquisition Lead',
         'spocEmail': 'pooja-campus@amazon.com',
         'spocPhone': '+91 98401 22334',
-        'linkedIn': 'LinkedIn',
+        'linkedIn': 'https://linkedin.com/in/pooja-nair',
         'threeYrHires': '42',
         'avgPackage': '₹22.5 LPA',
-        'highestCtc': '₹44 LPA',
+        'highestCtc': '₹44.0 LPA',
         'mouStatus': 'Active MoU',
-        'mouValidTill': 'Valid till 15 Nov 2027',
-        'lastDrive': 'Last drive: 18 Oct 2026',
+        'mouValidTill': '12/31/2027',
+        'lastDrive': 'Last drive: 05 Oct 2026',
+        'nextDrive': '12/01/2026',
+        'notes': 'Leadership principles interview round is decisive. Targets top 5% coding talent.',
       },
       {
         'id': 'google',
         'name': 'Google India',
         'recruiterType': 'Tier-1 Partner',
-        'sector': 'IT & Software',
-        'location': 'Hyderabad, Telangana',
-        'website': 'Website',
-        'spocName': 'Vikramaditya Rao',
-        'spocRole': 'University Programs Manager',
-        'spocEmail': 'vikramaditya@google.com',
-        'spocPhone': '+91 98840 55667',
-        'linkedIn': 'LinkedIn',
+        'sector': 'Product & Tech',
+        'location': 'Bengaluru, Karnataka',
+        'website': 'https://careers.google.com',
+        'spocName': 'Anandita Sen',
+        'spocRole': 'University Relations Lead',
+        'spocEmail': 'anandita@google.com',
+        'spocPhone': '+91 98840 12345',
+        'linkedIn': 'https://linkedin.com/in/anandita-sen',
         'threeYrHires': '18',
-        'avgPackage': '₹28.4 LPA',
-        'highestCtc': '₹52 LPA',
+        'avgPackage': '₹28.0 LPA',
+        'highestCtc': '₹32.5 LPA',
         'mouStatus': 'Active MoU',
-        'mouValidTill': 'Valid till 30 Jun 2028',
-        'lastDrive': 'Last drive: 25 Oct 2026',
+        'mouValidTill': '06/30/2029',
+        'lastDrive': 'Last drive: 12 Aug 2026',
+        'nextDrive': '11/20/2026',
+        'notes': 'Google Cloud and Android core platforms. Requires strong algorithms and concurrency fundamentals.',
       },
       {
         'id': 'microsoft',
-        'name': 'Microsoft Corporation',
+        'name': 'Microsoft India',
         'recruiterType': 'Tier-1 Partner',
-        'sector': 'Enterprise SaaS',
-        'location': 'Bengaluru, Karnataka',
-        'website': 'Website',
-        'spocName': 'Ananya Deshmukh',
-        'spocRole': 'India University Hiring Lead',
-        'spocEmail': 'ananya.d@microsoft.com',
-        'spocPhone': '+91 97400 88990',
-        'linkedIn': 'LinkedIn',
-        'threeYrHires': '26',
+        'sector': 'Product & Tech',
+        'location': 'Hyderabad, Telangana',
+        'website': 'https://careers.microsoft.com',
+        'spocName': 'Vikramaditya Rao',
+        'spocRole': 'Director - University Recruiting',
+        'spocEmail': 'vikram.rao@microsoft.com',
+        'spocPhone': '+91 99001 55667',
+        'linkedIn': 'https://linkedin.com/in/vikram-rao',
+        'threeYrHires': '24',
         'avgPackage': '₹24.0 LPA',
-        'highestCtc': '₹48 LPA',
+        'highestCtc': '₹38.0 LPA',
         'mouStatus': 'Active MoU',
-        'mouValidTill': 'Valid till 10 Dec 2027',
-        'lastDrive': 'Last drive: 05 Nov 2026',
+        'mouValidTill': '10/31/2028',
+        'lastDrive': 'Last drive: 22 Sept 2026',
+        'nextDrive': '12/10/2026',
+        'notes': 'Azure Core Systems and Office 365 services. Values system design and collaborative problem solving.',
       },
       {
         'id': 'cisco',
         'name': 'Cisco Systems',
         'recruiterType': 'Tier-1 Partner',
-        'sector': 'Networking & Security',
+        'sector': 'Core Engineering',
         'location': 'Bengaluru, Karnataka',
-        'website': 'Website',
-        'spocName': 'Raghavan Iyer',
-        'spocRole': 'Director - University Relations',
-        'spocEmail': 'riyer@cisco.com',
-        'spocPhone': '+91 94441 33221',
-        'linkedIn': 'LinkedIn',
-        'threeYrHires': '32',
-        'avgPackage': '₹15.6 LPA',
-        'highestCtc': '₹24 LPA',
-        'mouStatus': 'Active MoU',
-        'mouValidTill': 'Valid till 20 Jan 2028',
-        'lastDrive': 'Last drive: 12 Aug 2026',
+        'website': 'https://cisco.com/careers',
+        'spocName': 'Kavitha Balan',
+        'spocRole': 'Lead Campus Specialist - APJC',
+        'spocEmail': 'kavitha.b@cisco.com',
+        'spocPhone': '+91 91760 33445',
+        'linkedIn': 'https://linkedin.com/in/kavitha-balan',
+        'threeYrHires': '31',
+        'avgPackage': '₹14.5 LPA',
+        'highestCtc': '₹19.0 LPA',
+        'mouStatus': 'Under Renewal',
+        'mouValidTill': '11/30/2026',
+        'lastDrive': 'Last drive: 18 Aug 2026',
+        'nextDrive': '11/18/2026',
+        'notes': 'Networking lab sponsorship and summer internship track. Renewal meeting scheduled for next week.',
       },
       {
         'id': 'cognizant',
         'name': 'Cognizant Technology Solutions',
-        'recruiterType': 'Preferred Recruiter',
-        'sector': 'IT & Software',
+        'recruiterType': 'Active',
+        'sector': 'Consulting & Services',
         'location': 'Chennai, Tamil Nadu',
-        'website': 'Website',
-        'spocName': 'Karthik Balan',
-        'spocRole': 'Campus Engagement Lead',
-        'spocEmail': 'karthik.balan@cognizant.com',
-        'spocPhone': '+91 98410 77889',
-        'linkedIn': 'LinkedIn',
-        'threeYrHires': '30',
-        'avgPackage': '₹6.8 LPA',
-        'highestCtc': '₹10 LPA',
-        'mouStatus': 'Active MoU',
-        'mouValidTill': 'Valid till 14 Feb 2028',
-        'lastDrive': 'Last drive: 10 Sept 2026',
+        'website': 'https://cognizant.com/careers',
+        'spocName': 'Arun Karthik',
+        'spocRole': 'Manager - Talent Acquisition',
+        'spocEmail': 'arun.karthik@cognizant.com',
+        'spocPhone': '+91 98844 77889',
+        'linkedIn': 'https://linkedin.com/in/arun-karthik',
+        'threeYrHires': '180',
+        'avgPackage': '₹6.5 LPA',
+        'highestCtc': '₹8.5 LPA',
+        'mouStatus': 'In Discussion',
+        'mouValidTill': '',
+        'lastDrive': 'Last drive: 02 Oct 2026',
+        'nextDrive': '11/25/2026',
+        'notes': 'Hiring for Digital Specialist Engineer and GenC Elevate roles.',
       },
       {
         'id': 'infosys',
@@ -204,35 +238,37 @@ class _EmployersScreenState extends State<EmployersScreen> {
         'recruiterType': 'Preferred Recruiter',
         'sector': 'IT & Software',
         'location': 'Bengaluru, Karnataka',
-        'website': 'Website',
-        'spocName': 'Sneha Kulkarni',
-        'spocRole': 'Associate VP - Campus Hiring',
-        'spocEmail': 'sneha.k@infosys.com',
-        'spocPhone': '+91 99001 44556',
-        'linkedIn': 'LinkedIn',
-        'threeYrHires': '16',
-        'avgPackage': '₹6.5 LPA',
-        'highestCtc': '₹9.5 LPA',
+        'website': 'https://infosys.com/careers',
+        'spocName': 'Deepak Verma',
+        'spocRole': 'AVP - Campus Hiring Operations',
+        'spocEmail': 'deepak_verma@infosys.com',
+        'spocPhone': '+91 97400 11223',
+        'linkedIn': 'https://linkedin.com/in/deepak-verma',
+        'threeYrHires': '125',
+        'avgPackage': '₹7.2 LPA',
+        'highestCtc': '₹10.5 LPA',
         'mouStatus': 'Active MoU',
-        'mouValidTill': 'Valid till 05 May 2028',
-        'lastDrive': 'Last drive: 02 Oct 2026',
+        'mouValidTill': '05/31/2029',
+        'lastDrive': 'Last drive: 10 Sept 2026',
+        'nextDrive': '12/05/2026',
+        'notes': 'InfyTQ certified students are eligible for direct technical interview for Specialist Programmer.',
       },
     ];
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
+  // Filter calculation
   List<Map<String, dynamic>> _getFilteredEmployers() {
-    final query = _searchController.text.trim().toLowerCase();
+    final query = _searchController.text.toLowerCase().trim();
+
     return _employers.where((emp) {
-      final nameMatches = (emp['name'] as String).toLowerCase().contains(query);
-      final spocMatches = (emp['spocName'] as String).toLowerCase().contains(query);
-      final locMatches = (emp['location'] as String).toLowerCase().contains(query);
-      final searchMatches = query.isEmpty || nameMatches || spocMatches || locMatches;
+      final name = (emp['name'] as String? ?? '').toLowerCase();
+      final spoc = (emp['spocName'] as String? ?? '').toLowerCase();
+      final loc = (emp['location'] as String? ?? '').toLowerCase();
+
+      final searchMatches = query.isEmpty ||
+          name.contains(query) ||
+          spoc.contains(query) ||
+          loc.contains(query);
 
       final sectorMatches = _selectedSector == 'All Sectors' ||
           emp['sector'] == _selectedSector;
@@ -247,6 +283,641 @@ class _EmployersScreenState extends State<EmployersScreen> {
     }).toList();
   }
 
+  // ===========================================================================
+  // ADD / EDIT CORPORATE RECRUITER MODAL (Matches Images 1 & 2)
+  // ===========================================================================
+  void _showAddEmployerDialog({Map<String, dynamic>? initialEmployer}) {
+    final isEditing = initialEmployer != null;
+
+    final companyCtrl = TextEditingController(
+        text: isEditing ? (initialEmployer['name'] ?? '') : '');
+    String sector = isEditing
+        ? (initialEmployer['sector'] ?? 'IT & Software')
+        : 'IT & Software';
+    String tier = isEditing
+        ? (initialEmployer['recruiterType'] ?? 'Active')
+        : 'Active';
+    final locationCtrl = TextEditingController(
+        text: isEditing
+            ? (initialEmployer['location'] ?? '')
+            : 'Bengaluru, Karnataka');
+    final careersUrlCtrl = TextEditingController(
+        text: isEditing ? (initialEmployer['website'] ?? '') : '');
+    String mouStatus = isEditing
+        ? (initialEmployer['mouStatus'] ?? 'None')
+        : 'None';
+    final mouValidityCtrl = TextEditingController(
+        text: isEditing ? (initialEmployer['mouValidTill'] ?? '') : '');
+    final nextDriveCtrl = TextEditingController(
+        text: isEditing ? (initialEmployer['nextDrive'] ?? '') : '');
+
+    // University Relations Contact Fields (Cream Card)
+    final contactPersonCtrl = TextEditingController(
+        text: isEditing ? (initialEmployer['spocName'] ?? '') : '');
+    final designationCtrl = TextEditingController(
+        text: isEditing
+            ? (initialEmployer['spocRole'] ?? '')
+            : 'University Relations Lead');
+    final emailCtrl = TextEditingController(
+        text: isEditing ? (initialEmployer['spocEmail'] ?? '') : '');
+    final phoneCtrl = TextEditingController(
+        text: isEditing ? (initialEmployer['spocPhone'] ?? '') : '');
+    final linkedInCtrl = TextEditingController(
+        text: isEditing ? (initialEmployer['linkedIn'] ?? '') : '');
+
+    // Historical Placement Statistics Fields (White Card)
+    final totalHiresCtrl = TextEditingController(
+        text: isEditing ? '${initialEmployer['threeYrHires'] ?? 0}' : '0');
+    final avgPackageCtrl = TextEditingController(
+        text: isEditing
+            ? (initialEmployer['avgPackage'] ?? '12.5')
+                .toString()
+                .replaceAll('₹', '')
+                .replaceAll(' LPA', '')
+            : '12.5');
+    final highestPackageCtrl = TextEditingController(
+        text: isEditing
+            ? (initialEmployer['highestCtc'] ?? '18.0')
+                .toString()
+                .replaceAll('₹', '')
+                .replaceAll(' LPA', '')
+            : '18.0');
+
+    // Relationship Notes & Feedback
+    final notesCtrl = TextEditingController(
+        text: isEditing ? (initialEmployer['notes'] ?? '') : '');
+
+    final availableSectors = _sectors.where((s) => s != 'All Sectors').toList();
+    final availableTiers = _tiers.where((t) => t != 'All Tiers').toList();
+    final availableMous = _mous.where((m) => m != 'All MoUs').toList();
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogCtx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Dialog(
+              backgroundColor: Colors.white,
+              insetPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(22),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Header with close button
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              isEditing
+                                  ? "Edit Corporate Recruiter"
+                                  : "Add Corporate Recruiter",
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(dialogCtx),
+                            icon: const Icon(Icons.close_rounded,
+                                size: 20, color: Color(0xFF64748B)),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Divider(
+                          height: 1, thickness: 0.8, color: Color(0xFFF1F5F9)),
+                      const SizedBox(height: 18),
+
+                      // Row 1: Company Name & Sector / Industry (Image 1)
+                      _buildResponsiveRow(
+                        left: _buildFieldLabel(
+                          label: "Company Name",
+                          child: _buildTextField(
+                            controller: companyCtrl,
+                            hintText: "e.g. Google India",
+                          ),
+                        ),
+                        right: _buildFieldLabel(
+                          label: "Sector / Industry",
+                          child: _buildFormDropdown(
+                            value: sector,
+                            items: availableSectors,
+                            onChanged: (val) {
+                              if (val != null) {
+                                setModalState(() => sector = val);
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Row 2: Relationship Tier & Location / HQ (Image 1)
+                      _buildResponsiveRow(
+                        left: _buildFieldLabel(
+                          label: "Relationship Tier",
+                          child: _buildFormDropdown(
+                            value: tier,
+                            items: availableTiers,
+                            onChanged: (val) {
+                              if (val != null) {
+                                setModalState(() => tier = val);
+                              }
+                            },
+                          ),
+                        ),
+                        right: _buildFieldLabel(
+                          label: "Location / HQ",
+                          child: _buildTextField(
+                            controller: locationCtrl,
+                            hintText: "e.g. Bengaluru, Karnataka",
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Row 3: Company Careers URL & MoU Status (Image 1)
+                      _buildResponsiveRow(
+                        left: _buildFieldLabel(
+                          label: "Company Careers URL (optional)",
+                          child: _buildTextField(
+                            controller: careersUrlCtrl,
+                            hintText: "https://company.com/careers",
+                          ),
+                        ),
+                        right: _buildFieldLabel(
+                          label: "MoU Status",
+                          child: _buildFormDropdown(
+                            value: mouStatus,
+                            items: availableMous,
+                            onChanged: (val) {
+                              if (val != null) {
+                                setModalState(() => mouStatus = val);
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Row 4: MoU Validity Until & Next Scheduled Drive (Image 1)
+                      _buildResponsiveRow(
+                        left: _buildFieldLabel(
+                          label: "MoU Validity Until (optional)",
+                          child: _buildTextField(
+                            controller: mouValidityCtrl,
+                            hintText: "mm/dd/yyyy",
+                            suffixIcon: Icons.calendar_today_outlined,
+                            onSuffixTap: () async {
+                              final d = await showDatePicker(
+                                context: context,
+                                initialDate:
+                                    DateTime.now().add(const Duration(days: 365)),
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime.now()
+                                    .add(const Duration(days: 365 * 5)),
+                              );
+                              if (d != null) {
+                                mouValidityCtrl.text =
+                                    "${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}/${d.year}";
+                              }
+                            },
+                          ),
+                        ),
+                        right: _buildFieldLabel(
+                          label: "Next Scheduled Drive (optional)",
+                          child: _buildTextField(
+                            controller: nextDriveCtrl,
+                            hintText: "mm/dd/yyyy",
+                            suffixIcon: Icons.calendar_today_outlined,
+                            onSuffixTap: () async {
+                              final d = await showDatePicker(
+                                context: context,
+                                initialDate:
+                                    DateTime.now().add(const Duration(days: 30)),
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime.now()
+                                    .add(const Duration(days: 365 * 2)),
+                              );
+                              if (d != null) {
+                                nextDriveCtrl.text =
+                                    "${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}/${d.year}";
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Section 1: University Relations Contact Card (Cream Container - Image 1)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFBF8F2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFF2ECE1)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "University Relations Contact",
+                              style: GoogleFonts.poppins(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            // Contact Person & Designation
+                            _buildResponsiveRow(
+                              left: _buildFieldLabel(
+                                label: "Contact Person",
+                                child: _buildTextField(
+                                  controller: contactPersonCtrl,
+                                  hintText: "e.g. Anandita Sen",
+                                ),
+                              ),
+                              right: _buildFieldLabel(
+                                label: "Designation",
+                                child: _buildTextField(
+                                  controller: designationCtrl,
+                                  hintText: "University Relations Lead",
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            // Official Email & Phone / Mobile
+                            _buildResponsiveRow(
+                              left: _buildFieldLabel(
+                                label: "Official Email",
+                                child: _buildTextField(
+                                  controller: emailCtrl,
+                                  hintText: "recruiter@company.com",
+                                  keyboardType: TextInputType.emailAddress,
+                                ),
+                              ),
+                              right: _buildFieldLabel(
+                                label: "Phone / Mobile (optional)",
+                                child: _buildTextField(
+                                  controller: phoneCtrl,
+                                  hintText: "+91 98840 12345",
+                                  keyboardType: TextInputType.phone,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            // LinkedIn Profile URL
+                            _buildFieldLabel(
+                              label: "LinkedIn Profile URL (optional)",
+                              child: _buildTextField(
+                                controller: linkedInCtrl,
+                                hintText:
+                                    "https://linkedin.com/in/recruiter-profile",
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Section 2: Historical Placement Statistics Card (White Container - Image 1)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Historical Placement Statistics",
+                              style: GoogleFonts.poppins(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            LayoutBuilder(
+                              builder: (context, c) {
+                                if (c.maxWidth < 480) {
+                                  return Column(
+                                    children: [
+                                      _buildFieldLabel(
+                                        label: "3-Yr Total Hires",
+                                        child: _buildTextField(
+                                          controller: totalHiresCtrl,
+                                          hintText: "0",
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      _buildFieldLabel(
+                                        label: "Average Package (LPA)",
+                                        child: _buildTextField(
+                                          controller: avgPackageCtrl,
+                                          hintText: "12.5",
+                                          keyboardType:
+                                              const TextInputType.numberWithOptions(
+                                                  decimal: true),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      _buildFieldLabel(
+                                        label: "Highest Package (LPA)",
+                                        child: _buildTextField(
+                                          controller: highestPackageCtrl,
+                                          hintText: "18.0",
+                                          keyboardType:
+                                              const TextInputType.numberWithOptions(
+                                                  decimal: true),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }
+                                return Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildFieldLabel(
+                                        label: "3-Yr Total Hires",
+                                        child: _buildTextField(
+                                          controller: totalHiresCtrl,
+                                          hintText: "0",
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildFieldLabel(
+                                        label: "Average Package (LPA)",
+                                        child: _buildTextField(
+                                          controller: avgPackageCtrl,
+                                          hintText: "12.5",
+                                          keyboardType:
+                                              const TextInputType.numberWithOptions(
+                                                  decimal: true),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildFieldLabel(
+                                        label: "Highest Package (LPA)",
+                                        child: _buildTextField(
+                                          controller: highestPackageCtrl,
+                                          hintText: "18.0",
+                                          keyboardType:
+                                              const TextInputType.numberWithOptions(
+                                                  decimal: true),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Section 3: Relationship Notes & Feedback (optional) (Image 2)
+                      _buildFieldLabel(
+                        label: "Relationship Notes & Feedback (optional)",
+                        child: _buildTextField(
+                          controller: notesCtrl,
+                          hintText:
+                              "Key discussion points, target departments, student feedback, or recruiter preferences...",
+                          maxLines: 4,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Bottom Action Buttons: Cancel | Add employer (Image 2)
+                      LayoutBuilder(
+                        builder: (context, actionBox) {
+                          final isNarrow = actionBox.maxWidth < 500;
+
+                          void handleSave() {
+                            final compName = companyCtrl.text.trim();
+                            if (compName.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    "Please enter company name.",
+                                    style: GoogleFonts.poppins(),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                              return;
+                            }
+
+                            final hires = totalHiresCtrl.text.trim().isNotEmpty
+                                ? totalHiresCtrl.text.trim()
+                                : "0";
+                            final avgP = avgPackageCtrl.text.trim().isNotEmpty
+                                ? "₹${avgPackageCtrl.text.trim()} LPA"
+                                : "₹12.5 LPA";
+                            final highP = highestPackageCtrl.text.trim().isNotEmpty
+                                ? "₹${highestPackageCtrl.text.trim()} LPA"
+                                : "₹18.0 LPA";
+
+                            setState(() {
+                              if (isEditing) {
+                                initialEmployer['name'] = compName;
+                                initialEmployer['sector'] = sector;
+                                initialEmployer['recruiterType'] = tier;
+                                initialEmployer['location'] =
+                                    locationCtrl.text.trim();
+                                initialEmployer['website'] =
+                                    careersUrlCtrl.text.trim();
+                                initialEmployer['mouStatus'] = mouStatus;
+                                initialEmployer['mouValidTill'] =
+                                    mouValidityCtrl.text.trim();
+                                initialEmployer['nextDrive'] =
+                                    nextDriveCtrl.text.trim();
+                                initialEmployer['spocName'] =
+                                    contactPersonCtrl.text.trim();
+                                initialEmployer['spocRole'] =
+                                    designationCtrl.text.trim();
+                                initialEmployer['spocEmail'] =
+                                    emailCtrl.text.trim();
+                                initialEmployer['spocPhone'] =
+                                    phoneCtrl.text.trim();
+                                initialEmployer['linkedIn'] =
+                                    linkedInCtrl.text.trim();
+                                initialEmployer['threeYrHires'] = hires;
+                                initialEmployer['avgPackage'] = avgP;
+                                initialEmployer['highestCtc'] = highP;
+                                initialEmployer['notes'] = notesCtrl.text.trim();
+                              } else {
+                                _employers.insert(0, {
+                                  'id':
+                                      'emp-${DateTime.now().millisecondsSinceEpoch}',
+                                  'name': compName,
+                                  'recruiterType': tier,
+                                  'sector': sector,
+                                  'location': locationCtrl.text.trim().isNotEmpty
+                                      ? locationCtrl.text.trim()
+                                      : 'Bengaluru, Karnataka',
+                                  'website': careersUrlCtrl.text.trim().isNotEmpty
+                                      ? careersUrlCtrl.text.trim()
+                                      : 'https://company.com/careers',
+                                  'spocName': contactPersonCtrl.text.trim().isNotEmpty
+                                      ? contactPersonCtrl.text.trim()
+                                      : 'Campus HR',
+                                  'spocRole': designationCtrl.text.trim().isNotEmpty
+                                      ? designationCtrl.text.trim()
+                                      : 'University Relations Lead',
+                                  'spocEmail': emailCtrl.text.trim().isNotEmpty
+                                      ? emailCtrl.text.trim()
+                                      : 'recruiter@company.com',
+                                  'spocPhone': phoneCtrl.text.trim().isNotEmpty
+                                      ? phoneCtrl.text.trim()
+                                      : '+91 98840 12345',
+                                  'linkedIn': linkedInCtrl.text.trim().isNotEmpty
+                                      ? linkedInCtrl.text.trim()
+                                      : 'https://linkedin.com',
+                                  'threeYrHires': hires,
+                                  'avgPackage': avgP,
+                                  'highestCtc': highP,
+                                  'mouStatus': mouStatus,
+                                  'mouValidTill': mouValidityCtrl.text.trim(),
+                                  'lastDrive': 'Upcoming: Nov 2026',
+                                  'nextDrive': nextDriveCtrl.text.trim(),
+                                  'notes': notesCtrl.text.trim(),
+                                });
+                              }
+                            });
+
+                            Navigator.pop(dialogCtx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Row(
+                                  children: [
+                                    const Icon(Icons.check_circle_rounded,
+                                        color: Color(0xFF10B981), size: 18),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      isEditing
+                                          ? "$compName profile updated."
+                                          : "$compName added to hiring partners.",
+                                      style: GoogleFonts.poppins(fontSize: 12.5),
+                                    ),
+                                  ],
+                                ),
+                                backgroundColor: const Color(0xFF0F172A),
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8)),
+                              ),
+                            );
+                          }
+
+                          final cancelBtn = OutlinedButton(
+                            onPressed: () => Navigator.pop(dialogCtx),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xFFCBD5E1)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 18, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Text(
+                              "Cancel",
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF334155),
+                              ),
+                            ),
+                          );
+
+                          final saveBtn = ElevatedButton(
+                            onPressed: handleSave,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1E2865),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                isEditing ? "Save changes" : "Add employer",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          );
+
+                          if (isNarrow) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                saveBtn,
+                                const SizedBox(height: 8),
+                                cancelBtn,
+                              ],
+                            );
+                          }
+
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              cancelBtn,
+                              const SizedBox(width: 12),
+                              saveBtn,
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ===========================================================================
+  // MAIN BUILD
+  // ===========================================================================
   @override
   Widget build(BuildContext context) {
     final filtered = _getFilteredEmployers();
@@ -267,7 +938,7 @@ class _EmployersScreenState extends State<EmployersScreen> {
               _buildMetricCards(),
               const SizedBox(height: 18),
 
-              // 3. Search & Filter Bar
+              // 3. Search & Filter Bar (Images 3, 4, 5)
               _buildSearchAndFilterBar(),
               const SizedBox(height: 18),
 
@@ -299,196 +970,208 @@ class _EmployersScreenState extends State<EmployersScreen> {
           ],
         ),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          children: [
-            Positioned.fill(
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
               child: CustomPaint(
                 painter: _BlueprintGridPainter(),
               ),
             ),
-            // Watermark building
-            Positioned(
-              right: 15,
-              bottom: -20,
-              child: Opacity(
-                opacity: 0.10,
-                child: const Icon(
-                  Icons.apartment_rounded,
-                  size: 190,
-                  color: Colors.white,
-                ),
+          ),
+          Positioned(
+            right: 15,
+            bottom: -20,
+            child: Opacity(
+              opacity: 0.10,
+              child: const Icon(
+                Icons.apartment_rounded,
+                size: 190,
+                color: Colors.white,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 22),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Breadcrumb
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    child: Row(
-                      children: [
-                        if (widget.onBack != null) ...[
-                          InkWell(
-                            onTap: widget.onBack,
-                            borderRadius: BorderRadius.circular(6),
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              margin: const EdgeInsets.only(right: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Icon(Icons.arrow_back,
-                                  size: 14, color: Colors.white),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    children: [
+                      if (widget.onBack != null) ...[
+                        InkWell(
+                          onTap: widget.onBack,
+                          borderRadius: BorderRadius.circular(6),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            margin: const EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
                             ),
-                          ),
-                        ],
-                        Text(
-                          'Home',
-                          style: GoogleFonts.poppins(
-                            fontSize: 11.5,
-                            color: Colors.white.withValues(alpha: 0.75),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text('>',
-                            style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                color: Colors.white.withValues(alpha: 0.5))),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Placement',
-                          style: GoogleFonts.poppins(
-                            fontSize: 11.5,
-                            color: Colors.white.withValues(alpha: 0.75),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text('>',
-                            style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                color: Colors.white.withValues(alpha: 0.5))),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Employers',
-                          style: GoogleFonts.poppins(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            child: const Icon(Icons.arrow_back,
+                                size: 14, color: Colors.white),
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
-                            width: 1,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.apartment_rounded,
-                          color: Color(0xFFFBBF24),
-                          size: 24,
+                      Text(
+                        'Home',
+                        style: GoogleFonts.poppins(
+                          fontSize: 11.5,
+                          color: Colors.white.withValues(alpha: 0.75),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 9, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.16),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: Colors.white.withValues(alpha: 0.3),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'PLACEMENT',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.8,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 9, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF0D9488),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    'MVP',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Employers',
-                              style: GoogleFonts.poppins(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                                letterSpacing: -0.3,
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              'Recruiter relationships, history and hiring outcomes.',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: Colors.white.withValues(alpha: 0.85),
-                              ),
-                            ),
-                          ],
+                      const SizedBox(width: 6),
+                      Text('>',
+                          style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              color: Colors.white.withValues(alpha: 0.5))),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Placement',
+                        style: GoogleFonts.poppins(
+                          fontSize: 11.5,
+                          color: Colors.white.withValues(alpha: 0.75),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text('>',
+                          style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              color: Colors.white.withValues(alpha: 0.5))),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Employers',
+                        style: GoogleFonts.poppins(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.apartment_rounded,
+                        color: Color(0xFFFBBF24),
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 9, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.16),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                child: Text(
+                                  'PLACEMENT',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.8,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 9, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0D9488),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  'MVP',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Employers',
+                            style: GoogleFonts.poppins(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Recruiter relationships, history and hiring outcomes.',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.85),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   // ===========================================================================
-  // 2. 5 METRIC CARDS (Image 1)
+  // 2. 5 METRIC CARDS
   // ===========================================================================
   Widget _buildMetricCards() {
+    final totalEmp = _employers.length;
+    final activePartners = _employers
+        .where((e) =>
+            e['recruiterType'] == 'Tier-1 Partner' ||
+            e['recruiterType'] == 'Preferred Recruiter' ||
+            e['recruiterType'] == 'Active')
+        .length;
+    final tier1Partners =
+        _employers.where((e) => e['recruiterType'] == 'Tier-1 Partner').length;
+
+    int totalHires = 0;
+    for (var emp in _employers) {
+      totalHires += int.tryParse('${emp['threeYrHires']}') ?? 0;
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
         int count = 1;
@@ -500,25 +1183,28 @@ class _EmployersScreenState extends State<EmployersScreen> {
           count = 2;
         }
 
-        final double cardWidth = (constraints.maxWidth - (count - 1) * 12) / count;
+        final double cardWidth =
+            (constraints.maxWidth - (count - 1) * 12) / count;
 
         final cards = [
-          _buildStatCard('Total Employers', '8', 'Registered corporate partners',
-              Icons.article_outlined),
-          _buildStatCard('Active Partners', '8', 'Tier-1, Preferred & Active',
-              Icons.handshake_outlined),
-          _buildStatCard('Tier-1 Partners', '4', 'Marquee corporate relationships',
-              Icons.trending_up_rounded),
-          _buildStatCard('3-Yr Total Hires', '374', 'Cumulative students hired',
-              Icons.people_outline_rounded),
+          _buildStatCard('Total Employers', '$totalEmp',
+              'Registered corporate partners', Icons.article_outlined),
+          _buildStatCard('Active Partners', '$activePartners',
+              'Tier-1, Preferred & Active', Icons.handshake_outlined),
+          _buildStatCard('Tier-1 Partners', '$tier1Partners',
+              'Marquee corporate relationships', Icons.auto_awesome_outlined),
+          _buildStatCard('3-Yr Total Hires', '$totalHires',
+              'Cumulative students hired', Icons.groups_outlined),
           _buildStatCard('Average CTC', '₹14.6 LPA', 'Across hiring partners',
-              Icons.check_circle_outline_rounded),
+              Icons.trending_up),
         ];
 
         return Wrap(
           spacing: 12,
           runSpacing: 12,
-          children: cards.map((c) => SizedBox(width: cardWidth, child: c)).toList(),
+          children: cards
+              .map((c) => SizedBox(width: cardWidth, child: c))
+              .toList(),
         );
       },
     );
@@ -546,16 +1232,12 @@ class _EmployersScreenState extends State<EmployersScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF64748B),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: const Color(0xFF64748B),
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               Icon(icon, size: 16, color: const Color(0xFF94A3B8)),
@@ -565,8 +1247,8 @@ class _EmployersScreenState extends State<EmployersScreen> {
           Text(
             value,
             style: GoogleFonts.poppins(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
             ),
           ),
@@ -586,7 +1268,7 @@ class _EmployersScreenState extends State<EmployersScreen> {
   }
 
   // ===========================================================================
-  // 3. SEARCH & FILTERS BAR (Image 1)
+  // 3. SEARCH & FILTERS BAR (Images 3, 4, 5)
   // ===========================================================================
   Widget _buildSearchAndFilterBar() {
     return LayoutBuilder(
@@ -613,8 +1295,8 @@ class _EmployersScreenState extends State<EmployersScreen> {
               prefixIcon: const Icon(Icons.search,
                   size: 18, color: Color(0xFF94A3B8)),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12, vertical: 11),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
             ),
           ),
         );
@@ -660,12 +1342,13 @@ class _EmployersScreenState extends State<EmployersScreen> {
           style: OutlinedButton.styleFrom(
             side: const BorderSide(color: Color(0xFFCBD5E1)),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
         );
 
         final addEmployerBtn = ElevatedButton.icon(
-          onPressed: _showAddEmployerDialog,
+          onPressed: () => _showAddEmployerDialog(),
           icon: const Icon(Icons.add, size: 16),
           label: Text(
             'Add employer',
@@ -678,7 +1361,8 @@ class _EmployersScreenState extends State<EmployersScreen> {
             backgroundColor: const Color(0xFF1E2865),
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             elevation: 0,
           ),
         );
@@ -721,41 +1405,25 @@ class _EmployersScreenState extends State<EmployersScreen> {
         }
 
         return Container(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                flex: 5,
-                child: searchInput,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 6,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    sectorDropdown,
-                    const SizedBox(height: 8),
-                    tierDropdown,
-                    const SizedBox(height: 8),
-                    mouDropdown,
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        exportCsvBtn,
-                        const SizedBox(width: 10),
-                        addEmployerBtn,
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              Expanded(flex: 3, child: searchInput),
+              const SizedBox(width: 10),
+              sectorDropdown,
+              const SizedBox(width: 8),
+              tierDropdown,
+              const SizedBox(width: 8),
+              mouDropdown,
+              const SizedBox(width: 12),
+              exportCsvBtn,
+              const SizedBox(width: 8),
+              addEmployerBtn,
             ],
           ),
         );
@@ -779,7 +1447,7 @@ class _EmployersScreenState extends State<EmployersScreen> {
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
-          isExpanded: true,
+          isExpanded: false,
           icon: const Icon(Icons.keyboard_arrow_down,
               size: 16, color: Color(0xFF64748B)),
           style: GoogleFonts.poppins(
@@ -790,7 +1458,8 @@ class _EmployersScreenState extends State<EmployersScreen> {
           items: items
               .map((item) => DropdownMenuItem(
                     value: item,
-                    child: Text(item, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    child: Text(item,
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
                   ))
               .toList(),
           onChanged: onChanged,
@@ -800,7 +1469,7 @@ class _EmployersScreenState extends State<EmployersScreen> {
   }
 
   // ===========================================================================
-  // 4. EMPLOYERS GRID (Image 1)
+  // 4. EMPLOYERS GRID
   // ===========================================================================
   Widget _buildEmployersGrid(List<Map<String, dynamic>> items) {
     if (items.isEmpty) {
@@ -946,15 +1615,7 @@ class _EmployersScreenState extends State<EmployersScreen> {
                         size: 16, color: Color(0xFF64748B)),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text("Editing ${emp['name']} profile.",
-                              style: GoogleFonts.poppins()),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
+                    onPressed: () => _showAddEmployerDialog(initialEmployer: emp),
                     tooltip: 'Edit employer',
                   ),
                   const SizedBox(width: 6),
@@ -964,10 +1625,24 @@ class _EmployersScreenState extends State<EmployersScreen> {
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     onPressed: () {
+                      final removedEmp = emp;
+                      final idx = _employers.indexOf(emp);
+                      setState(() {
+                        _employers.remove(emp);
+                      });
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text("Delete confirmation for ${emp['name']}.",
+                          content: Text("${emp['name']} removed from roster.",
                               style: GoogleFonts.poppins()),
+                          action: SnackBarAction(
+                            label: "Undo",
+                            textColor: const Color(0xFF38BDF8),
+                            onPressed: () {
+                              setState(() {
+                                _employers.insert(idx, removedEmp);
+                              });
+                            },
+                          ),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
@@ -978,98 +1653,65 @@ class _EmployersScreenState extends State<EmployersScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
 
           // Location & Website
-          Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 8,
-            runSpacing: 4,
+          Row(
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.location_on_outlined,
-                      size: 13, color: Color(0xFF64748B)),
-                  const SizedBox(width: 4),
-                  Text(
-                    emp['location'],
-                    style: GoogleFonts.poppins(
-                        fontSize: 11.5, color: const Color(0xFF64748B)),
-                  ),
-                ],
+              const Icon(Icons.location_on_outlined,
+                  size: 13, color: Color(0xFF64748B)),
+              const SizedBox(width: 4),
+              Text(
+                emp['location'],
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  color: const Color(0xFF64748B),
+                ),
               ),
-              const Text('•',
-                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
-              InkWell(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Opening website for ${emp['name']}",
-                          style: GoogleFonts.poppins()),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.language_rounded,
-                        size: 13, color: Color(0xFF1E2865)),
-                    const SizedBox(width: 4),
-                    Text(
-                      emp['website'],
-                      style: GoogleFonts.poppins(
-                        fontSize: 11.5,
-                        color: const Color(0xFF1E2865),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+              const SizedBox(width: 14),
+              const Icon(Icons.language_rounded,
+                  size: 13, color: Color(0xFF2563EB)),
+              const SizedBox(width: 4),
+              Text(
+                'Website',
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF2563EB),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
 
-          // SPOC Box (Image 1)
+          // SPOC Box
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              color: const Color(0xFFFAF9F6),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFF1F5F9)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Wrap(
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 8,
-                  runSpacing: 4,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.person_outline_rounded,
-                            size: 14, color: Color(0xFF64748B)),
-                        const SizedBox(width: 6),
-                        Text(
-                          emp['spocName'],
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0F172A),
-                          ),
-                        ),
-                      ],
+                    Text(
+                      emp['spocName'],
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                      ),
                     ),
                     Text(
                       emp['spocRole'],
                       style: GoogleFonts.poppins(
                         fontSize: 11,
                         color: const Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -1077,19 +1719,18 @@ class _EmployersScreenState extends State<EmployersScreen> {
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 12,
-                  runSpacing: 6,
-                  crossAxisAlignment: WrapCrossAlignment.center,
+                  runSpacing: 4,
                   children: [
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.mail_outline_rounded,
-                            size: 13, color: Color(0xFF64748B)),
+                        const Icon(Icons.email_outlined,
+                            size: 12, color: Color(0xFF64748B)),
                         const SizedBox(width: 4),
                         Text(
                           emp['spocEmail'],
                           style: GoogleFonts.poppins(
-                            fontSize: 11,
+                            fontSize: 10.5,
                             color: const Color(0xFF475569),
                           ),
                         ),
@@ -1099,42 +1740,23 @@ class _EmployersScreenState extends State<EmployersScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(Icons.phone_outlined,
-                            size: 13, color: Color(0xFF64748B)),
+                            size: 12, color: Color(0xFF64748B)),
                         const SizedBox(width: 4),
                         Text(
                           emp['spocPhone'],
                           style: GoogleFonts.poppins(
-                            fontSize: 11,
+                            fontSize: 10.5,
                             color: const Color(0xFF475569),
                           ),
                         ),
                       ],
                     ),
-                    InkWell(
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Opening LinkedIn for ${emp['spocName']}",
-                                style: GoogleFonts.poppins()),
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.open_in_new_rounded,
-                              size: 12, color: Color(0xFF1E2865)),
-                          const SizedBox(width: 3),
-                          Text(
-                            emp['linkedIn'],
-                            style: GoogleFonts.poppins(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF1E2865),
-                            ),
-                          ),
-                        ],
+                    Text(
+                      'LinkedIn',
+                      style: GoogleFonts.poppins(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF2563EB),
                       ),
                     ),
                   ],
@@ -1142,67 +1764,59 @@ class _EmployersScreenState extends State<EmployersScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
 
-          // 3-Yr Hires, Avg Package, Highest CTC
+          // Placement Stats Row: 3-Yr Hires, Avg Package, Highest CTC
           Row(
             children: [
               Expanded(
-                child: _buildMetricColumn('3-Yr Hires', emp['threeYrHires']),
+                child: _buildMetricMini(
+                    '3-Yr Total Hires', '${emp['threeYrHires']}'),
               ),
               Expanded(
-                child: _buildMetricColumn('Avg Package', emp['avgPackage']),
+                child: _buildMetricMini('Average Package', emp['avgPackage']),
               ),
               Expanded(
-                child: _buildMetricColumn('Highest CTC', emp['highestCtc']),
+                child: _buildMetricMini('Highest Offered', emp['highestCtc']),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
           const SizedBox(height: 10),
 
-          // Footer Row: Active MoU & Last drive
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 8,
-            runSpacing: 6,
+          // Footer: MoU badge and last drive
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 7, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDCFCE7),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      emp['mouStatus'],
-                      style: GoogleFonts.poppins(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF15803D),
-                      ),
-                    ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: emp['mouStatus'] == 'Active MoU'
+                      ? const Color(0xFFECFDF5)
+                      : (emp['mouStatus'] == 'Under Renewal'
+                          ? const Color(0xFFFEF3C7)
+                          : const Color(0xFFF1F5F9)),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  emp['mouStatus'] == 'None'
+                      ? 'No MoU'
+                      : "${emp['mouStatus']}${emp['mouValidTill'] != null && emp['mouValidTill'].isNotEmpty ? ' · ${emp['mouValidTill']}' : ''}",
+                  style: GoogleFonts.poppins(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: emp['mouStatus'] == 'Active MoU'
+                        ? const Color(0xFF059669)
+                        : (emp['mouStatus'] == 'Under Renewal'
+                            ? const Color(0xFFD97706)
+                            : const Color(0xFF475569)),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    emp['mouValidTill'],
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      color: const Color(0xFF64748B),
-                    ),
-                  ),
-                ],
+                ),
               ),
               Text(
-                emp['lastDrive'],
+                emp['lastDrive'] ?? '',
                 style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  color: const Color(0xFF64748B),
+                  fontSize: 10,
+                  color: const Color(0xFF94A3B8),
                 ),
               ),
             ],
@@ -1212,24 +1826,22 @@ class _EmployersScreenState extends State<EmployersScreen> {
     );
   }
 
-  Widget _buildMetricColumn(String label, String value) {
+  Widget _buildMetricMini(String label, String value) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
-            fontSize: 11,
+            fontSize: 9.5,
             color: const Color(0xFF64748B),
           ),
         ),
-        const SizedBox(height: 3),
+        const SizedBox(height: 2),
         Text(
           value,
-          textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
-            fontSize: 13,
+            fontSize: 12.5,
             fontWeight: FontWeight.w700,
             color: const Color(0xFF0F172A),
           ),
@@ -1239,135 +1851,8 @@ class _EmployersScreenState extends State<EmployersScreen> {
   }
 
   // ===========================================================================
-  // MODALS: ADD EMPLOYER & DETAILS
+  // DETAILS MODAL
   // ===========================================================================
-  void _showAddEmployerDialog() {
-    final nameCtrl = TextEditingController();
-    final sectorCtrl = TextEditingController(text: 'IT & Software');
-    final spocCtrl = TextEditingController();
-    final emailCtrl = TextEditingController();
-    final phoneCtrl = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(
-            'Add New Employer',
-            style: GoogleFonts.poppins(
-                fontSize: 16, fontWeight: FontWeight.w700),
-          ),
-          content: SingleChildScrollView(
-            child: SizedBox(
-              width: 440,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: nameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Company Name',
-                      hintText: 'e.g. Cisco Systems',
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: sectorCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Sector / Domain',
-                      hintText: 'e.g. IT & Software',
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: spocCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'SPOC Contact Person',
-                      hintText: 'e.g. Rajesh Kumar',
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: emailCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'SPOC Email Address',
-                      hintText: 'e.g. rajesh@company.com',
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: phoneCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'SPOC Phone Number',
-                      hintText: 'e.g. +91 98765 43210',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancel', style: GoogleFonts.poppins()),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E2865),
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () {
-                if (nameCtrl.text.trim().isNotEmpty) {
-                  setState(() {
-                    _employers.insert(0, {
-                      'id': DateTime.now().millisecondsSinceEpoch.toString(),
-                      'name': nameCtrl.text.trim(),
-                      'recruiterType': 'Preferred Recruiter',
-                      'sector': sectorCtrl.text.trim().isNotEmpty
-                          ? sectorCtrl.text.trim()
-                          : 'IT & Software',
-                      'location': 'Chennai, Tamil Nadu',
-                      'website': 'Website',
-                      'spocName': spocCtrl.text.trim().isNotEmpty
-                          ? spocCtrl.text.trim()
-                          : 'Campus HR',
-                      'spocRole': 'Recruiting Manager',
-                      'spocEmail': emailCtrl.text.trim().isNotEmpty
-                          ? emailCtrl.text.trim()
-                          : 'campus@company.com',
-                      'spocPhone': phoneCtrl.text.trim().isNotEmpty
-                          ? phoneCtrl.text.trim()
-                          : '+91 90000 11111',
-                      'linkedIn': 'LinkedIn',
-                      'threeYrHires': '0',
-                      'avgPackage': '₹8.0 LPA',
-                      'highestCtc': '₹12 LPA',
-                      'mouStatus': 'Active MoU',
-                      'mouValidTill': 'Valid till 31 Dec 2028',
-                      'lastDrive': 'Upcoming: Nov 2026',
-                    });
-                  });
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                          "Employer ${nameCtrl.text.trim()} added successfully.",
-                          style: GoogleFonts.poppins()),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              },
-              child: Text('Add Employer', style: GoogleFonts.poppins()),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void _showEmployerDetailsDialog(Map<String, dynamic> emp) {
     showDialog(
       context: context,
@@ -1417,11 +1902,17 @@ class _EmployersScreenState extends State<EmployersScreen> {
                   _detailRow('Email', emp['spocEmail']),
                   _detailRow('Phone', emp['spocPhone']),
                   const Divider(height: 20),
-                  _detailRow('3-Year Total Hires', '${emp['threeYrHires']} students'),
+                  _detailRow(
+                      '3-Year Total Hires', '${emp['threeYrHires']} students'),
                   _detailRow('Average Compensation', emp['avgPackage']),
                   _detailRow('Highest Offered CTC', emp['highestCtc']),
-                  _detailRow('MoU Status', '${emp['mouStatus']} · ${emp['mouValidTill']}'),
+                  _detailRow('MoU Status',
+                      '${emp['mouStatus']} · ${emp['mouValidTill']}'),
                   _detailRow('Latest Activity', emp['lastDrive']),
+                  if (emp['notes'] != null && (emp['notes'] as String).isNotEmpty) ...[
+                    const Divider(height: 20),
+                    _detailRow('Relationship Notes', emp['notes']),
+                  ],
                 ],
               ),
             ),
@@ -1465,6 +1956,136 @@ class _EmployersScreenState extends State<EmployersScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // FORM COMPONENT HELPERS
+  // ===========================================================================
+  static Widget _buildResponsiveRow({
+    required Widget left,
+    required Widget right,
+  }) {
+    return LayoutBuilder(
+      builder: (context, c) {
+        if (c.maxWidth < 480) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              left,
+              const SizedBox(height: 14),
+              right,
+            ],
+          );
+        }
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: left),
+            const SizedBox(width: 14),
+            Expanded(child: right),
+          ],
+        );
+      },
+    );
+  }
+
+  static Widget _buildFieldLabel({
+    required String label,
+    required Widget child,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF0F172A),
+          ),
+        ),
+        const SizedBox(height: 6),
+        child,
+      ],
+    );
+  }
+
+  static Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
+    IconData? suffixIcon,
+    VoidCallback? onSuffixTap,
+  }) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      style:
+          GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF0F172A)),
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: GoogleFonts.poppins(
+            fontSize: 12, color: const Color(0xFF94A3B8)),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        suffixIcon: suffixIcon != null
+            ? InkWell(
+                onTap: onSuffixTap,
+                child:
+                    Icon(suffixIcon, size: 18, color: const Color(0xFF64748B)),
+              )
+            : null,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF1E2865), width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  static Widget _buildFormDropdown({
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFCBD5E1)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          isExpanded: true,
+          icon: const Icon(Icons.keyboard_arrow_down,
+              size: 18, color: Color(0xFF64748B)),
+          style: GoogleFonts.poppins(
+              fontSize: 12.5, color: const Color(0xFF0F172A)),
+          items: items
+              .map((it) => DropdownMenuItem(
+                    value: it,
+                    child: Text(it),
+                  ))
+              .toList(),
+          onChanged: onChanged,
+        ),
       ),
     );
   }
