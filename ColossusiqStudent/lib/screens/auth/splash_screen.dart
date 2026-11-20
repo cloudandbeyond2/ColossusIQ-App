@@ -175,141 +175,171 @@ class _SplashScreenState extends State<SplashScreen>
   // 1. TOP NAVIGATION BAR
   // ===========================================================================
   Widget _buildTopNavBar(bool isDesktop) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(
-        horizontal: isDesktop ? 36 : 20,
-        vertical: 14,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.92),
-        border: const Border(
-          bottom: BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Logo & Student Portal Badge
-          Row(
-            mainAxisSize: MainAxisSize.min,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 430;
+        final isVeryNarrow = constraints.maxWidth < 360;
+
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            horizontal: isDesktop ? 36 : (isNarrow ? 12 : 18),
+            vertical: 12,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.92),
+            border: const Border(
+              bottom: BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              AnimatedBuilder(
-                animation: _pulseAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: _pulseAnimation.value,
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+              // Logo & Student Portal Badge
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedBuilder(
+                        animation: _pulseAnimation,
+                        builder: (context, child) {
+                          return Transform.scale(
+                            scale: _pulseAnimation.value,
+                            child: Container(
+                              width: isNarrow ? 32 : 36,
+                              height: isNarrow ? 32 : 36,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF2563EB).withValues(alpha: 0.30),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                Icons.school_rounded,
+                                color: Colors.white,
+                                size: isNarrow ? 18 : 20,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      SizedBox(width: isNarrow ? 7 : 10),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "Colossus",
+                              style: GoogleFonts.poppins(
+                                fontSize: isNarrow ? 16.5 : 18,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF0F172A),
+                                letterSpacing: -0.4,
+                              ),
+                            ),
+                            TextSpan(
+                              text: "IQ",
+                              style: GoogleFonts.poppins(
+                                fontSize: isNarrow ? 16.5 : 18,
+                                fontWeight: FontWeight.w900,
+                                color: const Color(0xFF2563EB),
+                                letterSpacing: -0.4,
+                              ),
+                            ),
+                          ],
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF2563EB).withValues(alpha: 0.30),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
+                      ),
+                      SizedBox(width: isNarrow ? 7 : 10),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isNarrow ? 6 : 8,
+                          vertical: isNarrow ? 2 : 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFECFDF5),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFA7F3D0)),
+                        ),
+                        child: Text(
+                          "STUDENT",
+                          style: GoogleFonts.poppins(
+                            fontSize: isNarrow ? 9 : 10,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF059669),
+                            letterSpacing: 0.6,
                           ),
-                        ],
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.school_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(width: 10),
-              RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: "Colossus",
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: const Color(0xFF0F172A),
-                        letterSpacing: -0.4,
-                      ),
-                    ),
-                    TextSpan(
-                      text: "IQ",
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                        color: const Color(0xFF2563EB),
-                        letterSpacing: -0.4,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(width: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFECFDF5),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: const Color(0xFFA7F3D0)),
-                ),
-                child: Text(
-                  "STUDENT",
-                  style: GoogleFonts.poppins(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF059669),
-                    letterSpacing: 0.6,
+
+              const SizedBox(width: 8),
+
+              // Live Session Indicator Pill
+              Flexible(
+                fit: FlexFit.loose,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isNarrow ? 8 : 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFBFDBFE)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color(0x6610B981),
+                                blurRadius: 4,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          isVeryNarrow
+                              ? "Live"
+                              : (isNarrow ? "26–27 · Live" : "AY 2026–27 · Live"),
+                          style: GoogleFonts.poppins(
+                            fontSize: isNarrow ? 10.5 : 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1D4ED8),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ],
           ),
-
-          // Live Session Indicator Pill
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFBFDBFE)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF10B981),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0x6610B981),
-                        blurRadius: 4,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  "AY 2026–27 · Live",
-                  style: GoogleFonts.poppins(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1D4ED8),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
