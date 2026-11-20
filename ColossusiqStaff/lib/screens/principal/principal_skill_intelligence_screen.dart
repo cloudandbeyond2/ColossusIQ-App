@@ -16,6 +16,8 @@ class _PrincipalSkillIntelligenceScreenState
   int _activeTab = 0;
   final TextEditingController _searchController = TextEditingController();
 
+  final List<Map<String, dynamic>> _bridgeCourses = [];
+
   String _selectedDept = "All Departments";
   String _selectedBatch = "All Batches";
   String _selectedDomain = "All Domains";
@@ -392,9 +394,7 @@ class _PrincipalSkillIntelligenceScreenState
                   ),
                   const SizedBox(height: 8),
                   ElevatedButton(
-                    onPressed: () {
-                      setState(() => _activeTab = 3);
-                    },
+                    onPressed: () => _showScheduleBridgeCourseModal(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
                           const Color(0xFF1E2865), // Deep Navy / Indigo
@@ -725,7 +725,7 @@ class _PrincipalSkillIntelligenceScreenState
       {"label": "Skill Gap & Industry Demand", "icon": null},
       {"label": "Student Skill Inventory", "icon": Icons.people_outline_rounded},
       {"label": "Recruiter Benchmarks & Trends", "icon": Icons.track_changes_rounded},
-      {"label": "Bridge Courses (0)", "icon": null},
+      {"label": "Bridge Courses (${_bridgeCourses.length})", "icon": null},
     ];
 
     return SingleChildScrollView(
@@ -1469,7 +1469,12 @@ class _PrincipalSkillIntelligenceScreenState
                       // Action
                       DataCell(
                         OutlinedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            _showScheduleBridgeCourseModal(
+                              initialSkill: row["skill"] as String?,
+                              initialTitle: "${row["skill"]} Remediation Sprint",
+                            );
+                          },
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
@@ -2345,7 +2350,7 @@ class _PrincipalSkillIntelligenceScreenState
             );
 
             final newButton = ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () => _showScheduleBridgeCourseModal(),
               icon: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
               label: Text(
                 "New Bridge Course",
@@ -2388,79 +2393,524 @@ class _PrincipalSkillIntelligenceScreenState
         ),
         const SizedBox(height: 16),
 
-        // Empty state card
+        if (_bridgeCourses.isEmpty)
+          // Empty state card
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: const Icon(
+                    Icons.school_outlined,
+                    size: 24,
+                    color: Color(0xFF94A3B8),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  "No Bridge Courses Scheduled Yet",
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: Text(
+                    "No active or upcoming curricular interventions have been scheduled yet for All Departments. Assign a teaching faculty member to lead a focused sprint to close identified deficits.",
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11.5,
+                      color: const Color(0xFF64748B),
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () => _showScheduleBridgeCourseModal(),
+                  icon: const Icon(Icons.add_rounded, size: 15, color: Colors.white),
+                  label: Text(
+                    "Schedule First Bridge Course",
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF283685),
+                    elevation: 0,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          // List of Scheduled Bridge Courses
+          Column(
+            children: _bridgeCourses.map((c) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEEF2FF),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.rocket_launch_rounded,
+                          size: 20, color: Color(0xFF4338CA)),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                c["title"] as String,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF0F172A),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFDCFCE7),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  c["status"] as String,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF16A34A),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Target Skill: ${c["skill"]} • Duration: ${c["duration"]}",
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: const Color(0xFF334155),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Faculty Lead: ${c["faculty"]} • Cohort: ${c["cohort"]} (${c["dept"]})",
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline_rounded,
+                          size: 18, color: Color(0xFF94A3B8)),
+                      onPressed: () {
+                        setState(() {
+                          _bridgeCourses.remove(c);
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+      ],
+    );
+  }
+
+  // ===========================================================================
+  // MODAL: SCHEDULE CURRICULAR BRIDGE COURSE (Images 1 & 3)
+  // ===========================================================================
+  void _showScheduleBridgeCourseModal({
+    String? initialSkill,
+    String? initialTitle,
+  }) {
+    final titleCtrl = TextEditingController(
+        text: initialTitle ?? "AWS Cloud Native Practitioner Sprint");
+    final skillCtrl = TextEditingController(
+        text: initialSkill ?? "Cloud Architecture (AWS / Azure / GCP)");
+    String selectedDept = "Computer Science & Engi";
+    String selectedCohort = "2023–2027 (Final Year)";
+    String selectedFaculty = "far";
+    String selectedDuration = "4 Weeks Comprehensive";
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogCtx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Dialog(
+              backgroundColor: Colors.white,
+              insetPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 540),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Modal Header
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Schedule Curricular Bridge Course",
+                              style: GoogleFonts.poppins(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => Navigator.of(dialogCtx).pop(),
+                              icon: const Icon(Icons.close_rounded,
+                                  size: 20, color: Color(0xFF64748B)),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "Deploy targeted remediation for identified cohort skill deficits",
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Intervention Title
+                        _buildModalFormField(
+                          label: "Intervention Title",
+                          hint: "e.g. AWS Cloud Native Practitioner Sprint",
+                          controller: titleCtrl,
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Target Skill
+                        _buildModalFormField(
+                          label: "Target Skill",
+                          hint: "e.g. Cloud Architecture (AWS / Azure / GCP)",
+                          controller: skillCtrl,
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Department & Target Cohort
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildModalDropdown(
+                                label: "Department",
+                                value: selectedDept,
+                                items: [
+                                  "Computer Science & Engi",
+                                  "Information Technology",
+                                  "Artificial Intelligence",
+                                  "Electronics & Communication",
+                                ],
+                                onChanged: (v) =>
+                                    setModalState(() => selectedDept = v!),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: _buildModalDropdown(
+                                label: "Target Cohort",
+                                value: selectedCohort,
+                                items: [
+                                  "2023–2027 (Final Year)",
+                                  "2024–2028 (Third Year)",
+                                  "2025–2029 (Second Year)",
+                                ],
+                                onChanged: (v) =>
+                                    setModalState(() => selectedCohort = v!),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Faculty Mentor / Lead & Duration
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildModalDropdown(
+                                label: "Faculty Mentor / Lead",
+                                value: selectedFaculty,
+                                items: [
+                                  "Select teaching faculty...",
+                                  "far",
+                                  "Dr. Anand V.",
+                                  "Prof. Priya Sharma",
+                                  "Dr. Rajesh K.",
+                                ],
+                                onChanged: (v) =>
+                                    setModalState(() => selectedFaculty = v!),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: _buildModalDropdown(
+                                label: "Duration",
+                                value: selectedDuration,
+                                items: [
+                                  "4 Weeks Comprehensive",
+                                  "2 Weeks Sprint",
+                                  "8 Weeks Deep-Dive",
+                                  "Weekend Bootcamp",
+                                ],
+                                onChanged: (v) =>
+                                    setModalState(() => selectedDuration = v!),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Modal Footer Buttons
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            OutlinedButton(
+                              onPressed: () => Navigator.of(dialogCtx).pop(),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 12),
+                                side: const BorderSide(
+                                    color: Color(0xFFE2E8F0)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: Text(
+                                "Cancel",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF334155),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            ElevatedButton(
+                              onPressed: () {
+                                final title = titleCtrl.text.trim();
+                                final skill = skillCtrl.text.trim();
+                                if (title.isEmpty || skill.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          "Please enter both title and target skill",
+                                          style: GoogleFonts.poppins()),
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor:
+                                          const Color(0xFFEF4444),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                setState(() {
+                                  _bridgeCourses.insert(0, {
+                                    "title": title,
+                                    "skill": skill,
+                                    "dept": selectedDept,
+                                    "cohort": selectedCohort,
+                                    "faculty": selectedFaculty,
+                                    "duration": selectedDuration,
+                                    "status": "Active Sprint",
+                                  });
+                                  _activeTab = 3;
+                                });
+
+                                Navigator.of(dialogCtx).pop();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        "Bridge course '$title' scheduled successfully!",
+                                        style: GoogleFonts.poppins()),
+                                    behavior: SnackBarBehavior.floating,
+                                    backgroundColor:
+                                        const Color(0xFF10B981),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF2E3880),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 22, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: Text(
+                                "Deploy Intervention",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildModalFormField({
+    required String label,
+    required String hint,
+    required TextEditingController controller,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF0F172A),
+          ),
+        ),
+        const SizedBox(height: 6),
         Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+          height: 44,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(10),
             border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
-          child: Column(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                ),
-                child: const Icon(
-                  Icons.school_outlined,
-                  size: 24,
-                  color: Color(0xFF94A3B8),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                "No Bridge Courses Scheduled Yet",
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0F172A),
-                ),
-              ),
-              const SizedBox(height: 6),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 480),
-                child: Text(
-                  "No active or upcoming curricular interventions have been scheduled yet for All Departments. Assign a teaching faculty member to lead a focused sprint to close identified deficits.",
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11.5,
-                    color: const Color(0xFF64748B),
-                    height: 1.4,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.add_rounded, size: 15, color: Colors.white),
-                label: Text(
-                  "Schedule First Bridge Course",
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF283685),
-                  elevation: 0,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-            ],
+          child: TextField(
+            controller: controller,
+            style: GoogleFonts.poppins(fontSize: 12.5),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 11),
+            ),
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildModalDropdown({
+    required String label,
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.poppins(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF0F172A),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          height: 44,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: items.contains(value) ? value : items.first,
+              isExpanded: true,
+              icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                  size: 18, color: Color(0xFF64748B)),
+              style: GoogleFonts.poppins(
+                  fontSize: 12, color: const Color(0xFF0F172A)),
+              items: items
+                  .map((it) => DropdownMenuItem(
+                      value: it,
+                      child: Text(it, overflow: TextOverflow.ellipsis)))
+                  .toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
   }
 }
 

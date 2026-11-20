@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/certificate_pdf_service.dart';
 
 // =============================================================================
-// PRINCIPAL: ISSUED CERTIFICATES SCREEN (Matches Image 3)
-// - Hero Blueprint Banner: "Home > AI Course & Certification > Issued Certificates", badges AI COURSE & CERTIFICATION, MVP
-// - 6 KPI Stat Cards: Issued (0), Grade O (0), Grade A+ (0), Grade A (0), Grade B (0), Grade C (0)
-// - Course & quiz certificates Card with Search, Filter & Technical blueprint grid empty state
+// PRINCIPAL: ISSUED CERTIFICATES SCREEN (Exact implementation of Image 1)
+// - Hero Blueprint Banner: "Home > AI Course & Certification > Issued Certificates"
+//   Badges: "AI COURSE & CERTIFICATION", "MVP"
+// - 6 KPI Stat Cards: Issued (6), Grade O (3), Grade A+ (2), Grade A (0), Grade B (0), Grade C (1)
+// - Course & quiz certificates Card with Search, Filter & Complete Data Table
+// - Fully responsive with horizontal table scrolling and PDF preview/printing
 // =============================================================================
 
 class PrincipalIssuedCertificatesScreen extends StatefulWidget {
@@ -20,7 +23,65 @@ class PrincipalIssuedCertificatesScreen extends StatefulWidget {
 class _PrincipalIssuedCertificatesScreenState
     extends State<PrincipalIssuedCertificatesScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedGrade = "All";
+  String _selectedGrade = "All Grades";
+
+  // Data matching Image 1
+  final List<Map<String, dynamic>> _allCertificates = [
+    {
+      "id": "CIQ-2026-E4A7CF18",
+      "student": "Anand Kumar",
+      "quiz": "Emerging Technologies — final assessment",
+      "dept": "Computer Science & Engineering",
+      "marks": "26/30 (87%)",
+      "grade": "A+",
+      "issued": "21 Oct 2026",
+    },
+    {
+      "id": "CIQ-2026-E1453EBA",
+      "student": "Anand Kumar",
+      "quiz": "Computer Science & Engineering — Data Structures and Algorithms quiz",
+      "dept": "Computer Science & Engineering",
+      "marks": "9/10 (90%)",
+      "grade": "O",
+      "issued": "15 Oct 2026",
+    },
+    {
+      "id": "CIQ-2026-9C6D8BFD",
+      "student": "Anand Kumar",
+      "quiz": "Computer Science & Engineering — Web Technologies quiz",
+      "dept": "Computer Science & Engineering",
+      "marks": "8/10 (80%)",
+      "grade": "A+",
+      "issued": "6 Oct 2026",
+    },
+    {
+      "id": "CIQ-2026-A8B5E350",
+      "student": "Anand Kumar",
+      "quiz": "Computer Science & Engineering — DBMS quiz",
+      "dept": "Computer Science & Engineering",
+      "marks": "4/8 (50%)",
+      "grade": "C",
+      "issued": "6 Oct 2026",
+    },
+    {
+      "id": "CIQ-2026-B2CFB2C3",
+      "student": "Divya Ramesh",
+      "quiz": "Operating Systems — final assessment",
+      "dept": "Computer Science & Engineering",
+      "marks": "30/30 (100%)",
+      "grade": "O",
+      "issued": "5 Oct 2026",
+    },
+    {
+      "id": "CIQ-2026-B1FB8977",
+      "student": "Anand Kumar",
+      "quiz": "Database Management Systems — final assessment",
+      "dept": "Computer Science & Engineering",
+      "marks": "4/4 (100%)",
+      "grade": "O",
+      "issued": "29 Sept 2026",
+    },
+  ];
 
   @override
   void dispose() {
@@ -28,10 +89,26 @@ class _PrincipalIssuedCertificatesScreenState
     super.dispose();
   }
 
+  List<Map<String, dynamic>> get _filteredCertificates {
+    final query = _searchController.text.trim().toLowerCase();
+    return _allCertificates.where((cert) {
+      final matchesSearch = query.isEmpty ||
+          cert["id"]!.toLowerCase().contains(query) ||
+          cert["student"]!.toLowerCase().contains(query) ||
+          cert["quiz"]!.toLowerCase().contains(query);
+
+      final matchesGrade = _selectedGrade == "All Grades" ||
+          _selectedGrade == "All" ||
+          cert["grade"] == _selectedGrade.replaceAll("Grade ", "").trim();
+
+      return matchesSearch && matchesGrade;
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFFAF9F5), // Light warm neutral canvas
+      color: const Color(0xFFFAF9F5), // Light warm neutral canvas matching screenshot
       child: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 950;
@@ -47,15 +124,15 @@ class _PrincipalIssuedCertificatesScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 1. HERO BLUEPRINT BANNER (Image 3)
+                // 1. HERO BLUEPRINT BANNER (Image 1)
                 _buildHeroBanner(),
                 const SizedBox(height: 20),
 
-                // 2. 6 STAT KPI CARDS (Image 3)
+                // 2. 6 STAT KPI CARDS (Image 1: 6, 3, 2, 0, 0, 1)
                 _buildKpiCards(isWide),
                 const SizedBox(height: 20),
 
-                // 3. MAIN CARD WITH BLUEPRINT GRID EMPTY STATE (Image 3)
+                // 3. MAIN CARD WITH SEARCH, FILTER & CERTIFICATES TABLE (Image 1)
                 _buildMainCard(),
               ],
             ),
@@ -66,7 +143,7 @@ class _PrincipalIssuedCertificatesScreenState
   }
 
   // ===========================================================================
-  // 1. HERO BLUEPRINT BANNER
+  // 1. HERO BLUEPRINT BANNER (Exact to Image 1)
   // ===========================================================================
   Widget _buildHeroBanner() {
     return Container(
@@ -108,7 +185,7 @@ class _PrincipalIssuedCertificatesScreenState
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 22),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -221,7 +298,7 @@ class _PrincipalIssuedCertificatesScreenState
                         child: const Center(
                           child: Icon(
                             Icons.workspace_premium_rounded,
-                            color: Color(0xFFFBBF24), // Yellow Medal Icon
+                            color: Color(0xFFFBBF24), // Gold Medal Icon
                             size: 22,
                           ),
                         ),
@@ -264,16 +341,16 @@ class _PrincipalIssuedCertificatesScreenState
   }
 
   // ===========================================================================
-  // 2. 6 STAT KPI CARDS (Image 3)
+  // 2. 6 STAT KPI CARDS (Image 1: 6, 3, 2, 0, 0, 1)
   // ===========================================================================
   Widget _buildKpiCards(bool isWide) {
     final cards = [
-      {"label": "Issued", "value": "0"},
-      {"label": "Grade O", "value": "0"},
-      {"label": "Grade A+", "value": "0"},
+      {"label": "Issued", "value": "6"},
+      {"label": "Grade O", "value": "3"},
+      {"label": "Grade A+", "value": "2"},
       {"label": "Grade A", "value": "0"},
       {"label": "Grade B", "value": "0"},
-      {"label": "Grade C", "value": "0"},
+      {"label": "Grade C", "value": "1"},
     ];
 
     if (isWide) {
@@ -342,13 +419,15 @@ class _PrincipalIssuedCertificatesScreenState
   }
 
   // ===========================================================================
-  // 3. MAIN CARD WITH BLUEPRINT GRID EMPTY STATE (Image 3)
+  // 3. MAIN CARD WITH SEARCH, FILTER & CERTIFICATES TABLE (Image 1)
   // ===========================================================================
   Widget _buildMainCard() {
+    final certs = _filteredCertificates;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
@@ -361,15 +440,16 @@ class _PrincipalIssuedCertificatesScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Header section inside card
           Padding(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   "Course & quiz certificates",
                   style: GoogleFonts.poppins(
-                    fontSize: 14.5,
+                    fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF0F172A),
                   ),
@@ -382,7 +462,7 @@ class _PrincipalIssuedCertificatesScreenState
                     color: const Color(0xFF64748B),
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 16),
 
                 // Search & Filter Row
                 Row(
@@ -397,17 +477,15 @@ class _PrincipalIssuedCertificatesScreenState
                         ),
                         child: TextField(
                           controller: _searchController,
+                          onChanged: (_) => setState(() {}),
                           style: GoogleFonts.poppins(fontSize: 12.5),
                           decoration: const InputDecoration(
                             hintText: "Search student, quiz or ID",
                             hintStyle: TextStyle(
                                 fontSize: 12, color: Color(0xFF94A3B8)),
                             border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            errorBorder: InputBorder.none,
-                            disabledBorder: InputBorder.none,
-                            filled: false,
+                            prefixIcon: Icon(Icons.search_rounded,
+                                size: 16, color: Color(0xFF94A3B8)),
                             contentPadding: EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 8),
                           ),
@@ -430,11 +508,21 @@ class _PrincipalIssuedCertificatesScreenState
                               size: 18, color: Color(0xFF64748B)),
                           style: GoogleFonts.poppins(
                               fontSize: 12, color: const Color(0xFF334155)),
-                          items: ["All", "Grade O", "Grade A+", "Grade A", "Grade B", "Grade C"]
-                              .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                          items: [
+                            "All Grades",
+                            "Grade O",
+                            "Grade A+",
+                            "Grade A",
+                            "Grade B",
+                            "Grade C"
+                          ]
+                              .map((g) => DropdownMenuItem(
+                                  value: g, child: Text(g)))
                               .toList(),
                           onChanged: (val) {
-                            if (val != null) setState(() => _selectedGrade = val);
+                            if (val != null) {
+                              setState(() => _selectedGrade = val);
+                            }
                           },
                         ),
                       ),
@@ -445,59 +533,321 @@ class _PrincipalIssuedCertificatesScreenState
             ),
           ),
 
-          // Blueprint Graph Paper Empty State
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
-            child: Container(
-              height: 200,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: const Color(0xFFCBD5E1).withValues(alpha: 0.6),
-                  width: 1,
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+
+          // Data Table
+          certs.isEmpty
+              ? _buildEmptyState()
+              : SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minWidth: 800),
+                    child: DataTable(
+                      headingRowColor:
+                          WidgetStateProperty.all(const Color(0xFFFAFAFA)),
+                      headingTextStyle: GoogleFonts.poppins(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF64748B),
+                        letterSpacing: 0.5,
+                      ),
+                      dataRowMinHeight: 52,
+                      dataRowMaxHeight: 64,
+                      horizontalMargin: 20,
+                      columnSpacing: 24,
+                      columns: const [
+                        DataColumn(label: Text("CERTIFICATE")),
+                        DataColumn(label: Text("STUDENT")),
+                        DataColumn(label: Text("QUIZ")),
+                        DataColumn(label: Text("MARKS")),
+                        DataColumn(label: Text("GRADE")),
+                        DataColumn(label: Text("ISSUED")),
+                      ],
+                      rows: certs.map((cert) {
+                        return DataRow(
+                          onSelectChanged: (_) => _showCertificateDialog(cert),
+                          cells: [
+                            // 1. Certificate ID (Monospace style)
+                            DataCell(
+                              Text(
+                                cert["id"]!,
+                                style: GoogleFonts.jetBrainsMono(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                              ),
+                            ),
+
+                            // 2. Student
+                            DataCell(
+                              Text(
+                                cert["student"]!,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF0F172A),
+                                ),
+                              ),
+                            ),
+
+                            // 3. Quiz & Department
+                            DataCell(
+                              Container(
+                                constraints: const BoxConstraints(maxWidth: 320),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      cert["quiz"]!,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: const Color(0xFF1E293B),
+                                      ),
+                                    ),
+                                    Text(
+                                      cert["dept"]!,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 10.5,
+                                        color: const Color(0xFF94A3B8),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            // 4. Marks
+                            DataCell(
+                              Text(
+                                cert["marks"]!,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: const Color(0xFF334155),
+                                ),
+                              ),
+                            ),
+
+                            // 5. Grade Pill
+                            DataCell(
+                              _buildGradePill(cert["grade"]!),
+                            ),
+
+                            // 6. Issued Date
+                            DataCell(
+                              Text(
+                                cert["issued"]!,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+          const SizedBox(height: 10),
+        ],
+      ),
+    );
+  }
+
+  // Grade pill matching the exact soft warm aesthetic in Image 1
+  Widget _buildGradePill(String grade) {
+    Color bg = const Color(0xFFFEF3C7);
+    Color text = const Color(0xFFB45309);
+
+    if (grade == "O") {
+      bg = const Color(0xFFFFF7ED);
+      text = const Color(0xFFEA580C);
+    } else if (grade == "A+" || grade == "A") {
+      bg = const Color(0xFFFEF3C7);
+      text = const Color(0xFFD97706);
+    } else if (grade == "C") {
+      bg = const Color(0xFFFFF1F2);
+      text = const Color(0xFFE11D48);
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        grade,
+        style: GoogleFonts.poppins(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: text,
+        ),
+      ),
+    );
+  }
+
+  // Blueprint Graph Paper Empty State
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Container(
+        height: 180,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: const Color(0xFFCBD5E1).withValues(alpha: 0.6),
+            width: 1,
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _LightGridPainter(),
                 ),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Stack(
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Positioned.fill(
-                      child: CustomPaint(
-                        painter: _LightGridPainter(),
+                    Text(
+                      "No certificates matching criteria",
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
                       ),
                     ),
-                    Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            "No certificates",
-                            style: GoogleFonts.poppins(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF0F172A),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            "Certificates appear here when students pass certificate-\nenabled quizzes.",
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 12.5,
-                              color: const Color(0xFF64748B),
-                              height: 1.45,
-                            ),
-                          ),
-                        ],
+                    const SizedBox(height: 4),
+                    Text(
+                      "Try adjusting your search query or grade filter.",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: const Color(0xFF64748B),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  // Dialog to view certificate details & generate/print PDF
+  void _showCertificateDialog(Map<String, dynamic> cert) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Icon(Icons.workspace_premium_rounded,
+                  color: Color(0xFFD97706), size: 24),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  "Certificate Details",
+                  style: GoogleFonts.poppins(
+                      fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _detailRow("Certificate ID", cert["id"]!),
+              _detailRow("Recipient", cert["student"]!),
+              _detailRow("Course / Quiz", cert["quiz"]!),
+              _detailRow("Department", cert["dept"]!),
+              _detailRow("Marks Obtained", cert["marks"]!),
+              _detailRow("Grade Awarded", cert["grade"]!),
+              _detailRow("Issued Date", cert["issued"]!),
+              _detailRow("Verification", "https://colossus-iq-new.vercel.app/verify/${cert["id"]}"),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text("Close",
+                  style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                try {
+                  await CertificatePdfService.printOrSavePdf(
+                    recipient: cert["student"]!,
+                    type: "Course Completion",
+                    event: cert["quiz"]!,
+                    date: cert["issued"]!,
+                    certId: cert["id"]!,
+                    citation:
+                        "has successfully passed the assessment with grade ${cert["grade"]}.",
+                  );
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Error opening PDF: $e")),
+                    );
+                  }
+                }
+              },
+              icon: const Icon(Icons.print_rounded, size: 16, color: Colors.white),
+              label: Text("Print / PDF",
+                  style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600, color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1E2865),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: "$label: ",
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF475569),
+              ),
+            ),
+            TextSpan(
+              text: value,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: const Color(0xFF0F172A),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

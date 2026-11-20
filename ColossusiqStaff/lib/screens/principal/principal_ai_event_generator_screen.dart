@@ -213,7 +213,6 @@ class _PrincipalAiEventGeneratorScreenState
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             color: const Color(0xFF94A3B8),
-                            decoration: TextDecoration.underline,
                           ),
                         ),
                         const Padding(
@@ -398,15 +397,15 @@ class _PrincipalAiEventGeneratorScreenState
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: const Color(0xFFF0FDF4),
+                color: const Color(0xFFE0F2FE),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                "● 2 Events Active",
+                "● 10 Events Active",
                 style: GoogleFonts.poppins(
                   fontSize: 9.5,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF16A34A),
+                  color: const Color(0xFF0284C7),
                 ),
               ),
             ),

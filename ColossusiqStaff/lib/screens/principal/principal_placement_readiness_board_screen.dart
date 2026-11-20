@@ -494,6 +494,33 @@ class _PrincipalPlacementReadinessBoardScreenState
   Widget _buildReadinessBoardTable() {
     final students = [
       {
+        "name": "bala",
+        "roll": "27549861 · Computer Science & Engineering · 2023–2027 (Final Year)",
+        "dept": "Computer Science & Engineering",
+        "cohort": "2023–2027 (Final Year)",
+        "quiz": "0%",
+        "certs": "0",
+        "aptitude": "0",
+        "interview": "0",
+        "resume": "0",
+        "total": 0,
+        "status": "Needs work",
+        "statusType": "needs_work",
+        "hint": "Raise your quiz average to 60%",
+        "strengths": [
+          "Machine Learning",
+          "Advanced Java",
+          "Object-Oriented Programming with Java",
+        ],
+        "gaps": [
+          "Raise your quiz average to 60%",
+          "Earn 2 more certificate(s)",
+          "Score 50+ in a mock interview",
+        ],
+        "aiPlan":
+            "Recommended to enroll in the next upcoming bridge workshop for \"Raise your quiz average to 60%\" to clear recruiter cutoff.",
+      },
+      {
         "name": "Sanjay Pillai",
         "roll": "••••1007 · Information Technology",
         "quiz": "80%",
@@ -801,26 +828,33 @@ class _PrincipalPlacementReadinessBoardScreenState
                     cells: [
                       // Student
                       DataCell(
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              s["name"] as String,
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF0F172A),
-                              ),
+                        InkWell(
+                          onTap: () => _showStudentProfileModal(s),
+                          borderRadius: BorderRadius.circular(4),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  s["name"] as String,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
+                                Text(
+                                  s["roll"] as String,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    color: const Color(0xFF94A3B8),
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              s["roll"] as String,
-                              style: GoogleFonts.poppins(
-                                fontSize: 10,
-                                color: const Color(0xFF94A3B8),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                       // Quiz
@@ -976,6 +1010,288 @@ class _PrincipalPlacementReadinessBoardScreenState
           onChanged: onChanged,
         ),
       ),
+    );
+  }
+
+  // ===========================================================================
+  // MODAL: STUDENT READINESS PROFILE (Image 2)
+  // ===========================================================================
+  void _showStudentProfileModal(Map<String, dynamic> student) {
+    final name = student["name"] as String? ?? "bala";
+    final roll = student["roll"] as String? ??
+        "27549861 · Computer Science & Engineering · 2023–2027 (Final Year)";
+    final total = student["total"] as int? ?? 0;
+    final status = student["status"] as String? ?? "Needs work";
+
+    final strengths = (student["strengths"] as List<String>?) ??
+        [
+          "Machine Learning",
+          "Advanced Java",
+          "Object-Oriented Programming with Java",
+        ];
+
+    final gaps = (student["gaps"] as List<String>?) ??
+        [
+          "Raise your quiz average to 60%",
+          "Earn 2 more certificate(s)",
+          "Score 50+ in a mock interview",
+        ];
+
+    final aiPlan = student["aiPlan"] as String? ??
+        "Recommended to enroll in the next upcoming bridge workshop for \"Raise your quiz average to 60%\" to clear recruiter cutoff.";
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogCtx) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        name,
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(dialogCtx).pop(),
+                        icon: const Icon(Icons.close_rounded,
+                            size: 20, color: Color(0xFF64748B)),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    roll,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Placement Readiness Total Card (Image 2)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFAF7F2), // Light cream ivory
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFEFE8DD)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Placement Readiness Total",
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "$total / 100",
+                              style: GoogleFonts.poppins(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEE2E2),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                status,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFFDC2626),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // DEMONSTRATED STRENGTHS & TOP SKILLS
+                  Text(
+                    "DEMONSTRATED STRENGTHS & TOP SKILLS",
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: strengths.map((s) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE6FFFA),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFF99F6E4)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.check_rounded,
+                                size: 14, color: Color(0xFF0D9488)),
+                            const SizedBox(width: 4),
+                            Text(
+                              s,
+                              style: GoogleFonts.poppins(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF0D9488),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // REMEDIATION GAP AREAS
+                  Text(
+                    "REMEDIATION GAP AREAS",
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: gaps.map((g) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF2F2),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFFECACA)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.warning_amber_rounded,
+                                size: 14, color: Color(0xFFDC2626)),
+                            const SizedBox(width: 4),
+                            Text(
+                              g,
+                              style: GoogleFonts.poppins(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFFDC2626),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // AI Mentor Action Plan Box
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: RichText(
+                      text: TextSpan(
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: const Color(0xFF475569),
+                          height: 1.45,
+                        ),
+                        children: [
+                          const TextSpan(
+                            text: "AI Mentor Action Plan: ",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                          TextSpan(text: aiPlan),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+
+                  // Close Profile Button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      OutlinedButton(
+                        onPressed: () => Navigator.of(dialogCtx).pop(),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 22, vertical: 12),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          "Close Profile",
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF334155),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

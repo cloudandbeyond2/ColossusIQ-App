@@ -15,6 +15,7 @@ class _PrincipalStudentSuccessEarlyWarningScreenState
     extends State<PrincipalStudentSuccessEarlyWarningScreen> {
   int _activeTab = 0;
   final TextEditingController _searchController = TextEditingController();
+  final List<Map<String, dynamic>> _supportPlans = [];
 
   String _selectedDept = "All Departments";
   String _selectedLevel = "All Levels";
