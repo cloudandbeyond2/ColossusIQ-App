@@ -448,7 +448,7 @@ class _PrincipalAdmissionInsightsScreenState
       child: _buildCommunityMixChart(),
     );
 
-    if (maxWidth >= 850) {
+    if (maxWidth >= 950) {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -537,39 +537,40 @@ class _PrincipalAdmissionInsightsScreenState
           // Bars
           Expanded(
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: stages.map((s) {
                 final val = s["val"] as int;
                 final h = (val / 8.0) * maxH;
 
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      width: 18,
-                      height: h,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF131B4D),
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(3)),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    SizedBox(
-                      width: 48,
-                      child: Text(
-                        s["label"] as String,
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                          fontSize: 8,
-                          color: const Color(0xFF64748B),
+                return Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        width: 16,
+                        height: h,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF131B4D),
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(3)),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 1),
+                        child: Text(
+                          s["label"] as String,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 7.5,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               }).toList(),
             ),
@@ -644,7 +645,7 @@ class _PrincipalAdmissionInsightsScreenState
       child: _buildApplicationsPerWeekChart(),
     );
 
-    if (maxWidth >= 850) {
+    if (maxWidth >= 950) {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -704,39 +705,40 @@ class _PrincipalAdmissionInsightsScreenState
           // Bars
           Expanded(
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: progs.map((p) {
                 final val = p["val"] as double;
                 final h = (val / 3.0) * maxH;
 
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      width: 18,
-                      height: h,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF131B4D),
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(3)),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    SizedBox(
-                      width: 60,
-                      child: Text(
-                        p["label"] as String,
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                          fontSize: 8,
-                          color: const Color(0xFF64748B),
+                return Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        width: 18,
+                        height: h,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF131B4D),
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(3)),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: Text(
+                          p["label"] as String,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 8,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               }).toList(),
             ),

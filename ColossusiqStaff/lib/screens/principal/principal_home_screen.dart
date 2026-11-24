@@ -808,14 +808,19 @@ class PrincipalHomeScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: const [
-                            _VerticalBar(ratio: 0.0),
-                            _VerticalBar(ratio: 0.0),
-                            _VerticalBar(ratio: 1.0), // 3 of 3
-                            _VerticalBar(ratio: 0.33), // 1 of 3
-                            _VerticalBar(ratio: 0.0),
-                            _VerticalBar(ratio: 0.33), // 1 of 3
+                            Expanded(
+                                child: Center(child: _VerticalBar(ratio: 0.0))),
+                            Expanded(
+                                child: Center(child: _VerticalBar(ratio: 0.0))),
+                            Expanded(
+                                child: Center(child: _VerticalBar(ratio: 1.0))), // 3 of 3
+                            Expanded(
+                                child: Center(child: _VerticalBar(ratio: 0.33))), // 1 of 3
+                            Expanded(
+                                child: Center(child: _VerticalBar(ratio: 0.0))),
+                            Expanded(
+                                child: Center(child: _VerticalBar(ratio: 0.33))), // 1 of 3
                           ],
                         ),
                       ),
@@ -831,14 +836,13 @@ class PrincipalHomeScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 28),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildXAxisLabel('Enquiry'),
-                _buildXAxisLabel('Applied'),
-                _buildXAxisLabel('Verified'),
-                _buildXAxisLabel('Shortlisted'),
-                _buildXAxisLabel('Fee Paid'),
-                _buildXAxisLabel('Enrolled'),
+                Expanded(child: Center(child: _buildXAxisLabel('Enquiry'))),
+                Expanded(child: Center(child: _buildXAxisLabel('Applied'))),
+                Expanded(child: Center(child: _buildXAxisLabel('Verified'))),
+                Expanded(child: Center(child: _buildXAxisLabel('Shortlisted'))),
+                Expanded(child: Center(child: _buildXAxisLabel('Fee Paid'))),
+                Expanded(child: Center(child: _buildXAxisLabel('Enrolled'))),
               ],
             ),
           ),
@@ -850,6 +854,8 @@ class PrincipalHomeScreen extends StatelessWidget {
   Widget _buildXAxisLabel(String text) {
     return Text(
       text,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
       style: GoogleFonts.poppins(
         fontSize: 10,
         color: const Color(0xFF64748B),

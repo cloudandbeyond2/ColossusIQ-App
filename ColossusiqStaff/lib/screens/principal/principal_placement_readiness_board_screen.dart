@@ -14,35 +14,137 @@ class PrincipalPlacementReadinessBoardScreen extends StatefulWidget {
 class _PrincipalPlacementReadinessBoardScreenState
     extends State<PrincipalPlacementReadinessBoardScreen> {
   final TextEditingController _searchController = TextEditingController();
-
   String _selectedDept = "All";
   String _selectedTier = "All";
   String _selectedDrive = "Any drive";
 
-  final List<String> _departments = [
-    "All",
-    "Computer Science & Engineering",
-    "Information Technology",
-    "Artificial Intelligence & Data Science",
-    "Electronics & Communication",
-    "Electrical & Electronics",
-    "Mechanical Engineering",
-    "Civil Engineering",
-  ];
-
-  final List<String> _tiers = [
-    "All",
-    "Placement ready",
-    "Almost ready",
-    "Needs work",
-  ];
-
-  final List<String> _drives = [
-    "Any drive",
-    "Tier 1 IT Services",
-    "Product / Core Engineering",
-    "FinTech & BFSI",
-    "Consulting & Analytics",
+  final List<Map<String, dynamic>> _students = [
+    {
+      "name": "Anand Kumar",
+      "maskedRoll": "*****4001 · Computer Science & Engineering",
+      "fullRoll": "110124001 · Computer Science & Engineering · 2023–2027 (Final Year)",
+      "dept": "Computer Science & Engineering",
+      "quiz": "72%",
+      "certs": "7",
+      "aptitude": "67",
+      "interview": "17",
+      "resume": "72",
+      "total": 69,
+      "status": "Almost ready",
+      "statusType": "almost",
+      "gap": "Score 50+ in a mock interview",
+      "skills": ["Core Java", "Algorithms", "Database Systems"],
+      "gaps": ["Mock Technical Interview"],
+      "aiPlan": "Complete 2 timed mock interviews with feedback to bridge the gap to 70+ cutoff.",
+    },
+    {
+      "name": "Divya Ramesh",
+      "maskedRoll": "*****4002 · Computer Science & Engineering",
+      "fullRoll": "110124002 · Computer Science & Engineering · 2023–2027 (Final Year)",
+      "dept": "Computer Science & Engineering",
+      "quiz": "100%",
+      "certs": "1",
+      "aptitude": "0",
+      "interview": "0",
+      "resume": "0",
+      "total": 40,
+      "status": "Needs work",
+      "statusType": "needs",
+      "gap": "Earn 1 more certificate(s)",
+      "skills": ["Java Foundations", "OOP"],
+      "gaps": ["Verified Certificates", "Aptitude Assessment", "Technical Interview"],
+      "aiPlan": "Complete AWS Cloud or Machine Learning proctored certification and take mock interview.",
+    },
+    {
+      "name": "bala",
+      "maskedRoll": "*****9861 · Computer Science & Engineering",
+      "fullRoll": "27549861 · Computer Science & Engineering · 2023–2027 (Final Year)",
+      "dept": "Computer Science & Engineering",
+      "quiz": "0%",
+      "certs": "0",
+      "aptitude": "0",
+      "interview": "0",
+      "resume": "0",
+      "total": 0,
+      "status": "Needs work",
+      "statusType": "needs",
+      "gap": "Raise your quiz average to 60%",
+      "skills": ["Machine Learning", "Advanced Java", "Object-Oriented Programming with Java"],
+      "gaps": ["Raise your quiz average to 60%", "Earn 2 more certificate(s)", "Score 50+ in a mock interview"],
+      "aiPlan": "Recommended to enroll in the next upcoming bridge workshop for 'Raise your quiz average to 60%' to clear recruiter cutoff.",
+    },
+    {
+      "name": "Kirshna",
+      "maskedRoll": "*****4788 · Computer Science & Engineering",
+      "fullRoll": "21CS4788 · Computer Science & Engineering · 2023–2027 (Final Year)",
+      "dept": "Computer Science & Engineering",
+      "quiz": "0%",
+      "certs": "0",
+      "aptitude": "0",
+      "interview": "0",
+      "resume": "0",
+      "total": 0,
+      "status": "Needs work",
+      "statusType": "needs",
+      "gap": "Raise your quiz average to 60%",
+      "skills": ["Python Basics", "Web Tech"],
+      "gaps": ["Quiz Average", "Certificates", "Interview"],
+      "aiPlan": "Enroll in remedial lecture and mock interview sprint.",
+    },
+    {
+      "name": "Karthik Raja",
+      "maskedRoll": "*****4003 · Information Technology",
+      "fullRoll": "110124003 · Information Technology · 2023–2027 (Final Year)",
+      "dept": "Information Technology",
+      "quiz": "0%",
+      "certs": "0",
+      "aptitude": "0",
+      "interview": "0",
+      "resume": "0",
+      "total": 0,
+      "status": "Needs work",
+      "statusType": "needs",
+      "gap": "Raise your quiz average to 60%",
+      "skills": ["Cloud Architecture"],
+      "gaps": ["Quiz Average", "Certificates", "Resume ATS"],
+      "aiPlan": "Schedule academic counseling check-in.",
+    },
+    {
+      "name": "Suganya",
+      "maskedRoll": "*****1478 · Computer Science & Engineering",
+      "fullRoll": "52CS1478 · Computer Science & Engineering · 2023–2027 (Final Year)",
+      "dept": "Computer Science & Engineering",
+      "quiz": "0%",
+      "certs": "0",
+      "aptitude": "0",
+      "interview": "0",
+      "resume": "0",
+      "total": 0,
+      "status": "Needs work",
+      "statusType": "needs",
+      "gap": "Raise your quiz average to 60%",
+      "skills": ["SQL", "Data Structures"],
+      "gaps": ["Quiz Average", "Certificates"],
+      "aiPlan": "Enroll in normalization mastery session.",
+    },
+    {
+      "name": "Praveen Kumar",
+      "maskedRoll": "*****4005 · Computer Science & Engineering",
+      "fullRoll": "110124005 · Computer Science & Engineering · 2023–2027 (Final Year)",
+      "dept": "Computer Science & Engineering",
+      "quiz": "0%",
+      "certs": "0",
+      "aptitude": "0",
+      "interview": "0",
+      "resume": "0",
+      "total": 0,
+      "status": "Needs work",
+      "statusType": "needs",
+      "gap": "Raise your quiz average to 60%",
+      "skills": ["Computer Networks"],
+      "gaps": ["Quiz Average", "Certificates", "Interview"],
+      "aiPlan": "Attend bridge course for placement clearance.",
+    },
   ];
 
   @override
@@ -54,7 +156,7 @@ class _PrincipalPlacementReadinessBoardScreenState
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFFAF9F5), // Light warm neutral canvas
+      color: const Color(0xFFFAF9F5),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final horizPadding = constraints.maxWidth >= 1100
@@ -67,9 +169,9 @@ class _PrincipalPlacementReadinessBoardScreenState
             physics: const BouncingScrollPhysics(),
             padding: EdgeInsets.fromLTRB(horizPadding, 20, horizPadding, 80),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 1. HERO BLUEPRINT BANNER (Image 5)
+                // 1. Hero Blueprint Banner (Image 1)
                 _buildHeroBanner(),
                 const SizedBox(height: 14),
 
@@ -77,16 +179,16 @@ class _PrincipalPlacementReadinessBoardScreenState
                 _buildLiveStatusRow(),
                 const SizedBox(height: 14),
 
-                // 2. 5 METRIC KPI CARDS (Image 5) - Fully Responsive Grid
-                _buildKpiCards(),
+                // 2. 5 Metric KPI Cards (Image 1)
+                _buildKpiCards(constraints.maxWidth),
                 const SizedBox(height: 16),
 
-                // 3. FORMULA EXPLANATION BANNER (Image 5)
-                _buildFormulaBanner(),
-                const SizedBox(height: 18),
+                // 3. Formula Info Box (Image 1)
+                _buildFormulaBox(),
+                const SizedBox(height: 16),
 
-                // 4. READINESS BOARD TABLE (Image 5)
-                _buildReadinessBoardTable(),
+                // 4. Readiness Board Table Card (Image 1)
+                _buildReadinessBoardCard(),
               ],
             ),
           );
@@ -100,6 +202,7 @@ class _PrincipalPlacementReadinessBoardScreenState
   // ===========================================================================
   Widget _buildHeroBanner() {
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         gradient: const LinearGradient(
@@ -131,7 +234,7 @@ class _PrincipalPlacementReadinessBoardScreenState
               child: Opacity(
                 opacity: 0.08,
                 child: const Icon(
-                  Icons.adjust_rounded,
+                  Icons.track_changes_rounded,
                   size: 180,
                   color: Colors.white,
                 ),
@@ -230,7 +333,7 @@ class _PrincipalPlacementReadinessBoardScreenState
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0D9488), // Teal Green
+                          color: const Color(0xFF0D9488),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -263,7 +366,7 @@ class _PrincipalPlacementReadinessBoardScreenState
                         child: const Center(
                           child: Icon(
                             Icons.track_changes_rounded,
-                            color: Color(0xFFFBBF24), // Gold Target
+                            color: Color(0xFFFBBF24),
                             size: 24,
                           ),
                         ),
@@ -305,27 +408,25 @@ class _PrincipalPlacementReadinessBoardScreenState
     );
   }
 
-  // Live status row
   Widget _buildLiveStatusRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Text(
-          "Live · updated 01:09:15 pm",
-          style: GoogleFonts.poppins(
-            fontSize: 11.5,
-            color: const Color(0xFF64748B),
-          ),
+          "Live · updated 12:25:31 pm",
+          style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF94A3B8)),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 12),
         OutlinedButton.icon(
           onPressed: () {},
           icon: const Icon(Icons.sync_rounded, size: 14, color: Color(0xFF475569)),
-          label: Text("Refresh",
-              style: GoogleFonts.poppins(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF475569))),
+          label: Text(
+            "Refresh",
+            style: GoogleFonts.poppins(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF475569)),
+          ),
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             side: const BorderSide(color: Color(0xFFCBD5E1)),
@@ -337,75 +438,43 @@ class _PrincipalPlacementReadinessBoardScreenState
   }
 
   // ===========================================================================
-  // 2. 5 METRIC KPI CARDS (Image 5) - Fully Responsive Grid
+  // 2. 5 METRIC KPI CARDS (Image 1)
   // ===========================================================================
-  Widget _buildKpiCards() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double width = constraints.maxWidth;
-        final int count = width >= 1150
-            ? 5
-            : (width >= 400 ? 3 : 2);
-        final double spacing = width < 500 ? 8.0 : 10.0;
-        final double cardWidth = (width - ((count - 1) * spacing)) / count;
-        final double cardHeight = width < 500 ? 80.0 : 86.0;
-        final double ratio = cardWidth / cardHeight;
+  Widget _buildKpiCards(double maxWidth) {
+    double cardWidth;
+    if (maxWidth >= 1100) {
+      cardWidth = (maxWidth - (4 * 10)) / 5;
+    } else if (maxWidth >= 750) {
+      cardWidth = (maxWidth - (2 * 10)) / 3;
+    } else if (maxWidth >= 500) {
+      cardWidth = (maxWidth - 10) / 2;
+    } else {
+      cardWidth = maxWidth;
+    }
 
-        return GridView.count(
-          crossAxisCount: count,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: spacing,
-          mainAxisSpacing: spacing,
-          childAspectRatio: ratio,
-          children: [
-            _buildMetricCard(
-              title: "Students tracked",
-              value: "14",
-              icon: Icons.people_outline_rounded,
-              isCompact: cardWidth < 145,
-            ),
-            _buildMetricCard(
-              title: "Placement ready",
-              value: "3",
-              icon: Icons.check_circle_outline_rounded,
-              isCompact: cardWidth < 145,
-            ),
-            _buildMetricCard(
-              title: "Almost ready",
-              value: "8",
-              icon: Icons.hourglass_empty_rounded,
-              isCompact: cardWidth < 145,
-            ),
-            _buildMetricCard(
-              title: "Needs work",
-              value: "3",
-              icon: Icons.warning_amber_rounded,
-              isCompact: cardWidth < 145,
-            ),
-            _buildMetricCard(
-              title: "Average total",
-              value: "65",
-              icon: Icons.bar_chart_rounded,
-              isCompact: cardWidth < 145,
-            ),
-          ],
-        );
-      },
+    final cards = [
+      _buildSingleKpi("Students tracked", Icons.people_outline_rounded, "7"),
+      _buildSingleKpi("Placement ready", Icons.check_circle_outline_rounded, "0"),
+      _buildSingleKpi("Almost ready", Icons.hourglass_top_rounded, "1"),
+      _buildSingleKpi("Needs work", Icons.warning_amber_rounded, "6"),
+      _buildSingleKpi("Average total", Icons.show_chart_rounded, "16"),
+    ];
+
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: cards
+          .map((c) => SizedBox(
+                width: cardWidth,
+                child: c,
+              ))
+          .toList(),
     );
   }
 
-  Widget _buildMetricCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    bool isCompact = false,
-  }) {
+  Widget _buildSingleKpi(String title, IconData icon, String value) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isCompact ? 10 : 14,
-        vertical: isCompact ? 10 : 12,
-      ),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -420,34 +489,30 @@ class _PrincipalPlacementReadinessBoardScreenState
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Row(
             children: [
-              Icon(icon, size: isCompact ? 13 : 15, color: const Color(0xFF64748B)),
-              SizedBox(width: isCompact ? 5 : 7),
+              Icon(icon, size: 14, color: const Color(0xFF64748B)),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   title,
                   style: GoogleFonts.poppins(
-                    fontSize: isCompact ? 11 : 12,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF64748B),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Text(
             value,
             style: GoogleFonts.poppins(
-              fontSize: isCompact ? 20 : 23,
+              fontSize: 22,
               fontWeight: FontWeight.w800,
               color: const Color(0xFF0F172A),
-              height: 1.2,
             ),
           ),
         ],
@@ -456,229 +521,34 @@ class _PrincipalPlacementReadinessBoardScreenState
   }
 
   // ===========================================================================
-  // 3. FORMULA EXPLANATION BANNER (Image 5)
+  // 3. FORMULA BOX (Image 1)
   // ===========================================================================
-  Widget _buildFormulaBanner() {
+  Widget _buildFormulaBox() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: const Color(0xFFFAF7F2),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFEFE8DD)),
       ),
-      child: RichText(
-        text: TextSpan(
-          style: GoogleFonts.poppins(
-            fontSize: 11.5,
-            color: const Color(0xFF475569),
-            height: 1.4,
-          ),
-          children: const [
-            TextSpan(
-              text: "Placement ready ",
-              style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0F172A)),
-            ),
-            TextSpan(
-              text: "= total ≥ 70, quiz average ≥ 60%, ≥ 2 certificates and mock interview ≥ 50. Total = quiz 35% + certificates 20% + aptitude 15% + interview 15% + resume 15%.",
-            ),
-          ],
+      child: Text(
+        "Placement ready = total ≥ 70, quiz average ≥ 60%, ≥ 2 certificates and mock interview ≥ 50. Total = quiz 35% + certificates 20% + aptitude 15% + interview 15% + resume 15%.",
+        style: GoogleFonts.poppins(
+          fontSize: 11,
+          color: const Color(0xFF78350F),
+          height: 1.4,
         ),
       ),
     );
   }
 
   // ===========================================================================
-  // 4. READINESS BOARD TABLE (Image 5)
+  // 4. READINESS BOARD CARD & TABLE (Image 1)
   // ===========================================================================
-  Widget _buildReadinessBoardTable() {
-    final students = [
-      {
-        "name": "bala",
-        "roll": "27549861 · Computer Science & Engineering · 2023–2027 (Final Year)",
-        "dept": "Computer Science & Engineering",
-        "cohort": "2023–2027 (Final Year)",
-        "quiz": "0%",
-        "certs": "0",
-        "aptitude": "0",
-        "interview": "0",
-        "resume": "0",
-        "total": 0,
-        "status": "Needs work",
-        "statusType": "needs_work",
-        "hint": "Raise your quiz average to 60%",
-        "strengths": [
-          "Machine Learning",
-          "Advanced Java",
-          "Object-Oriented Programming with Java",
-        ],
-        "gaps": [
-          "Raise your quiz average to 60%",
-          "Earn 2 more certificate(s)",
-          "Score 50+ in a mock interview",
-        ],
-        "aiPlan":
-            "Recommended to enroll in the next upcoming bridge workshop for \"Raise your quiz average to 60%\" to clear recruiter cutoff.",
-      },
-      {
-        "name": "Sanjay Pillai",
-        "roll": "••••1007 · Information Technology",
-        "quiz": "80%",
-        "certs": "3",
-        "aptitude": "78",
-        "interview": "85",
-        "resume": "93",
-        "total": 81,
-        "status": "Placement ready",
-        "statusType": "ready",
-        "hint": null,
-      },
-      {
-        "name": "Sneha Srinivasan",
-        "roll": "••••1056 · Computer Science & Engineering",
-        "quiz": "88%",
-        "certs": "4",
-        "aptitude": "67",
-        "interview": "49",
-        "resume": "65",
-        "total": 78,
-        "status": "Almost ready",
-        "statusType": "almost",
-        "hint": "Score 50+ in a mock interview",
-      },
-      {
-        "name": "Deepika Das",
-        "roll": "••••1028 · Electrical & Electronics",
-        "quiz": "68%",
-        "certs": "4",
-        "aptitude": "78",
-        "interview": "69",
-        "resume": "75",
-        "total": 77,
-        "status": "Placement ready",
-        "statusType": "ready",
-        "hint": null,
-      },
-      {
-        "name": "Nandini Krishnan",
-        "roll": "••••1014 · Artificial Intelligence & Data Science",
-        "quiz": "60%",
-        "certs": "4",
-        "aptitude": "62",
-        "interview": "76",
-        "resume": "86",
-        "total": 75,
-        "status": "Placement ready",
-        "statusType": "ready",
-        "hint": null,
-      },
-      {
-        "name": "Arjun Varma",
-        "roll": "••••1063 · Information Technology",
-        "quiz": "59%",
-        "certs": "3",
-        "aptitude": "71",
-        "interview": "85",
-        "resume": "67",
-        "total": 70,
-        "status": "Placement ready",
-        "statusType": "ready",
-        "hint": null,
-      },
-      {
-        "name": "Sanjay Balaji",
-        "roll": "••••1077 · Electronics & Communication",
-        "quiz": "72%",
-        "certs": "1",
-        "aptitude": "65",
-        "interview": "62",
-        "resume": "88",
-        "total": 64,
-        "status": "Almost ready",
-        "statusType": "almost",
-        "hint": "Earn 1 more certificate",
-      },
-      {
-        "name": "Gokul Rao",
-        "roll": "••••1035 · Mechanical Engineering",
-        "quiz": "65%",
-        "certs": "1",
-        "aptitude": "58",
-        "interview": "52",
-        "resume": "95",
-        "total": 64,
-        "status": "Almost ready",
-        "statusType": "almost",
-        "hint": "Earn 1 more certificate",
-      },
-      {
-        "name": "Joseph Patel",
-        "roll": "••••1021 · Electronics & Communication",
-        "quiz": "47%",
-        "certs": "4",
-        "aptitude": "62",
-        "interview": "37",
-        "resume": "54",
-        "total": 61,
-        "status": "Almost ready",
-        "statusType": "almost",
-        "hint": "Score 50+ in a mock interview",
-      },
-      {
-        "name": "Kavya Menon",
-        "roll": "••••1006 · Computer Science & Engineering",
-        "quiz": "48%",
-        "certs": "1",
-        "aptitude": "50",
-        "interview": "75",
-        "resume": "89",
-        "total": 55,
-        "status": "Almost ready",
-        "statusType": "almost",
-        "hint": "Raise quiz avg to 60%",
-      },
-      {
-        "name": "Keerthana Joseph",
-        "roll": "••••1042 · Civil Engineering",
-        "quiz": "66%",
-        "certs": "1",
-        "aptitude": "42",
-        "interview": "49",
-        "resume": "52",
-        "total": 53,
-        "status": "Needs work",
-        "statusType": "needs_work",
-        "hint": "Multiple criteria deficit",
-      },
-      {
-        "name": "Karthik Khan",
-        "roll": "••••1049 · Science & Humanities",
-        "quiz": "77%",
-        "certs": "0",
-        "aptitude": "45",
-        "interview": "47",
-        "resume": "76",
-        "total": 52,
-        "status": "Needs work",
-        "statusType": "needs_work",
-        "hint": "Earn 2 certificates",
-      },
-      {
-        "name": "Kavya Gupta",
-        "roll": "••••1070 · Artificial Intelligence & Data Science",
-        "quiz": "59%",
-        "certs": "0",
-        "aptitude": "40",
-        "interview": "55",
-        "resume": "57",
-        "total": 44,
-        "status": "Needs work",
-        "statusType": "needs_work",
-        "hint": "Earn 2 certificates",
-      },
-    ];
-
+  Widget _buildReadinessBoardCard() {
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -687,7 +557,7 @@ class _PrincipalPlacementReadinessBoardScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header with Export button
+          // Header Row
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -719,18 +589,18 @@ class _PrincipalPlacementReadinessBoardScreenState
                 OutlinedButton.icon(
                   onPressed: () {},
                   icon: const Icon(Icons.download_rounded,
-                      size: 15, color: Color(0xFF334155)),
+                      size: 14, color: Color(0xFF475569)),
                   label: Text(
                     "Export shortlist (CSV)",
                     style: GoogleFonts.poppins(
-                      fontSize: 12,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xFF334155),
+                      color: const Color(0xFF475569),
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 8),
+                        horizontal: 12, vertical: 8),
                     side: const BorderSide(color: Color(0xFFCBD5E1)),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8)),
@@ -739,58 +609,61 @@ class _PrincipalPlacementReadinessBoardScreenState
               ],
             ),
           ),
-          const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
 
-          // Filters row
+          // Filters Row
           Padding(
-            padding: const EdgeInsets.all(14),
-            child: Wrap(
-              spacing: 12,
-              runSpacing: 10,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Container(
-                  height: 38,
-                  width: 220,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: TextField(
-                    controller: _searchController,
-                    style: GoogleFonts.poppins(fontSize: 12),
-                    decoration: const InputDecoration(
-                      hintText: "Search student",
-                      hintStyle:
-                          TextStyle(fontSize: 11.5, color: Color(0xFF94A3B8)),
-                      border: InputBorder.none,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                  ),
-                ),
-                _buildDropdownFilter(_selectedDept, _departments,
-                    (v) => setState(() => _selectedDept = v!)),
-                _buildDropdownFilter(_selectedTier, _tiers,
-                    (v) => setState(() => _selectedTier = v!)),
-                _buildDropdownFilter(_selectedDrive, _drives,
-                    (v) => setState(() => _selectedDrive = v!)),
-              ],
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 650;
+                if (isNarrow) {
+                  return Column(
+                    children: [
+                      _buildSearchField(),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(child: _buildFilterDropdown("Dept", _selectedDept, ["All", "CSE", "IT", "AI&DS"], (v) => setState(() => _selectedDept = v!))),
+                          const SizedBox(width: 8),
+                          Expanded(child: _buildFilterDropdown("Tier", _selectedTier, ["All", "Almost ready", "Needs work"], (v) => setState(() => _selectedTier = v!))),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      _buildFilterDropdown("Drive", _selectedDrive, ["Any drive", "TCS", "Zoho", "Amazon AWS"], (v) => setState(() => _selectedDrive = v!)),
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(flex: 3, child: _buildSearchField()),
+                    const SizedBox(width: 10),
+                    Expanded(flex: 2, child: _buildFilterDropdown("Dept", _selectedDept, ["All", "CSE", "IT", "AI&DS"], (v) => setState(() => _selectedDept = v!))),
+                    const SizedBox(width: 10),
+                    Expanded(flex: 2, child: _buildFilterDropdown("Tier", _selectedTier, ["All", "Almost ready", "Needs work"], (v) => setState(() => _selectedTier = v!))),
+                    const SizedBox(width: 10),
+                    Expanded(flex: 3, child: _buildFilterDropdown("Drive", _selectedDrive, ["Any drive", "TCS", "Zoho", "Amazon AWS"], (v) => setState(() => _selectedDrive = v!))),
+                  ],
+                );
+              },
             ),
           ),
+          const SizedBox(height: 14),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
 
           // Table
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: 1000),
+              constraints: const BoxConstraints(minWidth: 950),
               child: DataTable(
                 columnSpacing: 18,
                 horizontalMargin: 16,
                 headingRowHeight: 44,
-                dataRowMinHeight: 58,
-                dataRowMaxHeight: 66,
+                dataRowMinHeight: 56,
+                dataRowMaxHeight: 68,
+                headingRowColor:
+                    WidgetStateProperty.all(const Color(0xFFF7F4EE)),
                 headingTextStyle: GoogleFonts.poppins(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
@@ -807,133 +680,100 @@ class _PrincipalPlacementReadinessBoardScreenState
                   DataColumn(label: Text("TOTAL ↓")),
                   DataColumn(label: Text("STATUS")),
                 ],
-                rows: students.map((s) {
+                rows: _students.map((s) {
                   final total = s["total"] as int;
                   final statusType = s["statusType"] as String;
-                  Color statusBg;
-                  Color statusColor;
+                  final isAlmost = statusType == "almost";
 
-                  if (statusType == "ready") {
-                    statusBg = const Color(0xFFCCFBF1);
-                    statusColor = const Color(0xFF0D9488);
-                  } else if (statusType == "almost") {
-                    statusBg = const Color(0xFFFEF3C7);
-                    statusColor = const Color(0xFFD97706);
-                  } else {
-                    statusBg = const Color(0xFFFFE4E6);
-                    statusColor = const Color(0xFFE11D48);
-                  }
+                  final statusBg = isAlmost ? const Color(0xFFFEF3C7) : const Color(0xFFFFE4E6);
+                  final statusFg = isAlmost ? const Color(0xFFD97706) : const Color(0xFFE11D48);
 
                   return DataRow(
                     cells: [
-                      // Student
+                      // Student & Masked Roll
                       DataCell(
                         InkWell(
                           onTap: () => _showStudentProfileModal(s),
-                          borderRadius: BorderRadius.circular(4),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  s["name"] as String,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFF0F172A),
-                                  ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                s["name"] as String,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF0F172A),
                                 ),
-                                Text(
-                                  s["roll"] as String,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 10,
-                                    color: const Color(0xFF94A3B8),
-                                  ),
+                              ),
+                              Text(
+                                s["maskedRoll"] as String,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 10,
+                                  color: const Color(0xFF94A3B8),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      // Quiz
+                      // Quiz Avg
                       DataCell(
                         Text(
                           s["quiz"] as String,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0F172A),
-                          ),
+                          style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600),
                         ),
                       ),
                       // Certs
                       DataCell(
                         Text(
                           s["certs"] as String,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0F172A),
-                          ),
+                          style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600),
                         ),
                       ),
                       // Aptitude
                       DataCell(
                         Text(
                           s["aptitude"] as String,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0F172A),
-                          ),
+                          style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600),
                         ),
                       ),
                       // Interview
                       DataCell(
                         Text(
                           s["interview"] as String,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0F172A),
-                          ),
+                          style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600),
                         ),
                       ),
                       // Resume
                       DataCell(
                         Text(
                           s["resume"] as String,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0F172A),
-                          ),
+                          style: GoogleFonts.poppins(fontSize: 11.5, fontWeight: FontWeight.w600),
                         ),
                       ),
-                      // Total
+                      // Total & progress bar
                       DataCell(
                         Row(
                           children: [
                             Text(
                               "$total",
                               style: GoogleFonts.poppins(
-                                fontSize: 12.5,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w700,
                                 color: const Color(0xFF0F172A),
                               ),
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 8),
                             SizedBox(
-                              width: 36,
+                              width: 32,
                               child: LinearProgressIndicator(
                                 value: total / 100,
                                 backgroundColor: const Color(0xFFF1F5F9),
                                 valueColor: AlwaysStoppedAnimation(
-                                  total >= 70
-                                      ? const Color(0xFF0D9488)
-                                      : const Color(0xFF131B4D),
+                                  total >= 60
+                                      ? const Color(0xFF131B4D)
+                                      : (total >= 40 ? const Color(0xFFB45309) : const Color(0xFFCBD5E1)),
                                 ),
                                 minHeight: 4,
                               ),
@@ -941,15 +781,14 @@ class _PrincipalPlacementReadinessBoardScreenState
                           ],
                         ),
                       ),
-                      // Status
+                      // Status & gap hint
                       DataCell(
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                               decoration: BoxDecoration(
                                 color: statusBg,
                                 borderRadius: BorderRadius.circular(4),
@@ -957,22 +796,20 @@ class _PrincipalPlacementReadinessBoardScreenState
                               child: Text(
                                 s["status"] as String,
                                 style: GoogleFonts.poppins(
-                                  fontSize: 10.5,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.w600,
-                                  color: statusColor,
+                                  color: statusFg,
                                 ),
                               ),
                             ),
-                            if (s["hint"] != null) ...[
-                              const SizedBox(height: 2),
-                              Text(
-                                s["hint"] as String,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 9.5,
-                                  color: const Color(0xFF64748B),
-                                ),
+                            const SizedBox(height: 2),
+                            Text(
+                              s["gap"] as String,
+                              style: GoogleFonts.poppins(
+                                fontSize: 9.5,
+                                color: const Color(0xFF94A3B8),
                               ),
-                            ],
+                            ),
                           ],
                         ),
                       ),
@@ -987,11 +824,33 @@ class _PrincipalPlacementReadinessBoardScreenState
     );
   }
 
-  Widget _buildDropdownFilter(
-      String value, List<String> items, ValueChanged<String?> onChanged) {
+  Widget _buildSearchField() {
     return Container(
       height: 38,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: TextField(
+        controller: _searchController,
+        style: GoogleFonts.poppins(fontSize: 12),
+        decoration: const InputDecoration(
+          hintText: "Search student",
+          hintStyle: TextStyle(fontSize: 11.5, color: Color(0xFF94A3B8)),
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: EdgeInsets.symmetric(vertical: 10),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterDropdown(String label, String value, List<String> items, ValueChanged<String?> onChanged) {
+    return Container(
+      height: 38,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -1000,13 +859,10 @@ class _PrincipalPlacementReadinessBoardScreenState
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded,
-              size: 16, color: Color(0xFF64748B)),
-          style: GoogleFonts.poppins(
-              fontSize: 11.5, color: const Color(0xFF0F172A)),
-          items: items
-              .map((it) => DropdownMenuItem(value: it, child: Text(it)))
-              .toList(),
+          isExpanded: true,
+          icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: Color(0xFF64748B)),
+          style: GoogleFonts.poppins(fontSize: 11.5, color: const Color(0xFF0F172A)),
+          items: items.map((it) => DropdownMenuItem(value: it, child: Text(it))).toList(),
           onChanged: onChanged,
         ),
       ),
@@ -1014,30 +870,22 @@ class _PrincipalPlacementReadinessBoardScreenState
   }
 
   // ===========================================================================
-  // MODAL: STUDENT READINESS PROFILE (Image 2)
+  // STUDENT PROFILE MODAL (Matching Reference Image)
   // ===========================================================================
   void _showStudentProfileModal(Map<String, dynamic> student) {
-    final name = student["name"] as String? ?? "bala";
-    final roll = student["roll"] as String? ??
-        "27549861 · Computer Science & Engineering · 2023–2027 (Final Year)";
-    final total = student["total"] as int? ?? 0;
-    final status = student["status"] as String? ?? "Needs work";
-
-    final strengths = (student["strengths"] as List<String>?) ??
-        [
+    final skills = (student["skills"] as List<String>?) ??
+        const [
           "Machine Learning",
           "Advanced Java",
           "Object-Oriented Programming with Java",
         ];
-
     final gaps = (student["gaps"] as List<String>?) ??
-        [
+        const [
           "Raise your quiz average to 60%",
           "Earn 2 more certificate(s)",
           "Score 50+ in a mock interview",
         ];
-
-    final aiPlan = student["aiPlan"] as String? ??
+    final aiPlan = (student["aiPlan"] as String?) ??
         "Recommended to enroll in the next upcoming bridge workshop for \"Raise your quiz average to 60%\" to clear recruiter cutoff.";
 
     showDialog(
@@ -1046,247 +894,254 @@ class _PrincipalPlacementReadinessBoardScreenState
       builder: (dialogCtx) {
         return Dialog(
           backgroundColor: Colors.white,
-          insetPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 520),
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        name,
-                        style: GoogleFonts.poppins(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF0F172A),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.of(dialogCtx).pop(),
-                        icon: const Icon(Icons.close_rounded,
-                            size: 20, color: Color(0xFF64748B)),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    roll,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: const Color(0xFF64748B),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-
-                  // Placement Readiness Total Card (Image 2)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFAF7F2), // Light cream ivory
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFEFE8DD)),
-                    ),
-                    child: Column(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "Placement Readiness Total",
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: const Color(0xFF64748B),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "$total / 100",
-                              style: GoogleFonts.poppins(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF0F172A),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFEE2E2),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                status,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                student["name"] as String,
                                 style: GoogleFonts.poppins(
-                                  fontSize: 11.5,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.w700,
-                                  color: const Color(0xFFDC2626),
+                                  color: const Color(0xFF0F172A),
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 2),
+                              Text(
+                                student["fullRoll"] as String,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.of(dialogCtx).pop(),
+                          icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF64748B)),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 18),
+                    const SizedBox(height: 16),
+                    const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                    const SizedBox(height: 18),
 
-                  // DEMONSTRATED STRENGTHS & TOP SKILLS
-                  Text(
-                    "DEMONSTRATED STRENGTHS & TOP SKILLS",
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
-                      color: const Color(0xFF64748B),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: strengths.map((s) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE6FFFA),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF99F6E4)),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.check_rounded,
-                                size: 14, color: Color(0xFF0D9488)),
-                            const SizedBox(width: 4),
-                            Text(
-                              s,
-                              style: GoogleFonts.poppins(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF0D9488),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 18),
-
-                  // REMEDIATION GAP AREAS
-                  Text(
-                    "REMEDIATION GAP AREAS",
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
-                      color: const Color(0xFF64748B),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: gaps.map((g) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEF2F2),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFFECACA)),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.warning_amber_rounded,
-                                size: 14, color: Color(0xFFDC2626)),
-                            const SizedBox(width: 4),
-                            Text(
-                              g,
-                              style: GoogleFonts.poppins(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFFDC2626),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 18),
-
-                  // AI Mentor Action Plan Box
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                    ),
-                    child: RichText(
-                      text: TextSpan(
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: const Color(0xFF475569),
-                          height: 1.45,
-                        ),
+                    // Readiness Score Card (Cream)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFAF7F2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFEFE8DD)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const TextSpan(
-                            text: "AI Mentor Action Plan: ",
-                            style: TextStyle(
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Placement Readiness Total",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFE4E6),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  student["status"] as String,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFFE11D48),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            "${student["total"]} / 100",
+                            style: GoogleFonts.poppins(
+                              fontSize: 28,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF0F172A),
+                              color: const Color(0xFF0F172A),
                             ),
                           ),
-                          TextSpan(text: aiPlan),
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 22),
+                    const SizedBox(height: 20),
 
-                  // Close Profile Button
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      OutlinedButton(
-                        onPressed: () => Navigator.of(dialogCtx).pop(),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 22, vertical: 12),
-                          side: const BorderSide(color: Color(0xFFCBD5E1)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                    // Demonstrated Strengths
+                    if (skills.isNotEmpty) ...[
+                      Text(
+                        "DEMONSTRATED STRENGTHS & TOP SKILLS",
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF64748B),
+                          letterSpacing: 0.5,
                         ),
-                        child: Text(
-                          "Close Profile",
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF334155),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: skills.map((sk) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE6F7F5),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFFB2EBF2)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.check_rounded, size: 14, color: Color(0xFF0D9488)),
+                                const SizedBox(width: 5),
+                                Text(
+                                  sk,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF0D9488),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+
+                    // Remediation Gap Areas
+                    if (gaps.isNotEmpty) ...[
+                      Text(
+                        "REMEDIATION GAP AREAS",
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF64748B),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: gaps.map((g) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF2F2),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFFFECACA)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFDC2626)),
+                                const SizedBox(width: 5),
+                                Text(
+                                  g,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFFDC2626),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+
+                    // AI Mentor Action Plan Box
+                    if (aiPlan.isNotEmpty) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: RichText(
+                          text: TextSpan(
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: const Color(0xFF475569),
+                              height: 1.45,
+                            ),
+                            children: [
+                              const TextSpan(
+                                text: "AI Mentor Action Plan: ",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
+                              TextSpan(text: aiPlan),
+                            ],
                           ),
                         ),
                       ),
+                      const SizedBox(height: 22),
                     ],
-                  ),
-                ],
+
+                    // Close Button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        OutlinedButton(
+                          onPressed: () => Navigator.of(dialogCtx).pop(),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          child: Text(
+                            "Close Profile",
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF334155),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -1295,10 +1150,6 @@ class _PrincipalPlacementReadinessBoardScreenState
     );
   }
 }
-
-// =============================================================================
-// GRID PAINTER
-// =============================================================================
 
 class _BlueprintGridPainter extends CustomPainter {
   @override

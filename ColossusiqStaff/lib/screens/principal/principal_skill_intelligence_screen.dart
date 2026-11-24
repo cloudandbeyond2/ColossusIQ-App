@@ -1,10 +1,16 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class PrincipalSkillIntelligenceScreen extends StatefulWidget {
   final VoidCallback? onBack;
+  final int initialTab;
 
-  const PrincipalSkillIntelligenceScreen({super.key, this.onBack});
+  const PrincipalSkillIntelligenceScreen({
+    super.key,
+    this.onBack,
+    this.initialTab = 0,
+  });
 
   @override
   State<PrincipalSkillIntelligenceScreen> createState() =>
@@ -13,10 +19,65 @@ class PrincipalSkillIntelligenceScreen extends StatefulWidget {
 
 class _PrincipalSkillIntelligenceScreenState
     extends State<PrincipalSkillIntelligenceScreen> {
-  int _activeTab = 0;
+  late int _activeTab;
+
+  @override
+  void initState() {
+    super.initState();
+    _activeTab = widget.initialTab;
+  }
   final TextEditingController _searchController = TextEditingController();
 
-  final List<Map<String, dynamic>> _bridgeCourses = [];
+  final List<Map<String, dynamic>> _bridgeCourses = [
+    {
+      "title": "Continuous Assessment: Attendance & Continuity Intervention",
+      "skill": "Remedial Lecture",
+      "status": "Upcoming",
+      "dateInfo": "2026-11-18 | 16:00 – 17:00 | LH-204 / Seminar Hall",
+      "durationLabel": "",
+      "faculty": "Dr. Meena Raghavan",
+      "dept": "CSE-A · Term 1",
+      "cohort": "sec-da34dd13-d795-4287-baa2-1c73053637fa",
+      "enrolled": "0 students",
+      "uuid": "1748491e-68e5-4fd2-9fe5-195ab9d6e28b",
+    },
+    {
+      "title": "NoSQL Distributed Consistency",
+      "skill": "Unit 5: NoSQL & Distributed Consistency",
+      "status": "Completed",
+      "dateInfo": "",
+      "durationLabel": "4 Weeks",
+      "faculty": "Department Faculty",
+      "dept": "Computer Science & Engineering",
+      "cohort": "All Batches",
+      "enrolled": "0 students",
+      "uuid": "3ee2c567-9b24-489f-99f3-48833baedb04",
+    },
+    {
+      "title": "Normalization Mastery Session",
+      "skill": "Unit 3: Normalization & Functional Dependencies",
+      "status": "Completed",
+      "dateInfo": "",
+      "durationLabel": "4 Weeks",
+      "faculty": "Department Faculty",
+      "dept": "Computer Science & Engineering",
+      "cohort": "All Batches",
+      "enrolled": "0 students",
+      "uuid": "e13f90eb-4d82-47cb-b172-ca5dece543b6",
+    },
+    {
+      "title": "AWS",
+      "skill": "Cloud Architecture",
+      "status": "Completed",
+      "dateInfo": "",
+      "durationLabel": "4 Weeks",
+      "faculty": "far",
+      "dept": "Computer Science & Engineering",
+      "cohort": "2023–2027 (Final Year)",
+      "enrolled": "0 students",
+      "uuid": "5598cbae-9def-4c15-b73a-df4269b9cef1",
+    },
+  ];
 
   String _selectedDept = "All Departments";
   String _selectedBatch = "All Batches";
@@ -68,25 +129,25 @@ class _PrincipalSkillIntelligenceScreenState
             physics: const BouncingScrollPhysics(),
             padding: EdgeInsets.fromLTRB(horizPadding, 20, horizPadding, 80),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 1. HERO BLUEPRINT BANNER (Image 1)
+                // 1. Hero Blueprint Banner
                 _buildHeroBanner(),
                 const SizedBox(height: 18),
 
-                // 2. FILTER & ACTION TOOLBAR (Image 1)
+                // 2. Filter & Action Toolbar
                 _buildFilterToolbar(),
                 const SizedBox(height: 18),
 
-                // 3. 5 METRIC KPI CARDS (Image 1)
+                // 3. 5 Metric KPI Cards
                 _buildKpiCards(constraints.maxWidth),
                 const SizedBox(height: 20),
 
-                // 4. SUBTABS
+                // 4. SubTabs Navigation
                 _buildSubTabs(),
-                const SizedBox(height: 18),
+                const SizedBox(height: 20),
 
-                // 5. TAB CONTENT
+                // 5. Active Tab Content
                 if (_activeTab == 0) _buildTab0SkillGap(),
                 if (_activeTab == 1) _buildTab1StudentInventory(),
                 if (_activeTab == 2) _buildTab2RecruiterBenchmarks(),
@@ -314,6 +375,7 @@ class _PrincipalSkillIntelligenceScreenState
   // ===========================================================================
   Widget _buildFilterToolbar() {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -453,7 +515,7 @@ class _PrincipalSkillIntelligenceScreenState
           const SizedBox(height: 4),
           Container(
             height: 38,
-            constraints: const BoxConstraints(maxWidth: 420),
+            width: double.infinity,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
@@ -500,43 +562,50 @@ class _PrincipalSkillIntelligenceScreenState
   }
 
   Widget _buildDropdownField(String label, String value, List<String> items,
-      ValueChanged<String?> onChanged) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.5,
-            color: const Color(0xFF64748B),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Container(
-          height: 36,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: value,
-              icon: const Icon(Icons.keyboard_arrow_down_rounded,
-                  size: 16, color: Color(0xFF64748B)),
-              style: GoogleFonts.poppins(
-                  fontSize: 11.5, color: const Color(0xFF0F172A)),
-              items: items
-                  .map((it) => DropdownMenuItem(value: it, child: Text(it)))
-                  .toList(),
-              onChanged: onChanged,
+      ValueChanged<String?> onChanged, {double? width}) {
+    return SizedBox(
+      width: width,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+              color: const Color(0xFF64748B),
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          Container(
+            height: 36,
+            width: width,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: items.contains(value) ? value : items.first,
+                isExpanded: true,
+                icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                    size: 16, color: Color(0xFF64748B)),
+                style: GoogleFonts.poppins(
+                    fontSize: 11.5, color: const Color(0xFF0F172A)),
+                items: items
+                    .map((it) => DropdownMenuItem(
+                        value: it,
+                        child: Text(it, overflow: TextOverflow.ellipsis)))
+                    .toList(),
+                onChanged: onChanged,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -580,15 +649,15 @@ class _PrincipalSkillIntelligenceScreenState
         badge: "Across active departments",
         badgeBg: const Color(0xFFEEF2FF),
         badgeColor: const Color(0xFF4F46E5),
-        value: "14",
+        value: "7",
         subtext: "Enrolled students evaluated in active..",
       ),
       _buildSingleKpi(
         title: "Placement Ready",
-        badge: "3 of 14 qualified",
+        badge: "0 of 7 qualified",
         badgeBg: const Color(0xFFFEF3C7),
         badgeColor: const Color(0xFFD97706),
-        value: "21%",
+        value: "0%",
         subtext: "Score >= 70 across quizzes, certs &..",
       ),
       _buildSingleKpi(
@@ -596,16 +665,15 @@ class _PrincipalSkillIntelligenceScreenState
         badge: "Below target benchmark",
         badgeBg: const Color(0xFFFFE4E6),
         badgeColor: const Color(0xFFE11D48),
-        value: "3",
+        value: "16",
         subtext: "Curricular areas with < 65% cohort..",
-        borderColor: const Color(0xFFFDA4AF), // Red/Pink accent outline
       ),
       _buildSingleKpi(
         title: "Verified Certificates",
         badge: "Issued to date",
         badgeBg: const Color(0xFFFEF3C7),
         badgeColor: const Color(0xFFD97706),
-        value: "0",
+        value: "6",
         subtext: "Passed proctored assessments in this..",
       ),
       _buildSingleKpi(
@@ -613,7 +681,7 @@ class _PrincipalSkillIntelligenceScreenState
         badge: "Placement bar: 70",
         badgeBg: const Color(0xFFE0F2FE),
         badgeColor: const Color(0xFF0284C7),
-        value: "65 / 100",
+        value: "16 / 100",
         subtext: "Weighted average across cohort..",
       ),
     ];
@@ -728,56 +796,66 @@ class _PrincipalSkillIntelligenceScreenState
       {"label": "Bridge Courses (${_bridgeCourses.length})", "icon": null},
     ];
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      child: Row(
-        children: List.generate(tabs.length, (index) {
-          final isSelected = _activeTab == index;
-          final t = tabs[index];
-          return Padding(
-            padding: const EdgeInsets.only(right: 18),
-            child: InkWell(
-              onTap: () => setState(() => _activeTab = index),
-              child: Container(
-                padding: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: isSelected
-                          ? const Color(0xFF1E2865)
-                          : Colors.transparent,
-                      width: 2.5,
-                    ),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    if (t["icon"] != null) ...[
-                      Icon(t["icon"] as IconData,
-                          size: 15,
-                          color: isSelected
-                              ? const Color(0xFF1E2865)
-                              : const Color(0xFF64748B)),
-                      const SizedBox(width: 6),
-                    ],
-                    Text(
-                      t["label"] as String,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight:
-                            isSelected ? FontWeight.w700 : FontWeight.w500,
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Color(0xFFE2E8F0),
+            width: 1.5,
+          ),
+        ),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          children: List.generate(tabs.length, (index) {
+            final isSelected = _activeTab == index;
+            final t = tabs[index];
+            return Padding(
+              padding: const EdgeInsets.only(right: 28),
+              child: InkWell(
+                onTap: () => setState(() => _activeTab = index),
+                child: Container(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
                         color: isSelected
                             ? const Color(0xFF1E2865)
-                            : const Color(0xFF64748B),
+                            : Colors.transparent,
+                        width: 2.5,
                       ),
                     ),
-                  ],
+                  ),
+                  child: Row(
+                    children: [
+                      if (t["icon"] != null) ...[
+                        Icon(t["icon"] as IconData,
+                            size: 16,
+                            color: isSelected
+                                ? const Color(0xFF1E2865)
+                                : const Color(0xFF64748B)),
+                        const SizedBox(width: 6),
+                      ],
+                      Text(
+                        t["label"] as String,
+                        style: GoogleFonts.poppins(
+                          fontSize: 13.5,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected
+                              ? const Color(0xFF1E2865)
+                              : const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       ),
     );
   }
@@ -883,17 +961,21 @@ class _PrincipalSkillIntelligenceScreenState
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        _buildDualBar("DBMS", 75, 68),
-                        const SizedBox(width: 14),
-                        _buildDualBar("Operating Systems", 75, 68),
-                        const SizedBox(width: 14),
-                        _buildDualBar("Computer Networks", 75, 68),
-                        const SizedBox(width: 14),
-                        _buildDualBar("Machine Learning", 75, 60),
-                        const SizedBox(width: 14),
-                        _buildDualBar("Theory of Machines", 75, 56),
-                        const SizedBox(width: 14),
-                        _buildDualBar("Cloud Computing", 75, 62),
+                        _buildDualBar("", 75, 36),
+                        const SizedBox(width: 10),
+                        _buildDualBar("Advanced Java", 75, 36),
+                        const SizedBox(width: 10),
+                        _buildDualBar("", 75, 36),
+                        const SizedBox(width: 10),
+                        _buildDualBar("Cloud Computing &", 75, 36),
+                        const SizedBox(width: 10),
+                        _buildDualBar("", 75, 36),
+                        const SizedBox(width: 10),
+                        _buildDualBar("python", 75, 36),
+                        const SizedBox(width: 10),
+                        _buildDualBar("", 75, 36),
+                        const SizedBox(width: 10),
+                        _buildDualBar("Web Technologies", 75, 36),
                       ],
                     ),
                   ),
@@ -1109,18 +1191,18 @@ class _PrincipalSkillIntelligenceScreenState
                     badgeBg: const Color(0xFFFFE4E6),
                     title: "Curricular Deficit in Machine Learning",
                     desc:
-                        "Cohort readiness in Machine Learning (AL3451) is currently 60%, trailing the standard target of 75%. Remediate through structured lab assignments.",
-                    footer: "Assessed across 2 enrolled students in Theory",
+                        "Cohort readiness in Machine Learning (CSE108) is currently 36%, trailing the standard target of 75%. Remediate through structured lab assignments.",
+                    footer: "Assessed across 6 enrolled students in Theory",
                   ),
                   _buildRecommendationCard(
                     width: width,
-                    badge: "ACTIONABLE PLAN",
-                    badgeColor: const Color(0xFF0284C7),
-                    badgeBg: const Color(0xFFE0F2FE),
-                    title: "No Course Certificates Issued Yet",
+                    badge: "STRONG DOMAIN",
+                    badgeColor: const Color(0xFF0D9488),
+                    badgeBg: const Color(0xFFCCFBF1),
+                    title: "6 Verifiable Credentials Issued",
                     desc:
-                        "Students have not yet passed final proctored assessments. Publishing quizzes in AI Quiz Builder will enable verifiable digital credentials.",
-                    footer: "0 issued certificates in store",
+                        "Students have successfully earned 6 mark-based certificates with public verification hashes.",
+                    footer: "Verified across 6 records in this institution",
                   ),
                   _buildRecommendationCard(
                     width: width,
@@ -1129,9 +1211,9 @@ class _PrincipalSkillIntelligenceScreenState
                     badgeBg: const Color(0xFFE0F2FE),
                     title: "Placement Readiness Gateway Summary",
                     desc:
-                        "21% of the cohort qualifies for placement drives (Overall score ≥ 70, Quiz avg ≥ 60%, Mock interview ≥ 50).",
+                        "0% of the cohort qualifies for placement drives (Overall score ≥ 70, Quiz avg ≥ 60%, Mock Interview ≥ 50).",
                     footer:
-                        "Aggregated from 14 active student records on the readiness board",
+                        "Aggregated from 7 active student records on the readiness board.",
                   ),
                 ],
               );
@@ -1212,64 +1294,196 @@ class _PrincipalSkillIntelligenceScreenState
   Widget _buildSkillMatrixTable() {
     final matrixData = [
       {
-        "course": "Database Management Systems (CS3492)",
-        "dept":
-            "Theory · Computer Science & Engineering Graduate, Core Technical Associate",
+        "course": "Machine Learning (CSE108)",
+        "category": "Theory",
+        "dept": "Computer Science & Engineering Graduate, Core Technical Associate",
         "target": "75%",
         "targetVal": 0.75,
-        "mastery": "68%",
-        "masteryVal": 0.68,
-        "gap": "-7%",
-        "status": "Moderate",
-        "evaluated": "2",
+        "mastery": "36%",
+        "masteryVal": 0.36,
+        "gap": "-39%",
+        "status": "Critical Gap",
+        "evaluated": "6",
       },
       {
-        "course": "Operating Systems (CS3451)",
-        "dept":
-            "Theory · Computer Science & Engineering Graduate, Core Technical Associate",
+        "course": "Advanced Java (CS301)",
+        "category": "Theory + Lab",
+        "dept": "Computer Science & Engineering Graduate, Core Technical Associate",
         "target": "75%",
         "targetVal": 0.75,
-        "mastery": "68%",
-        "masteryVal": 0.68,
-        "gap": "-7%",
-        "status": "Moderate",
-        "evaluated": "2",
+        "mastery": "36%",
+        "masteryVal": 0.36,
+        "gap": "-39%",
+        "status": "Critical Gap",
+        "evaluated": "6",
       },
       {
-        "course": "Computer Networks (CS3591)",
-        "dept":
-            "Theory · Computer Science & Engineering Graduate, Core Technical Associate",
+        "course": "Object-Oriented Programming with Java (CS201)",
+        "category": "Theory",
+        "dept": "Computer Science & Engineering Graduate, Core Technical Associate",
         "target": "75%",
         "targetVal": 0.75,
-        "mastery": "68%",
-        "masteryVal": 0.68,
-        "gap": "-7%",
-        "status": "Moderate",
-        "evaluated": "2",
+        "mastery": "36%",
+        "masteryVal": 0.36,
+        "gap": "-39%",
+        "status": "Critical Gap",
+        "evaluated": "6",
       },
       {
-        "course": "Machine Learning (AL3451)",
-        "dept":
-            "Theory · AI & Data Science Graduate, Machine Learning Engineer",
+        "course": "Cloud Computing & Virtualization (CS3492)",
+        "category": "Theory",
+        "dept": "Computer Science & Engineering Graduate, Core Technical Associate",
         "target": "75%",
         "targetVal": 0.75,
-        "mastery": "60%",
-        "masteryVal": 0.60,
-        "gap": "-15%",
-        "status": "Critical",
-        "evaluated": "2",
+        "mastery": "36%",
+        "masteryVal": 0.36,
+        "gap": "-39%",
+        "status": "Critical Gap",
+        "evaluated": "6",
       },
       {
-        "course": "Theory of Machines (ME3391)",
-        "dept":
-            "Theory · Mechanical Engineering Graduate, Core Design Specialist",
+        "course": "Emerging Technologies (CSE107)",
+        "category": "Theory",
+        "dept": "Computer Science & Engineering Graduate, Core Technical Associate",
         "target": "75%",
         "targetVal": 0.75,
-        "mastery": "56%",
-        "masteryVal": 0.56,
-        "gap": "-19%",
-        "status": "Critical",
-        "evaluated": "2",
+        "mastery": "36%",
+        "masteryVal": 0.36,
+        "gap": "-39%",
+        "status": "Critical Gap",
+        "evaluated": "6",
+      },
+      {
+        "course": "python (CS2354)",
+        "category": "Theory",
+        "dept": "Computer Science & Engineering Graduate, Core Technical Associate",
+        "target": "75%",
+        "targetVal": 0.75,
+        "mastery": "36%",
+        "masteryVal": 0.36,
+        "gap": "-39%",
+        "status": "Critical Gap",
+        "evaluated": "6",
+      },
+      {
+        "course": "Data base System Applications (CSE105)",
+        "category": "Theory",
+        "dept": "Computer Science & Engineering Graduate, Core Technical Associate",
+        "target": "75%",
+        "targetVal": 0.75,
+        "mastery": "36%",
+        "masteryVal": 0.36,
+        "gap": "-39%",
+        "status": "Critical Gap",
+        "evaluated": "6",
+      },
+      {
+        "course": "Web Technologies (CSE106)",
+        "category": "Theory",
+        "dept": "Computer Science & Engineering Graduate, Core Technical Associate",
+        "target": "75%",
+        "targetVal": 0.75,
+        "mastery": "36%",
+        "masteryVal": 0.36,
+        "gap": "-39%",
+        "status": "Critical Gap",
+        "evaluated": "6",
+      },
+      {
+        "course": "Signals and Systems (EC101)",
+        "category": "Theory",
+        "dept": "Electronics & Communication Graduate, Core Technical Associate",
+        "target": "75%",
+        "targetVal": 0.75,
+        "mastery": "0%",
+        "masteryVal": 0.0,
+        "gap": "-75%",
+        "status": "Critical Gap",
+        "evaluated": "0",
+      },
+      {
+        "course": "DBMS (CSE104)",
+        "category": "Theory",
+        "dept": "Computer Science & Engineering Graduate, Core Technical Associate",
+        "target": "75%",
+        "targetVal": 0.75,
+        "mastery": "36%",
+        "masteryVal": 0.36,
+        "gap": "-39%",
+        "status": "Critical Gap",
+        "evaluated": "6",
+      },
+      {
+        "course": "Data Structures & Algorithms (CS202)",
+        "category": "Theory + Lab",
+        "dept": "Computer Science & Engineering Graduate, Core Technical Associate",
+        "target": "75%",
+        "targetVal": 0.75,
+        "mastery": "36%",
+        "masteryVal": 0.36,
+        "gap": "-39%",
+        "status": "Critical Gap",
+        "evaluated": "6",
+      },
+      {
+        "course": "Operating Systems Architecture (CS203)",
+        "category": "Theory",
+        "dept": "Computer Science & Engineering Graduate, Core Technical Associate",
+        "target": "75%",
+        "targetVal": 0.75,
+        "mastery": "36%",
+        "masteryVal": 0.36,
+        "gap": "-39%",
+        "status": "Critical Gap",
+        "evaluated": "6",
+      },
+      {
+        "course": "Computer Networks & Protocols (CS304)",
+        "category": "Theory + Lab",
+        "dept": "Computer Science & Engineering Graduate, Core Technical Associate",
+        "target": "75%",
+        "targetVal": 0.75,
+        "mastery": "36%",
+        "masteryVal": 0.36,
+        "gap": "-39%",
+        "status": "Critical Gap",
+        "evaluated": "6",
+      },
+      {
+        "course": "Software Engineering & Agile (CS305)",
+        "category": "Theory",
+        "dept": "Computer Science & Engineering Graduate, Core Technical Associate",
+        "target": "75%",
+        "targetVal": 0.75,
+        "mastery": "36%",
+        "masteryVal": 0.36,
+        "gap": "-39%",
+        "status": "Critical Gap",
+        "evaluated": "6",
+      },
+      {
+        "course": "Artificial Intelligence Foundations (CS401)",
+        "category": "Theory",
+        "dept": "Computer Science & Engineering Graduate, Core Technical Associate",
+        "target": "75%",
+        "targetVal": 0.75,
+        "mastery": "36%",
+        "masteryVal": 0.36,
+        "gap": "-39%",
+        "status": "Critical Gap",
+        "evaluated": "6",
+      },
+      {
+        "course": "Distributed Systems & Cloud (CS402)",
+        "category": "Theory",
+        "dept": "Computer Science & Engineering Graduate, Core Technical Associate",
+        "target": "75%",
+        "targetVal": 0.75,
+        "mastery": "36%",
+        "masteryVal": 0.36,
+        "gap": "-39%",
+        "status": "Critical Gap",
+        "evaluated": "6",
       },
     ];
 
@@ -1312,7 +1526,7 @@ class _PrincipalSkillIntelligenceScreenState
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  "Showing 6 skills",
+                  "Showing 16 skills",
                   style: GoogleFonts.poppins(
                     fontSize: 11.5,
                     color: const Color(0xFF94A3B8),
@@ -1333,6 +1547,8 @@ class _PrincipalSkillIntelligenceScreenState
                 headingRowHeight: 44,
                 dataRowMinHeight: 56,
                 dataRowMaxHeight: 64,
+                headingRowColor:
+                    WidgetStateProperty.all(const Color(0xFFF7F4EE)),
                 headingTextStyle: GoogleFonts.poppins(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
@@ -1350,11 +1566,11 @@ class _PrincipalSkillIntelligenceScreenState
                 ],
                 rows: matrixData.map((row) {
                   final status = row["status"] as String;
-                  final isCrit = status == "Critical";
+                  final isCrit = status == "Critical Gap";
 
                   return DataRow(
                     cells: [
-                      // Course name + dept
+                      // Course name + category + dept
                       DataCell(
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1368,12 +1584,31 @@ class _PrincipalSkillIntelligenceScreenState
                                 color: const Color(0xFF0F172A),
                               ),
                             ),
-                            Text(
-                              row["dept"] as String,
-                              style: GoogleFonts.poppins(
-                                fontSize: 10,
-                                color: const Color(0xFF94A3B8),
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  row["category"] as String,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 9.5,
+                                    color: const Color(0xFF64748B),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const Text(" · ",
+                                    style: TextStyle(
+                                        fontSize: 9.5,
+                                        color: Color(0xFF94A3B8))),
+                                Flexible(
+                                  child: Text(
+                                    row["dept"] as String,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 9.5,
+                                      color: const Color(0xFF94A3B8),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -1415,7 +1650,7 @@ class _PrincipalSkillIntelligenceScreenState
                                 value: row["masteryVal"] as double,
                                 backgroundColor: const Color(0xFFF1F5F9),
                                 valueColor: const AlwaysStoppedAnimation(
-                                    Color(0xFF131B4D)),
+                                    Color(0xFFE11D48)),
                                 minHeight: 4,
                               ),
                             ),
@@ -1508,6 +1743,28 @@ class _PrincipalSkillIntelligenceScreenState
   // ===========================================================================
   Widget _buildTab1StudentInventory() {
     final rosterData = [
+      {
+        "name": "bala",
+        "roll": "27549861",
+        "fullRoll": "27549861 · Computer Science & Engineering · 2023–2027 (Final Year)",
+        "dept": "Computer Science & Engineering",
+        "cohort": "2023–2027 (Final Year)",
+        "readiness": 0,
+        "status": "Needs work",
+        "skills": [
+          "Machine Learning",
+          "Advanced Java",
+          "Object-Oriented Programming with Java",
+        ],
+        "gaps": [
+          "Raise your quiz average to 60%",
+          "Earn 2 more certificate(s)",
+          "Score 50+ in a mock interview",
+        ],
+        "certs": "0",
+        "aiPlan":
+            "Recommended to enroll in the next upcoming bridge workshop for \"Raise your quiz average to 60%\" to clear recruiter cutoff.",
+      },
       {
         "name": "Kavya Menon",
         "roll": "110121006",
@@ -1770,12 +2027,19 @@ class _PrincipalSkillIntelligenceScreenState
                       return DataRow(
                         cells: [
                           DataCell(
-                            Text(
-                              s["name"] as String,
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF0F172A),
+                            InkWell(
+                              onTap: () => _showStudentProfileModal(s),
+                              borderRadius: BorderRadius.circular(4),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: Text(
+                                  s["name"] as String,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -1890,7 +2154,7 @@ class _PrincipalSkillIntelligenceScreenState
                           ),
                           DataCell(
                             OutlinedButton(
-                              onPressed: () {},
+                              onPressed: () => _showStudentProfileModal(s),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 4),
@@ -1899,9 +2163,10 @@ class _PrincipalSkillIntelligenceScreenState
                                     borderRadius: BorderRadius.circular(6)),
                               ),
                               child: Text(
-                                "Inspect",
+                                "Inspect Profile",
                                 style: GoogleFonts.poppins(
                                   fontSize: 11,
+                                  fontWeight: FontWeight.w600,
                                   color: const Color(0xFF334155),
                                 ),
                               ),
@@ -1959,6 +2224,24 @@ class _PrincipalSkillIntelligenceScreenState
   }
 
   Widget _buildCertificatesByCourseCard() {
+    const donutColors = [
+      Color(0xFF005F6B),
+      Color(0xFFD4A017),
+      Color(0xFF008B8B),
+      Color(0xFF2E5090),
+      Color(0xFFB22222),
+      Color(0xFFD2691E),
+    ];
+    const donutLabels = [
+      "Emerging Technologies",
+      "Data Structures and...",
+      "Web Technologies",
+      "DBMS",
+      "Database Management",
+      "Operating Systems",
+    ];
+    const donutValues = [22.0, 18.0, 17.0, 15.0, 15.0, 13.0];
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -1977,31 +2260,53 @@ class _PrincipalSkillIntelligenceScreenState
               color: const Color(0xFF0F172A),
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 16),
           Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF0F172A),
-                    shape: BoxShape.circle,
-                  ),
+            child: SizedBox(
+              height: 180,
+              width: 180,
+              child: CustomPaint(
+                painter: _DonutChartPainter(
+                  values: donutValues,
+                  colors: donutColors,
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  "No Certificates Issued Yet",
-                  style: GoogleFonts.poppins(
-                    fontSize: 11.5,
-                    color: const Color(0xFF64748B),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-          const SizedBox(height: 50),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: List.generate(donutLabels.length, (i) {
+              return SizedBox(
+                width: 160,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: donutColors[i],
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        donutLabels[i],
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          color: const Color(0xFF475569),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ),
         ],
       ),
     );
@@ -2009,10 +2314,10 @@ class _PrincipalSkillIntelligenceScreenState
 
   Widget _buildReadinessCriteriaCard() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
@@ -2021,63 +2326,69 @@ class _PrincipalSkillIntelligenceScreenState
           Row(
             children: [
               const Icon(Icons.track_changes_rounded,
-                  size: 16, color: Color(0xFF1E2865)),
+                  size: 18, color: Color(0xFF1E2865)),
               const SizedBox(width: 8),
-              Text(
-                "Institutional Readiness Criteria Breakdown",
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0F172A),
+              Expanded(
+                child: Text(
+                  "Institutional Readiness Criteria Breakdown",
+                  style: GoogleFonts.poppins(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             "Real evaluation metrics for Anna Institute of Technology measured against the standard placement threshold (Overall ≥ 70).",
             style: GoogleFonts.poppins(
-              fontSize: 10.5,
+              fontSize: 11,
               color: const Color(0xFF64748B),
+              height: 1.4,
             ),
           ),
           const SizedBox(height: 14),
 
-          // Tier 1
+          // Tier 1 - Placement Ready Cohort (count: 0)
           _buildTierRow(
             title: "Placement Ready Cohort",
             sub: "Total ≥ 70, Quiz Avg ≥ 60%, Certs ≥ 2, Interview ≥ 50",
-            count: "3",
+            count: "0",
             countLabel: "Students Qualified",
-            bg: const Color(0xFFF0FDF4),
+            countColor: const Color(0xFF0D9488),
+            bg: const Color(0xFFFAF7F2),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
 
-          // Tier 2
+          // Tier 2 - Almost Ready (count: 1)
           _buildTierRow(
             title: "Almost Ready (Near Threshold)",
             sub: "Total score between 55 and 69",
-            count: "8",
+            count: "1",
             countLabel: "In Active Remediation",
-            bg: const Color(0xFFFFFBEB),
+            countColor: const Color(0xFFD97706),
+            bg: const Color(0xFFFAF7F2),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
 
-          // Tier 3
+          // Tier 3 - Needs Curricular Action (count: 6)
           _buildTierRow(
             title: "Needs Curricular Action",
             sub: "Total score < 55 or missing multiple assessments",
-            count: "3",
+            count: "6",
             countLabel: "Intervention Needed",
-            bg: const Color(0xFFFFF1F2),
+            countColor: const Color(0xFFDC2626),
+            bg: const Color(0xFFFAF7F2),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           Text(
             "Placement formula: Quiz marks 35% + Certificates 20% + Aptitude 15% + Mock interview 15% + Resume 15%.",
             style: GoogleFonts.poppins(
-              fontSize: 9.5,
-              color: const Color(0xFF94A3B8),
+              fontSize: 10.5,
+              color: const Color(0xFF64748B),
             ),
           ),
         ],
@@ -2090,34 +2401,36 @@ class _PrincipalSkillIntelligenceScreenState
     required String sub,
     required String count,
     required String countLabel,
+    required Color countColor,
     required Color bg,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFEFE8DD)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
                   title,
                   style: GoogleFonts.poppins(
-                    fontSize: 11.5,
+                    fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF0F172A),
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   sub,
                   style: GoogleFonts.poppins(
-                    fontSize: 9.5,
+                    fontSize: 10,
                     color: const Color(0xFF64748B),
                   ),
                 ),
@@ -2130,7 +2443,7 @@ class _PrincipalSkillIntelligenceScreenState
               Text(
                 count,
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: 15,
                   fontWeight: FontWeight.w800,
                   color: const Color(0xFF0F172A),
                 ),
@@ -2138,8 +2451,9 @@ class _PrincipalSkillIntelligenceScreenState
               Text(
                 countLabel,
                 style: GoogleFonts.poppins(
-                  fontSize: 8.5,
-                  color: const Color(0xFF64748B),
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                  color: countColor,
                 ),
               ),
             ],
@@ -2155,57 +2469,57 @@ class _PrincipalSkillIntelligenceScreenState
         "dim": "Overall Placement Eligibility Gateway",
         "target": "Total Score ≥ 70 / 100",
         "standard": "70 score cutoff",
-        "pop": "14 students",
-        "compliance": "3 Qualified (21%)",
+        "pop": "7 students",
+        "compliance": "0 Qualified (0%)",
       },
       {
         "dim": "Academic & Quiz Mastery Standard",
         "target": "Quiz Average ≥ 60%",
         "standard": "60 score cutoff",
-        "pop": "14 students",
-        "compliance": "Cohort Avg: 63%",
+        "pop": "7 students",
+        "compliance": "Cohort Avg: 25%",
       },
       {
         "dim": "Technical Mock Interview Clearance",
         "target": "Interview Score ≥ 50",
         "standard": "50 score cutoff",
-        "pop": "14 students",
-        "compliance": "Cohort Avg: 60%",
+        "pop": "7 students",
+        "compliance": "Cohort Avg: 2%",
       },
       {
         "dim": "ATS Resume Standard",
         "target": "Resume ATS Score ≥ 70",
         "standard": "70 score cutoff",
-        "pop": "14 students",
-        "compliance": "Cohort Avg: 78%",
+        "pop": "7 students",
+        "compliance": "Cohort Avg: 10%",
       },
       {
         "dim": "Aptitude & Logical Assessment",
         "target": "Aptitude Score ≥ 50",
         "standard": "50 score cutoff",
-        "pop": "14 students",
-        "compliance": "Cohort Avg: 67%",
+        "pop": "7 students",
+        "compliance": "Cohort Avg: 10%",
       },
     ];
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(18),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
                   "Placement Gateway Thresholds & Cohort Compliance",
                   style: GoogleFonts.poppins(
-                    fontSize: 13.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF0F172A),
                   ),
@@ -2214,23 +2528,24 @@ class _PrincipalSkillIntelligenceScreenState
                 Text(
                   "Official criteria enforced across students for campus recruitment readiness",
                   style: GoogleFonts.poppins(
-                    fontSize: 11,
+                    fontSize: 11.5,
                     color: const Color(0xFF64748B),
                   ),
                 ),
               ],
             ),
           ),
-          const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
 
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: ConstrainedBox(
               constraints: const BoxConstraints(minWidth: 900),
               child: DataTable(
-                columnSpacing: 18,
-                horizontalMargin: 16,
-                headingRowHeight: 44,
+                headingRowColor:
+                    WidgetStateProperty.all(const Color(0xFFF5F2EB)),
+                columnSpacing: 22,
+                horizontalMargin: 18,
+                headingRowHeight: 46,
                 dataRowMinHeight: 48,
                 dataRowMaxHeight: 56,
                 headingTextStyle: GoogleFonts.poppins(
@@ -2290,10 +2605,10 @@ class _PrincipalSkillIntelligenceScreenState
                       DataCell(
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: const Color(0xFFCCFBF1),
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             t["compliance"] as String,
@@ -2466,102 +2781,179 @@ class _PrincipalSkillIntelligenceScreenState
             ),
           )
         else
-          // List of Scheduled Bridge Courses
-          Column(
-            children: _bridgeCourses.map((c) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
+          // 2×2 Responsive Grid of Bridge Course Cards
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final crossCount = constraints.maxWidth >= 700 ? 2 : 1;
+              final cardWidth = crossCount == 2
+                  ? (constraints.maxWidth - 12) / 2
+                  : constraints.maxWidth;
+              return Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: _bridgeCourses.map((c) {
+                  final isUpcoming = (c["status"] as String) == "Upcoming";
+                  return SizedBox(
+                    width: cardWidth,
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEEF2FF),
-                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      child: const Icon(Icons.rocket_launch_rounded,
-                          size: 20, color: Color(0xFF4338CA)),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Top row: status badge + date/duration
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                c["title"] as String,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF0F172A),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
+                                    horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFDCFCE7),
-                                  borderRadius: BorderRadius.circular(4),
+                                  color: isUpcoming
+                                      ? const Color(0xFFFEF3C7)
+                                      : const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: Text(
                                   c["status"] as String,
                                   style: GoogleFonts.poppins(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF16A34A),
+                                    color: isUpcoming
+                                        ? const Color(0xFFD97706)
+                                        : const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ),
+                              Flexible(
+                                child: Text(
+                                  isUpcoming
+                                      ? (c["dateInfo"] as String)
+                                      : (c["durationLabel"] as String),
+                                  textAlign: TextAlign.right,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    color: const Color(0xFF94A3B8),
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 10),
+
+                          // Title
                           Text(
-                            "Target Skill: ${c["skill"]} • Duration: ${c["duration"]}",
+                            c["title"] as String,
                             style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: const Color(0xFF334155),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
                             ),
                           ),
                           const SizedBox(height: 4),
+
+                          // Target Skill
                           Text(
-                            "Faculty Lead: ${c["faculty"]} • Cohort: ${c["cohort"]} (${c["dept"]})",
+                            "Target Skill: ${c["skill"]}",
                             style: GoogleFonts.poppins(
-                              fontSize: 11,
+                              fontSize: 12,
                               color: const Color(0xFF64748B),
                             ),
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Inner info card
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                  color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildCourseInfoCell(
+                                          "FACULTY LEAD",
+                                          c["faculty"] as String),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _buildCourseInfoCell(
+                                          "DEPARTMENT",
+                                          c["dept"] as String),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildCourseInfoCell(
+                                          "COHORT",
+                                          c["cohort"] as String),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _buildCourseInfoCell(
+                                          "ENROLLED",
+                                          c["enrolled"] as String),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Footer row
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  "Targeting proficiency uplift for ${c["skill"]}",
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 10.5,
+                                    color: const Color(0xFF0D9488),
+                                    decoration: TextDecoration.underline,
+                                    decorationColor:
+                                        const Color(0xFF0D9488),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                c["uuid"] as String,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 9,
+                                  color: const Color(0xFFCBD5E1),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline_rounded,
-                          size: 18, color: Color(0xFF94A3B8)),
-                      onPressed: () {
-                        setState(() {
-                          _bridgeCourses.remove(c);
-                        });
-                      },
-                    ),
-                  ],
-                ),
+                  );
+                }).toList(),
               );
-            }).toList(),
+            },
           ),
       ],
     );
@@ -2574,11 +2966,9 @@ class _PrincipalSkillIntelligenceScreenState
     String? initialSkill,
     String? initialTitle,
   }) {
-    final titleCtrl = TextEditingController(
-        text: initialTitle ?? "AWS Cloud Native Practitioner Sprint");
-    final skillCtrl = TextEditingController(
-        text: initialSkill ?? "Cloud Architecture (AWS / Azure / GCP)");
-    String selectedDept = "Computer Science & Engi";
+    final titleCtrl = TextEditingController(text: initialTitle ?? "");
+    final skillCtrl = TextEditingController(text: initialSkill ?? "");
+    String selectedDept = "Computer Science & Engineering";
     String selectedCohort = "2023–2027 (Final Year)";
     String selectedFaculty = "far";
     String selectedDuration = "4 Weeks Comprehensive";
@@ -2595,44 +2985,55 @@ class _PrincipalSkillIntelligenceScreenState
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16)),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 540),
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Modal Header
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Schedule Curricular Bridge Course",
-                              style: GoogleFonts.poppins(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF0F172A),
-                              ),
+              child: Container(
+                width: math.min(540, MediaQuery.of(dialogCtx).size.width - 32),
+                padding: const EdgeInsets.all(22),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Modal Header
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Schedule Curricular Bridge Course",
+                                  softWrap: true,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Deploy targeted remediation for identified cohort skill deficits",
+                                  softWrap: true,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
                             ),
-                            IconButton(
-                              onPressed: () => Navigator.of(dialogCtx).pop(),
-                              icon: const Icon(Icons.close_rounded,
-                                  size: 20, color: Color(0xFF64748B)),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Deploy targeted remediation for identified cohort skill deficits",
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: const Color(0xFF64748B),
                           ),
-                        ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            onPressed: () => Navigator.of(dialogCtx).pop(),
+                            icon: const Icon(Icons.close_rounded,
+                                size: 20, color: Color(0xFF64748B)),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
+                      ),
+                        const SizedBox(height: 20),
+                        const Divider(height: 1, color: Color(0xFFE2E8F0)),
                         const SizedBox(height: 20),
 
                         // Intervention Title
@@ -2652,80 +3053,151 @@ class _PrincipalSkillIntelligenceScreenState
                         const SizedBox(height: 14),
 
                         // Department & Target Cohort
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildModalDropdown(
-                                label: "Department",
-                                value: selectedDept,
-                                items: [
-                                  "Computer Science & Engi",
-                                  "Information Technology",
-                                  "Artificial Intelligence",
-                                  "Electronics & Communication",
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isCompact = constraints.maxWidth < 420;
+                            if (isCompact) {
+                              return Column(
+                                children: [
+                                  _buildModalDropdown(
+                                    label: "Department",
+                                    value: selectedDept,
+                                    items: const [
+                                      "Computer Science & Engineering",
+                                      "Information Technology",
+                                      "Artificial Intelligence",
+                                      "Electronics & Communication",
+                                    ],
+                                    onChanged: (v) =>
+                                        setModalState(() => selectedDept = v!),
+                                  ),
+                                  const SizedBox(height: 14),
+                                  _buildModalDropdown(
+                                    label: "Target Cohort",
+                                    value: selectedCohort,
+                                    items: const [
+                                      "2023–2027 (Final Year)",
+                                      "2024–2028 (Third Year)",
+                                      "2025–2029 (Second Year)",
+                                    ],
+                                    onChanged: (v) =>
+                                        setModalState(() => selectedCohort = v!),
+                                  ),
+                                  const SizedBox(height: 14),
+                                  _buildModalDropdown(
+                                    label: "Faculty Mentor / Lead",
+                                    value: selectedFaculty,
+                                    items: const [
+                                      "far",
+                                      "Dr. Meena Raghavan",
+                                      "Department Faculty",
+                                      "Dr. Anand V.",
+                                      "Prof. Priya Sharma",
+                                    ],
+                                    onChanged: (v) =>
+                                        setModalState(() => selectedFaculty = v!),
+                                  ),
+                                  const SizedBox(height: 14),
+                                  _buildModalDropdown(
+                                    label: "Duration",
+                                    value: selectedDuration,
+                                    items: const [
+                                      "4 Weeks Comprehensive",
+                                      "2 Weeks Sprint",
+                                      "8 Weeks Deep-Dive",
+                                      "Weekend Bootcamp",
+                                    ],
+                                    onChanged: (v) =>
+                                        setModalState(() => selectedDuration = v!),
+                                  ),
                                 ],
-                                onChanged: (v) =>
-                                    setModalState(() => selectedDept = v!),
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: _buildModalDropdown(
-                                label: "Target Cohort",
-                                value: selectedCohort,
-                                items: [
-                                  "2023–2027 (Final Year)",
-                                  "2024–2028 (Third Year)",
-                                  "2025–2029 (Second Year)",
-                                ],
-                                onChanged: (v) =>
-                                    setModalState(() => selectedCohort = v!),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-
-                        // Faculty Mentor / Lead & Duration
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildModalDropdown(
-                                label: "Faculty Mentor / Lead",
-                                value: selectedFaculty,
-                                items: [
-                                  "Select teaching faculty...",
-                                  "far",
-                                  "Dr. Anand V.",
-                                  "Prof. Priya Sharma",
-                                  "Dr. Rajesh K.",
-                                ],
-                                onChanged: (v) =>
-                                    setModalState(() => selectedFaculty = v!),
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: _buildModalDropdown(
-                                label: "Duration",
-                                value: selectedDuration,
-                                items: [
-                                  "4 Weeks Comprehensive",
-                                  "2 Weeks Sprint",
-                                  "8 Weeks Deep-Dive",
-                                  "Weekend Bootcamp",
-                                ],
-                                onChanged: (v) =>
-                                    setModalState(() => selectedDuration = v!),
-                              ),
-                            ),
-                          ],
+                              );
+                            }
+                            return Column(
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: _buildModalDropdown(
+                                        label: "Department",
+                                        value: selectedDept,
+                                        items: const [
+                                          "Computer Science & Engineering",
+                                          "Information Technology",
+                                          "Artificial Intelligence",
+                                          "Electronics & Communication",
+                                        ],
+                                        onChanged: (v) =>
+                                            setModalState(() => selectedDept = v!),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildModalDropdown(
+                                        label: "Target Cohort",
+                                        value: selectedCohort,
+                                        items: const [
+                                          "2023–2027 (Final Year)",
+                                          "2024–2028 (Third Year)",
+                                          "2025–2029 (Second Year)",
+                                        ],
+                                        onChanged: (v) =>
+                                            setModalState(() => selectedCohort = v!),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 14),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: _buildModalDropdown(
+                                        label: "Faculty Mentor / Lead",
+                                        value: selectedFaculty,
+                                        items: const [
+                                          "far",
+                                          "Dr. Meena Raghavan",
+                                          "Department Faculty",
+                                          "Dr. Anand V.",
+                                          "Prof. Priya Sharma",
+                                        ],
+                                        onChanged: (v) =>
+                                            setModalState(() => selectedFaculty = v!),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildModalDropdown(
+                                        label: "Duration",
+                                        value: selectedDuration,
+                                        items: const [
+                                          "4 Weeks Comprehensive",
+                                          "2 Weeks Sprint",
+                                          "8 Weeks Deep-Dive",
+                                          "Weekend Bootcamp",
+                                        ],
+                                        onChanged: (v) =>
+                                            setModalState(() => selectedDuration = v!),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            );
+                          },
                         ),
                         const SizedBox(height: 24),
+                        const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                        const SizedBox(height: 16),
 
                         // Modal Footer Buttons
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                        Wrap(
+                          alignment: WrapAlignment.end,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 12,
+                          runSpacing: 8,
                           children: [
                             OutlinedButton(
                               onPressed: () => Navigator.of(dialogCtx).pop(),
@@ -2733,7 +3205,7 @@ class _PrincipalSkillIntelligenceScreenState
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 20, vertical: 12),
                                 side: const BorderSide(
-                                    color: Color(0xFFE2E8F0)),
+                                    color: Color(0xFFCBD5E1)),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -2747,34 +3219,32 @@ class _PrincipalSkillIntelligenceScreenState
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 12),
                             ElevatedButton(
                               onPressed: () {
                                 final title = titleCtrl.text.trim();
                                 final skill = skillCtrl.text.trim();
-                                if (title.isEmpty || skill.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          "Please enter both title and target skill",
-                                          style: GoogleFonts.poppins()),
-                                      behavior: SnackBarBehavior.floating,
-                                      backgroundColor:
-                                          const Color(0xFFEF4444),
-                                    ),
-                                  );
-                                  return;
-                                }
+                                final courseTitle = title.isEmpty
+                                    ? "AWS Cloud Native Practitioner Sprint"
+                                    : title;
+                                final targetSkill = skill.isEmpty
+                                    ? "Cloud Architecture (AWS / Azure / GCP)"
+                                    : skill;
 
                                 setState(() {
                                   _bridgeCourses.insert(0, {
-                                    "title": title,
-                                    "skill": skill,
+                                    "title": courseTitle,
+                                    "skill": targetSkill,
+                                    "status": "Upcoming",
+                                    "dateInfo": "Scheduled",
+                                    "durationLabel": selectedDuration.contains(" ")
+                                        ? "${selectedDuration.split(" ")[0]} ${selectedDuration.split(" ")[1]}"
+                                        : selectedDuration,
+                                    "faculty": selectedFaculty,
                                     "dept": selectedDept,
                                     "cohort": selectedCohort,
-                                    "faculty": selectedFaculty,
-                                    "duration": selectedDuration,
-                                    "status": "Active Sprint",
+                                    "enrolled": "0 students",
+                                    "uuid":
+                                        "${DateTime.now().millisecondsSinceEpoch.toRadixString(16)}-bridge",
                                   });
                                   _activeTab = 3;
                                 });
@@ -2783,7 +3253,7 @@ class _PrincipalSkillIntelligenceScreenState
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                        "Bridge course '$title' scheduled successfully!",
+                                        "Bridge course '$courseTitle' scheduled successfully!",
                                         style: GoogleFonts.poppins()),
                                     behavior: SnackBarBehavior.floating,
                                     backgroundColor:
@@ -2792,7 +3262,7 @@ class _PrincipalSkillIntelligenceScreenState
                                 );
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2E3880),
+                                backgroundColor: const Color(0xFF2E3B8B),
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 22, vertical: 12),
                                 shape: RoundedRectangleBorder(
@@ -2815,13 +3285,12 @@ class _PrincipalSkillIntelligenceScreenState
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
+              );
+            },
+          );
+        },
+      );
+    }
 
   Widget _buildModalFormField({
     required String label,
@@ -2911,14 +3380,334 @@ class _PrincipalSkillIntelligenceScreenState
       ],
     );
   }
+
+  Widget _buildCourseInfoCell(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 9,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.4,
+            color: const Color(0xFF94A3B8),
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.poppins(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF0F172A),
+          ),
+        ),
+      ],
+    );
   }
+  // ===========================================================================
+  // MODAL: STUDENT READINESS PROFILE (Image 1)
+  // ===========================================================================
+  void _showStudentProfileModal(Map<String, dynamic> student) {
+    final name = student["name"] as String? ?? "bala";
+    final roll = student["fullRoll"] as String? ??
+        (student["roll"] as String? ??
+            "27549861 · Computer Science & Engineering · 2023–2027 (Final Year)");
+    final readiness = student["readiness"] as int? ?? 0;
+    final status = student["status"] as String? ?? "Needs work";
+
+    final strengths = (student["skills"] as List<String>?) ??
+        (student["strengths"] as List<String>?) ??
+        [
+          "Machine Learning",
+          "Advanced Java",
+          "Object-Oriented Programming with Java",
+        ];
+
+    final gaps = (student["gaps"] as List<String>?) ??
+        [
+          "Raise your quiz average to 60%",
+          "Earn 2 more certificate(s)",
+          "Score 50+ in a mock interview",
+        ];
+
+    final aiPlan = student["aiPlan"] as String? ??
+        "Recommended to enroll in the next upcoming bridge workshop for \"Raise your quiz average to 60%\" to clear recruiter cutoff.";
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogCtx) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header: Name & Close button
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            name,
+                            style: GoogleFonts.poppins(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          onPressed: () => Navigator.of(dialogCtx).pop(),
+                          icon: const Icon(Icons.close_rounded,
+                              size: 20, color: Color(0xFF64748B)),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      roll,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                    const SizedBox(height: 18),
+
+                    // Placement Readiness Total Card (Image 1)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFAF7F2), // Light cream ivory
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFEFE8DD)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Placement Readiness Total",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFE4E6),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  status,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFFE11D48),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            "$readiness / 100",
+                            style: GoogleFonts.poppins(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // DEMONSTRATED STRENGTHS & TOP SKILLS
+                    Text(
+                      "DEMONSTRATED STRENGTHS & TOP SKILLS",
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: strengths.map((s) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE6F7F5),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFB2EBF2)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_rounded,
+                                  size: 14, color: Color(0xFF0D9488)),
+                              const SizedBox(width: 4),
+                              Text(
+                                s,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF0D9488),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // REMEDIATION GAP AREAS
+                    Text(
+                      "REMEDIATION GAP AREAS",
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: gaps.map((g) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF2F2),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFFECACA)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.warning_amber_rounded,
+                                  size: 14, color: Color(0xFFDC2626)),
+                              const SizedBox(width: 4),
+                              Text(
+                                g,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFFDC2626),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // AI Mentor Action Plan Box
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: RichText(
+                        text: TextSpan(
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: const Color(0xFF475569),
+                            height: 1.45,
+                          ),
+                          children: [
+                            const TextSpan(
+                              text: "AI Mentor Action Plan: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            TextSpan(text: aiPlan),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+
+                    // Close Profile Button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        OutlinedButton(
+                          onPressed: () => Navigator.of(dialogCtx).pop(),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 22, vertical: 12),
+                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Text(
+                            "Close Profile",
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF334155),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
 }
 
 // =============================================================================
 // GRID & RADAR PAINTERS
 // =============================================================================
 
-class _BlueprintGridPainter extends CustomPainter {
+
+  class _BlueprintGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
@@ -2936,6 +3725,46 @@ class _BlueprintGridPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _DonutChartPainter extends CustomPainter {
+  final List<double> values;
+  final List<Color> colors;
+
+  const _DonutChartPainter({required this.values, required this.colors});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+    const strokeWidth = 32.0;
+    final innerRadius = radius - strokeWidth;
+
+    final total = values.fold(0.0, (a, b) => a + b);
+    double startAngle = -3.14159265 / 2; // Start from top
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.butt;
+
+    for (int i = 0; i < values.length; i++) {
+      final sweepAngle = (values[i] / total) * 2 * 3.14159265;
+      paint.color = colors[i];
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: innerRadius + strokeWidth / 2),
+        startAngle,
+        sweepAngle - 0.03, // small gap between segments
+        false,
+        paint,
+      );
+      startAngle += sweepAngle;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DonutChartPainter oldDelegate) =>
+      oldDelegate.values != values || oldDelegate.colors != colors;
 }
 
 class _RadarPlaceholderPainter extends CustomPainter {
