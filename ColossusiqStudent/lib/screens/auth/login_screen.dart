@@ -236,7 +236,7 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFFF1F5FC),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isDesktop = constraints.maxWidth >= 980;
@@ -248,6 +248,7 @@ class _LoginScreenState extends State<LoginScreen>
                 Expanded(
                   flex: 52,
                   child: Container(
+                    key: const ValueKey('student-login-showcase-panel'),
                     decoration: const BoxDecoration(
                       color: Color(0xFFF8FAFC),
                       border: Border(right: BorderSide(color: Color(0xFFE2E8F0))),
@@ -325,14 +326,7 @@ class _LoginScreenState extends State<LoginScreen>
                 child: IntrinsicHeight(
                   child: Column(
                     children: [
-                      // Top Row Header
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildBrandLogo(),
-                          _buildAyBadge(),
-                        ],
-                      ),
+                      _buildMobileBrandCard(),
                       const SizedBox(height: 12),
                       const Spacer(),
 
@@ -369,18 +363,18 @@ class _LoginScreenState extends State<LoginScreen>
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 34,
-          height: 34,
+          width: 38,
+          height: 38,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
             gradient: const LinearGradient(
-              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+              colors: [Color(0xFF2563EB), Color(0xFF4F46E5)],
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF2563EB).withValues(alpha: 0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
+                color: const Color(0xFF3B5BDB).withValues(alpha: 0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 5),
               ),
             ],
           ),
@@ -408,7 +402,7 @@ class _LoginScreenState extends State<LoginScreen>
                 style: GoogleFonts.poppins(
                   fontSize: 19,
                   fontWeight: FontWeight.w900,
-                  color: const Color(0xFF2563EB),
+                  color: const Color(0xFF4F46E5),
                   letterSpacing: -0.4,
                 ),
               ),
@@ -423,9 +417,9 @@ class _LoginScreenState extends State<LoginScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
+        color: const Color(0xFFF0F4FF),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFBFDBFE)),
+        border: Border.all(color: const Color(0xFFDCE5FF)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -444,11 +438,159 @@ class _LoginScreenState extends State<LoginScreen>
             style: GoogleFonts.poppins(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF1D4ED8),
+              color: const Color(0xFF3949AB),
               letterSpacing: 0.3,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMobileBrandCard() {
+    final showAcademicYear = MediaQuery.sizeOf(context).width >= 420;
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF172554),
+            Color(0xFF253B86),
+            Color(0xFF3949AB),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF253B86).withValues(alpha: 0.22),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -44,
+              top: -72,
+              child: Container(
+                width: 184,
+                height: 184,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.055),
+                ),
+              ),
+            ),
+            Positioned(
+              right: 28,
+              bottom: -78,
+              child: Container(
+                width: 154,
+                height: 154,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    width: 22,
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 16,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.11),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.16),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.school_rounded,
+                      color: Color(0xFFFBBF24),
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 2,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              "ColossusIQ",
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFF10B981,
+                                ).withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: const Color(
+                                    0xFF6EE7B7,
+                                  ).withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: Text(
+                                "STUDENT",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF6EE7B7),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          "Student Portal Authentication",
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.85),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (showAcademicYear) ...[
+                    const SizedBox(width: 8),
+                    _buildAyBadge(),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -528,7 +670,7 @@ class _LoginScreenState extends State<LoginScreen>
             style: GoogleFonts.poppins(
               fontSize: 10.5,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF1D4ED8),
+              color: const Color(0xFF3949AB),
               letterSpacing: 0.8,
             ),
           ),
@@ -727,11 +869,15 @@ class _LoginScreenState extends State<LoginScreen>
       children: [
         const Icon(Icons.verified_user_outlined, size: 14, color: Color(0xFF059669)),
         const SizedBox(width: 6),
-        Text(
-          "Zero-Trust TLS 1.3 • AICTE & NEP 2020 Compliant",
-          style: GoogleFonts.poppins(
-            fontSize: 11,
-            color: const Color(0xFF64748B),
+        Flexible(
+          child: Text(
+            "Zero-Trust TLS 1.3 • AICTE & NEP 2020 Compliant",
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              color: const Color(0xFF64748B),
+            ),
           ),
         ),
       ],
@@ -743,16 +889,17 @@ class _LoginScreenState extends State<LoginScreen>
   // ===========================================================================
   Widget _buildLoginFormCard() {
     return Container(
+      key: const ValueKey('student-login-form-card'),
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: const Color(0xFFE5EAF3)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.05),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
+            color: const Color(0xFF16233F).withValues(alpha: 0.07),
+            blurRadius: 34,
+            offset: const Offset(0, 14),
           ),
         ],
       ),
@@ -762,15 +909,17 @@ class _LoginScreenState extends State<LoginScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top Badge: Student Access & Version
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                    color: const Color(0xFFF0F4FF),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFDCE5FF)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -796,14 +945,14 @@ class _LoginScreenState extends State<LoginScreen>
                     ],
                   ),
                 ),
-                Text(
-                  "v2.4",
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF94A3B8),
-                  ),
-                ),
+                // Text(
+                //   "v2.4",
+                //   style: GoogleFonts.poppins(
+                //     fontSize: 11,
+                //     fontWeight: FontWeight.w600,
+                //     color: const Color(0xFF94A3B8),
+                //   ),
+                // ),
               ],
             ),
             const SizedBox(height: 16),
@@ -812,10 +961,10 @@ class _LoginScreenState extends State<LoginScreen>
             Text(
               "Student Portal Sign In",
               style: GoogleFonts.poppins(
-                fontSize: 24,
+                fontSize: 26,
                 fontWeight: FontWeight.w800,
                 color: const Color(0xFF0F172A),
-                letterSpacing: -0.5,
+                letterSpacing: -0.7,
               ),
             ),
             const SizedBox(height: 4),
@@ -827,7 +976,7 @@ class _LoginScreenState extends State<LoginScreen>
                 height: 1.45,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 22),
 
             // Campus Selector Dropdown
             _buildCampusSelector(),
@@ -874,13 +1023,13 @@ class _LoginScreenState extends State<LoginScreen>
   Widget _buildCampusSelector() {
     return InkWell(
       onTap: _showCollegePicker,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFFBEB),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFFDE68A)),
+          color: const Color(0xFFF3F5FF),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFDCE3FA)),
         ),
         child: Row(
           children: [
@@ -888,7 +1037,7 @@ class _LoginScreenState extends State<LoginScreen>
               width: 8,
               height: 8,
               decoration: const BoxDecoration(
-                color: Color(0xFFD97706),
+                color: Color(0xFF5367D8),
                 shape: BoxShape.circle,
               ),
             ),
@@ -898,7 +1047,7 @@ class _LoginScreenState extends State<LoginScreen>
               style: GoogleFonts.poppins(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFFB45309),
+                color: const Color(0xFF64748B),
               ),
             ),
             Expanded(
@@ -907,7 +1056,7 @@ class _LoginScreenState extends State<LoginScreen>
                 style: GoogleFonts.poppins(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF78350F),
+                  color: const Color(0xFF253B86),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -916,7 +1065,7 @@ class _LoginScreenState extends State<LoginScreen>
             const Icon(
               Icons.unfold_more_rounded,
               size: 18,
-              color: Color(0xFFB45309),
+              color: Color(0xFF5367D8),
             ),
           ],
         ),
@@ -946,20 +1095,20 @@ class _LoginScreenState extends State<LoginScreen>
             hintText: "student1@ait.edu.in",
             hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
             filled: true,
-            fillColor: const Color(0xFFF8FAFC),
+            fillColor: const Color(0xFFF9FAFE),
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFFD9E1EF)),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFFD9E1EF)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFF4F46E5), width: 1.5),
             ),
           ),
           validator: (val) {
@@ -1002,20 +1151,20 @@ class _LoginScreenState extends State<LoginScreen>
             hintText: "••••••••••",
             hintStyle: GoogleFonts.poppins(fontSize: 12.5, color: const Color(0xFF94A3B8)),
             filled: true,
-            fillColor: const Color(0xFFF8FAFC),
+            fillColor: const Color(0xFFF9FAFE),
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFFD9E1EF)),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFFD9E1EF)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFF4F46E5), width: 1.5),
             ),
           ),
           validator: (val) {
@@ -1029,27 +1178,35 @@ class _LoginScreenState extends State<LoginScreen>
 
   // --- REMEMBER ME & FORGOT PASSWORD ---
   Widget _buildRememberForgotRow() {
-    return Row(
+    return Wrap(
+      spacing: 12,
+      runSpacing: 8,
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        SizedBox(
-          height: 18,
-          width: 18,
-          child: Checkbox(
-            value: _rememberMe,
-            onChanged: (val) => setState(() => _rememberMe = val ?? true),
-            activeColor: const Color(0xFF2563EB),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 18,
+              width: 18,
+              child: Checkbox(
+                value: _rememberMe,
+                onChanged: (val) => setState(() => _rememberMe = val ?? true),
+                activeColor: const Color(0xFF4F46E5),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+              ),
+            ),
+            const SizedBox(width: 8),
+            InkWell(
+              onTap: () => setState(() => _rememberMe = !_rememberMe),
+              child: Text(
+                "Remember me",
+                style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF334155), fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 8),
-        InkWell(
-          onTap: () => setState(() => _rememberMe = !_rememberMe),
-          child: Text(
-            "Remember me",
-            style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF334155), fontWeight: FontWeight.w500),
-          ),
-        ),
-        const Spacer(),
         InkWell(
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -1064,7 +1221,7 @@ class _LoginScreenState extends State<LoginScreen>
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF2563EB),
+              color: const Color(0xFF4F46E5),
             ),
           ),
         ),
@@ -1076,17 +1233,17 @@ class _LoginScreenState extends State<LoginScreen>
   Widget _buildSignInButton() {
     return Container(
       width: double.infinity,
-      height: 46,
+      height: 52,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         gradient: const LinearGradient(
-          colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+          colors: [Color(0xFF315AE9), Color(0xFF4F46E5)],
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2563EB).withValues(alpha: 0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: const Color(0xFF3B5BDB).withValues(alpha: 0.24),
+            blurRadius: 18,
+            offset: const Offset(0, 7),
           ),
         ],
       ),
@@ -1095,7 +1252,7 @@ class _LoginScreenState extends State<LoginScreen>
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
         child: _isLoading
             ? const SizedBox(
@@ -1108,12 +1265,16 @@ class _LoginScreenState extends State<LoginScreen>
                 children: [
                   const Icon(Icons.arrow_forward_rounded, size: 16, color: Colors.white),
                   const SizedBox(width: 8),
-                  Text(
-                    "Sign in to StudentApp",
-                    style: GoogleFonts.poppins(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                  Flexible(
+                    child: Text(
+                      "Sign in to StudentApp",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],
@@ -1126,11 +1287,11 @@ class _LoginScreenState extends State<LoginScreen>
   Widget _buildSsoButton() {
     return Container(
       width: double.infinity,
-      height: 46,
+      height: 50,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFCBD5E1)),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFD9E1EF)),
       ),
       child: OutlinedButton(
         onPressed: () {
@@ -1138,19 +1299,23 @@ class _LoginScreenState extends State<LoginScreen>
         },
         style: OutlinedButton.styleFrom(
           side: BorderSide.none,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.security_rounded, size: 16, color: Color(0xFF475569)),
             const SizedBox(width: 8),
-            Text(
-              "Sign in with Student SSO",
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF334155),
+            Flexible(
+              child: Text(
+                "Sign in with Student SSO",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF334155),
+                ),
               ),
             ),
           ],
