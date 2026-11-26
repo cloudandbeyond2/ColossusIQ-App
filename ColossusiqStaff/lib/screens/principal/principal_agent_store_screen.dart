@@ -12,6 +12,7 @@ class PrincipalAgentStoreScreen extends StatefulWidget {
 class _PrincipalAgentStoreScreenState extends State<PrincipalAgentStoreScreen> {
   String _selectedFilter = "All";
   final TextEditingController _searchController = TextEditingController();
+  final Set<String> _disabledAgents = {"Academic Tutor"};
 
   final List<Map<String, dynamic>> _agents = [
     // --- Student (17) ---
@@ -209,6 +210,27 @@ class _PrincipalAgentStoreScreenState extends State<PrincipalAgentStoreScreen> {
     super.dispose();
   }
 
+  bool _isAgentEnabled(Map<String, dynamic> agent) {
+    return !_disabledAgents.contains(agent["name"]);
+  }
+
+  bool _isCoreAgent(Map<String, dynamic> agent) {
+    return agent["department"] == "Platform";
+  }
+
+  void _toggleAgent(Map<String, dynamic> agent) {
+    if (_isCoreAgent(agent)) return;
+
+    final name = agent["name"] as String;
+    setState(() {
+      if (_disabledAgents.contains(name)) {
+        _disabledAgents.remove(name);
+      } else {
+        _disabledAgents.add(name);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // Filter agents
@@ -235,6 +257,9 @@ class _PrincipalAgentStoreScreenState extends State<PrincipalAgentStoreScreen> {
 
               // 2. Blueprint Hero Banner (Matches Image 5)
               _buildHeroBanner(),
+              const SizedBox(height: 18),
+
+              _buildAgentStatusSummary(_agents.where(_isAgentEnabled).length),
               const SizedBox(height: 18),
 
               // 3. Department Filters & Search Row (Matches Image 5)
@@ -289,7 +314,7 @@ class _PrincipalAgentStoreScreenState extends State<PrincipalAgentStoreScreen> {
                       crossAxisCount: colCount,
                       crossAxisSpacing: 14,
                       mainAxisSpacing: 14,
-                      childAspectRatio: colCount == 1 ? 2.4 : 1.75,
+                      childAspectRatio: colCount == 1 ? 1.55 : 1.75,
                     ),
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
@@ -302,6 +327,82 @@ class _PrincipalAgentStoreScreenState extends State<PrincipalAgentStoreScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildAgentStatusSummary(int enabledCount) {
+    final details = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "$enabledCount of ${_agents.length} agents are on for your college",
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF0F172A),
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          "Toggle local availability for each agent. Core platform agents stay on.",
+          style: GoogleFonts.poppins(
+            fontSize: 11,
+            color: const Color(0xFF64748B),
+          ),
+        ),
+      ],
+    );
+    final providerBadge = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        "Google Gemini",
+        style: GoogleFonts.poppins(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF2563EB),
+        ),
+      ),
+    );
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 500) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                details,
+                const SizedBox(height: 8),
+                Align(alignment: Alignment.centerRight, child: providerBadge),
+              ],
+            );
+          }
+          return Row(
+            children: [
+              Expanded(child: details),
+              providerBadge,
+            ],
+          );
+        },
       ),
     );
   }
@@ -592,7 +693,7 @@ class _PrincipalAgentStoreScreenState extends State<PrincipalAgentStoreScreen> {
               onChanged: (_) => setState(() {}),
               style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF0F172A)),
               decoration: InputDecoration(
-                hintText: "Search labs & practicals...",
+                hintText: "Search agents...",
                 hintStyle: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF94A3B8)),
                 prefixIcon: const Icon(Icons.search_rounded, size: 17, color: Color(0xFF94A3B8)),
                 suffixIcon: _searchController.text.isNotEmpty
@@ -639,6 +740,8 @@ class _PrincipalAgentStoreScreenState extends State<PrincipalAgentStoreScreen> {
   // ===========================================================================
   Widget _buildAgentCard(Map<String, dynamic> agent) {
     final dept = agent["department"] as String;
+    final isEnabled = _isAgentEnabled(agent);
+    final isCoreAgent = _isCoreAgent(agent);
 
     Color deptBg;
     Color deptText;
@@ -659,7 +762,7 @@ class _PrincipalAgentStoreScreenState extends State<PrincipalAgentStoreScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isEnabled ? Colors.white : const Color(0xFFFFFEFC),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
@@ -679,7 +782,10 @@ class _PrincipalAgentStoreScreenState extends State<PrincipalAgentStoreScreen> {
             children: [
               // Department pill
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 2.5,
+                ),
                 decoration: BoxDecoration(
                   color: deptBg,
                   borderRadius: BorderRadius.circular(6),
@@ -694,35 +800,27 @@ class _PrincipalAgentStoreScreenState extends State<PrincipalAgentStoreScreen> {
                 ),
               ),
 
-              // Live Google Gemini pill
+              // Enabled state
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF0FDF4),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: const Color(0xFFA7F3D0)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 2.5,
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 5,
-                      height: 5,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF059669),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      agent["status"] as String,
-                      style: GoogleFonts.poppins(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF047857),
-                      ),
-                    ),
-                  ],
+                decoration: BoxDecoration(
+                  color: isEnabled
+                      ? const Color(0xFFE0F2F1)
+                      : const Color(0xFFF1F0ED),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  isEnabled ? "On" : "Off",
+                  style: GoogleFonts.poppins(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                    color: isEnabled
+                        ? const Color(0xFF0F766E)
+                        : const Color(0xFF78716C),
+                  ),
                 ),
               ),
             ],
@@ -735,22 +833,71 @@ class _PrincipalAgentStoreScreenState extends State<PrincipalAgentStoreScreen> {
             style: GoogleFonts.poppins(
               fontSize: 14.5,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF0F172A),
+              color: isEnabled
+                  ? const Color(0xFF0F172A)
+                  : const Color(0xFF78716C),
             ),
           ),
           const SizedBox(height: 4),
 
-          // Description
+          // Description and action
           Expanded(
             child: Text(
               agent["desc"] as String,
               style: GoogleFonts.poppins(
                 fontSize: 12,
-                color: const Color(0xFF64748B),
+                color: isEnabled
+                    ? const Color(0xFF64748B)
+                    : const Color(0xFF9A948D),
                 height: 1.45,
               ),
               maxLines: 4,
               overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          const SizedBox(height: 8),
+          Tooltip(
+            message: isCoreAgent ? "Core platform agents stay on" : "",
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton(
+                onPressed: isCoreAgent ? null : () => _toggleAgent(agent),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: isEnabled
+                      ? const Color(0xFF0F172A)
+                      : Colors.white,
+                  backgroundColor: isEnabled
+                      ? Colors.white
+                      : const Color(0xFF6366C1),
+                  side: BorderSide(
+                    color: isEnabled
+                        ? const Color(0xFFE2E8F0)
+                        : const Color(0xFF6366C1),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  minimumSize: const Size(0, 32),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                ),
+                child: Text(
+                  isCoreAgent
+                      ? "Always on"
+                      : isEnabled
+                      ? "Switch off"
+                      : "Switch on",
+                  style: GoogleFonts.poppins(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
           ),
         ],

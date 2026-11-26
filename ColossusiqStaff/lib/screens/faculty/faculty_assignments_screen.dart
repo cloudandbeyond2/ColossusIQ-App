@@ -1293,53 +1293,56 @@ class _FacultyAssignmentsScreenState extends State<FacultyAssignmentsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Breadcrumbs
-                  Row(
-                    children: [
-                      if (widget.onBack != null) ...[
-                        InkWell(
-                          onTap: widget.onBack,
-                          borderRadius: BorderRadius.circular(4),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.arrow_back_ios_new_rounded, size: 12, color: Colors.white70),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Home',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 12,
-                                  color: Colors.white.withValues(alpha: 0.75),
-                                  fontWeight: FontWeight.w500,
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        if (widget.onBack != null) ...[
+                          InkWell(
+                            onTap: widget.onBack,
+                            borderRadius: BorderRadius.circular(4),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.arrow_back_ios_new_rounded, size: 12, color: Colors.white70),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Home',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 12,
+                                    color: Colors.white.withValues(alpha: 0.75),
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ] else ...[
+                        ] else ...[
+                          Text(
+                            'Home',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.75),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                         Text(
-                          'Home',
+                          '  \u203A  Academics  \u203A  ',
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
-                            color: Colors.white.withValues(alpha: 0.75),
-                            fontWeight: FontWeight.w500,
+                            color: Colors.white.withValues(alpha: 0.6),
+                          ),
+                        ),
+                        Text(
+                          'Assignments',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
-                      Text(
-                        '  ›  Academics  ›  ',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.6),
-                        ),
-                      ),
-                      Text(
-                        'Assignments',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                   const SizedBox(height: 12),
 
@@ -1615,9 +1618,9 @@ class _FacultyAssignmentsScreenState extends State<FacultyAssignmentsScreen> {
             child: DataTable(
               headingRowColor: WidgetStateProperty.all(const Color(0xFFFBFBFB)),
               dataRowMinHeight: 68,
-              dataRowMaxHeight: 74,
-              horizontalMargin: 20,
-              columnSpacing: 24,
+              dataRowMaxHeight: 90,
+              horizontalMargin: 16,
+              columnSpacing: 20,
               columns: [
                 DataColumn(
                   label: Text(
@@ -1757,7 +1760,7 @@ class _FacultyAssignmentsScreenState extends State<FacultyAssignmentsScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            width: 56,
+                            width: 48,
                             height: 6,
                             decoration: BoxDecoration(
                               color: const Color(0xFFF3F4F6),
@@ -1776,9 +1779,12 @@ class _FacultyAssignmentsScreenState extends State<FacultyAssignmentsScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 8),
                           Text(
                             '${asg.handedInCount} / ${asg.totalStudents}',
+                            maxLines: 1,
+                            softWrap: false,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 13,
                               color: const Color(0xFF4B5563),
@@ -1793,6 +1799,9 @@ class _FacultyAssignmentsScreenState extends State<FacultyAssignmentsScreen> {
                     DataCell(
                       Text(
                         asg.markedCount > 0 ? '${asg.markedCount} of ${asg.handedInCount}' : '—',
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 13,
                           color: const Color(0xFF4B5563),
@@ -1803,18 +1812,29 @@ class _FacultyAssignmentsScreenState extends State<FacultyAssignmentsScreen> {
 
                     // 5. Status Pill
                     DataCell(
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: asg.statusBgColor,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          asg.status,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: asg.statusTextColor,
+                      SizedBox(
+                        width: 72,
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: asg.statusBgColor,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              asg.status,
+                              maxLines: 1,
+                              softWrap: false,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: asg.statusTextColor,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -1863,7 +1883,7 @@ class _FacultyAssignmentsScreenState extends State<FacultyAssignmentsScreen> {
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           IconButton(
                             onPressed: () => _showEditAssignmentModal(asg),
                             icon: const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF6B7280)),
@@ -1872,7 +1892,7 @@ class _FacultyAssignmentsScreenState extends State<FacultyAssignmentsScreen> {
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           IconButton(
                             onPressed: () => _confirmDeleteAssignment(asg),
                             icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Color(0xFFDC2626)),

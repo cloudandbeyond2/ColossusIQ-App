@@ -1444,8 +1444,11 @@ class _PrincipalBrandingScreenState extends State<PrincipalBrandingScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Row(
                           children: [
@@ -1494,6 +1497,7 @@ class _PrincipalBrandingScreenState extends State<PrincipalBrandingScreen> {
 
                     // CNAME Table Card
                     Container(
+                      key: const ValueKey("dns-cname-record"),
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -1501,14 +1505,59 @@ class _PrincipalBrandingScreenState extends State<PrincipalBrandingScreen> {
                         border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       child: LayoutBuilder(
-                        builder: (context, b) {
+                        builder: (context, constraints) {
+                          final type = _buildDnsCol(
+                            "TYPE",
+                            "CNAME",
+                            isBold: true,
+                          );
+                          final host = _buildDnsCol(
+                            "HOST",
+                            "portal",
+                            isCode: true,
+                          );
+                          final target = _buildDnsCol(
+                            "TARGET VALUE",
+                            "cname.colossusiq.ai",
+                            isGreen: true,
+                          );
+                          final status = _buildDnsCol(
+                            "STATUS",
+                            "✔ Active",
+                            isGreenBadge: true,
+                          );
+
+                          if (constraints.maxWidth < 480) {
+                            return Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(child: type),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: host),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(child: target),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: status),
+                                  ],
+                                ),
+                              ],
+                            );
+                          }
+
                           return Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _buildDnsCol("TYPE", "CNAME", isBold: true),
-                              _buildDnsCol("HOST", "portal", isCode: true),
-                              _buildDnsCol("TARGET VALUE", "cname.colossusiq.ai", isGreen: true),
-                              _buildDnsCol("STATUS", "✔ Active", isGreenBadge: true),
+                              Expanded(child: type),
+                              const SizedBox(width: 12),
+                              Expanded(child: host),
+                              const SizedBox(width: 12),
+                              Expanded(flex: 2, child: target),
+                              const SizedBox(width: 12),
+                              Expanded(child: status),
                             ],
                           );
                         },
@@ -1565,6 +1614,8 @@ class _PrincipalBrandingScreenState extends State<PrincipalBrandingScreen> {
         const SizedBox(height: 2),
         Text(
           val,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: GoogleFonts.poppins(
             fontSize: 11.5,
             fontWeight: isBold || isGreenBadge ? FontWeight.w700 : FontWeight.w600,

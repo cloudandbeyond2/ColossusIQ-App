@@ -432,7 +432,10 @@ class _PrincipalSecuritySettingsScreenState extends State<PrincipalSecuritySetti
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
@@ -449,9 +452,9 @@ class _PrincipalSecuritySettingsScreenState extends State<PrincipalSecuritySetti
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
                         Text(
                           "•  Real-Time Compliance Score",
+                          softWrap: true,
                           style: GoogleFonts.poppins(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
@@ -745,16 +748,20 @@ class _PrincipalSecuritySettingsScreenState extends State<PrincipalSecuritySetti
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    f["name"]!,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12.5,
-                      color: const Color(0xFF334155),
-                      fontWeight: FontWeight.w500,
+                  Expanded(
+                    child: Text(
+                      f["name"]!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.5,
+                        color: const Color(0xFF334155),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
@@ -802,17 +809,21 @@ class _PrincipalSecuritySettingsScreenState extends State<PrincipalSecuritySetti
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "LIVE SECURITY AUDIT",
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF64748B),
-                  letterSpacing: 0.6,
+              Expanded(
+                child: Text(
+                  "LIVE SECURITY AUDIT",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF64748B),
+                    letterSpacing: 0.6,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               const Icon(
                 Icons.access_time_rounded,
                 size: 15,
@@ -953,12 +964,16 @@ class _PrincipalSecuritySettingsScreenState extends State<PrincipalSecuritySetti
               color: Color(0xFF059669),
             ),
             const SizedBox(width: 6),
-            Text(
-              "All policies synchronized",
-              style: GoogleFonts.poppins(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF059669),
+            Flexible(
+              child: Text(
+                "All policies synchronized",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF059669),
+                ),
               ),
             ),
           ],
